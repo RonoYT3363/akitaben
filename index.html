@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>んだっす 0.4.0-α</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <style>
+        /* Akitamonページ専用の地図スタイル */
+        #map {
+            width: 100%;
+            height: 500px;
+            margin-top: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div id="topRight">
+    <button id="accountBtn">アカウント作成</button>
+</div>
+
+<div id="container">
+
+    <div id="leftMenu">
+        <button onclick="showPage('homePage')">ホーム</button>
+        <button onclick="showPage('akitamonPage')">Akitamon</button>
+        <button onclick="showPage('loginPage')">ログイン</button>
+        <button onclick="showPage('registerPage')">登録</button>
+        <button onclick="showPage('profilePage')">プロフィール</button>
+    </div>
+
+    <div id="main">
+
+        <div id="homePage" class="page">
+            <h2>ホーム</h2>
+
+            <textarea
+                id="postInput"
+                placeholder="投稿..."
+            ></textarea>
+
+            <button
+                class="postButton"
+                onclick="addPost()"
+            >
+                投稿
+            </button>
+
+            <div id="posts"></div>
+        </div>
+
+        <div id="akitamonPage" class="page" style="display:none;">
+            <h2>Akitamon</h2>
+            <div id="map"></div>
+        </div>
+
+        <div
+            id="loginPage"
+            class="page"
+            style="display:none;"
+        >
+            <h2>ログイン</h2>
+
+            <input
+                id="loginId"
+                placeholder="ID"
+            >
+
+            <input
+                id="loginPw"
+                type="password"
+                placeholder="PW"
+            >
+
+            <button onclick="login()">
+                ログイン
+            </button>
+        </div>
+
+        <div
+            id="registerPage"
+            class="page"
+            style="display:none;"
+        >
+            <h2>登録</h2>
+
+            <input
+                id="regId"
+                placeholder="ID"
+            >
+
+            <input
+                id="regName"
+                placeholder="ニックネーム"
+            >
+
+            <input
+                id="regPw"
+                type="password"
+                placeholder="PW"
+            >
+
+            <button onclick="register()">
+                登録
+            </button>
+        </div>
+
+        <div
+            id="profilePage"
+            class="page"
+            style="display:none;"
+        >
+            <h2>プロフィール</h2>
+
+            <div id="profileInfo"></div>
+        </div>
+
+    </div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    query,
+    orderBy,
+    onSnapshot,
+    getDocs,
+    serverTimestamp
+}
+from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBrvljWUiy1qW1FpGi37Md0j7c73ZVvPfE",
+    authDomain: "akitaben-socialmedia.firebaseapp.com",
+    projectId: "akitaben-socialmedia",
+    storageBucket: "akitaben-socialmedia.appspot.com",
+    messagingSenderId: "1042795276573",
+    appId: "1:1042795276573:web:e9f4c18963fd5adfd099f4"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.db = db;
+
+window.fs = {
+    collection,
+    addDoc,
+    query,
+    orderBy,
+    onSnapshot,
+    getDocs,
+    serverTimestamp
+};
+
+</script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script src="dictionary.js"></script>
+
+<script src="script.js"></script>
+</body>
+</html>
