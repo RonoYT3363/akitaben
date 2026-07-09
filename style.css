@@ -1,363 +1,204 @@
-let currentUser = null;
+/* ==========================================
+   んだっす 0.4.0 専用スタイルシート
+   ========================================== */
 
-// =====================
-// 初期化
-// =====================
-window.addEventListener("load", () => {
-    loadUser();
-    updateTopRight();
-    loadPosts();
-});
-
-// =====================
-// 投稿作成
-// =====================
-async function addPost() {
-
-    const input = document.getElementById("postInput");
-
-    let text = input.value.trim();
-
-    if (!text) return;
-
-    // 秋田弁へ変換
-    if (typeof convertToAkita === "function") {
-        text = convertToAkita(text);
-    }
-
-    await fs.addDoc(
-        fs.collection(db, "posts"),
-        {
-            text,
-            nickname: currentUser?.nickname || "名無し",
-            createdAt: fs.serverTimestamp()
-        }
-    );
-
-    input.value = "";
+/* 全体の基本設定 */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    background-color: #f0f2f5; /* 優しいグレーの背景 */
+    color: #333333;
 }
 
-// =====================
-// 投稿取得
-// =====================
-function loadPosts() {
-
-    const posts = document.getElementById("posts");
-
-    const q = fs.query(
-        fs.collection(db, "posts"),
-        fs.orderBy("createdAt", "desc")
-    );
-
-    fs.onSnapshot(q, (snap) => {
-
-        console.log("posts:", snap.size);
-
-        posts.innerHTML = "";
-
-        snap.forEach(doc => {
-
-            const p = doc.data();
-
-            let timeText = "送信中...";
-
-            if (p.createdAt) {
-
-                const date = p.createdAt.toDate();
-
-                const yyyy = date.getFullYear();
-                const mm = String(date.getMonth() + 1).padStart(2, "0");
-                const dd = String(date.getDate()).padStart(2, "0");
-                const hh = String(date.getHours()).padStart(2, "0");
-                const mi = String(date.getMinutes()).padStart(2, "0");
-
-                timeText = `${yyyy}/${mm}/${dd} ${hh}:${mi}`;
-            }
-
-            const div = document.createElement("div");
-
-            div.className = "post";
-
-            div.innerHTML = `
-                <div class="postHeader">
-                    <b>${p.nickname || "名無し"}</b>
-                </div>
-
-                <div class="postText">
-                    ${p.text || ""}
-                </div>
-
-                <div class="postTime">
-                    ${timeText}
-                </div>
-            `;
-
-            posts.appendChild(div);
-
-        });
-
-    });
-
+/* 右上のアカウントボタンエリア */
+#topRight {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    z-index: 10;
 }
 
-// =====================
-// 登録
-// =====================
-async function register() {
-
-    const id = document.getElementById("regId").value;
-
-    const name = document.getElementById("regName").value;
-
-    const pw = document.getElementById("regPw").value;
-
-    await fs.addDoc(
-
-        fs.collection(db, "users"),
-
-        {
-
-            accountId: id,
-
-            nickname: name,
-
-            password: pw
-
-        }
-
-    );
-
-    alert("登録完了");
-
-    showPage("loginPage");
-
+#accountBtn {
+    background-color: #ffffff;
+    color: #1877f2;
+    border: 2px solid #1877f2;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-// =====================
-// ログイン
-// =====================
-async function login() {
-
-    const id = document.getElementById("loginId").value;
-
-    const pw = document.getElementById("loginPw").value;
-
-    const snap = await fs.getDocs(
-
-        fs.collection(db, "users")
-
-    );
-
-    snap.forEach(doc => {
-
-        const u = doc.data();
-
-        if (
-
-            u.accountId === id &&
-
-            u.password === pw
-
-        ) {
-
-            currentUser = u;
-
-            localStorage.setItem(
-
-                "user",
-
-                JSON.stringify(u)
-
-            );
-
-        }
-
-    });
-
-    updateTopRight();
-
-    showPage("homePage");
-
-}
-// =====================
-// ユーザー読込
-// =====================
-function loadUser() {
-
-    const u = localStorage.getItem("user");
-
-    if (u) {
-
-        currentUser = JSON.parse(u);
-
-    }
-
+#accountBtn:hover {
+    background-color: #1877f2;
+    color: #ffffff;
 }
 
-// =====================
-// 右上ボタン更新
-// =====================
-function updateTopRight() {
-
-    const btn = document.getElementById("accountBtn");
-
-    if (!btn) return;
-
-    if (!currentUser) {
-
-        btn.textContent = "アカウント作成";
-
-        btn.onclick = () => {
-
-            showPage("registerPage");
-
-        };
-
-    } else {
-
-        btn.textContent = currentUser.nickname;
-
-        btn.onclick = () => {
-
-            showPage("profilePage");
-
-        };
-
-        renderProfile();
-
-    }
-
+/* メインの左右分割コンテナ */
+#container {
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: 60px; /* 上部に少し余白 */
+    min-height: 100vh;
 }
 
-// =====================
-// プロフィール表示
-// =====================
-function renderProfile() {
-
-    const el = document.getElementById("profileInfo");
-
-    if (!el || !currentUser) return;
-
-    el.innerHTML = `
-        <p>ID: ${currentUser.accountId}</p>
-        <p>名前: ${currentUser.nickname}</p>
-    `;
-
+/* 左側メニュー */
+#leftMenu {
+    width: 240px;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-// =====================
-// ページ切替
-// =====================
-function showPage(id) {
-
-    document.querySelectorAll(".page").forEach(page => {
-
-        page.style.display = "none";
-
-    });
-
-    const target = document.getElementById(id);
-
-    if (target) {
-
-        target.style.display = "block";
-
-    }
-
+#leftMenu button {
+    background-color: #ffffff;
+    color: #333333;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
 }
 
-// =====================
-// Enterキーで投稿
-// =====================
-document.addEventListener("DOMContentLoaded", () => {
+#leftMenu button:hover {
+    background-color: #1877f2;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(24, 119, 242, 0.2);
+}
 
-    const input = document.getElementById("postInput");
+/* 右側メインコンテンツエリア */
+#main {
+    flex: 1;
+    padding: 20px;
+    box-sizing: border-box;
+}
 
-    if (!input) return;
+/* 各ページの白いカードデザイン */
+.page {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+}
 
-    input.addEventListener("keydown", (e) => {
+.page h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #111111;
+    border-bottom: 2px solid #f0f2f5;
+    padding-bottom: 10px;
+}
 
-        if (e.key === "Enter" && !e.shiftKey) {
+/* 投稿フォームのスタイル */
+#postInput {
+    width: 100%;
+    height: 100px;
+    padding: 15px;
+    box-sizing: border-box;
+    border: 1px solid #ccd0d5;
+    border-radius: 8px;
+    font-size: 16px;
+    resize: none;
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+}
 
-            e.preventDefault();
+#postInput:focus {
+    border-color: #1877f2;
+}
 
-            addPost();
+.postButton {
+    background-color: #1877f2;
+    color: #ffffff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    float: right;
+    transition: background-color 0.2s;
+}
 
-        }
+.postButton:hover {
+    background-color: #166fe5;
+}
 
-    });
+/* 投稿一覧（タイムライン）のスタイル */
+#posts {
+    margin-top: 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
 
-});
+.post {
+    background-color: #f8f9fa;
+    border: 1px solid #e4e6eb;
+    border-radius: 8px;
+    padding: 16px;
+}
 
-// =====================
-// グローバル公開
-// =====================
-window.addPost = addPost;
-window.register = register;
-window.login = login;
-window.showPage = showPage;
+.postHeader {
+    font-size: 14px;
+    color: #1c1e21;
+    margin-bottom: 8px;
+}
 
+.postText {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #050505;
+    white-space: pre-wrap;
+    margin-bottom: 8px;
+}
 
-// ==========================================
-// 追加：現在地追跡（GPS連携）付きのLeaflet初期化
-// ==========================================
-document.addEventListener("DOMContentLoaded", () => {
-    if (!document.getElementById('map')) return;
+.postTime {
+    font-size: 12px;
+    color: #65676b;
+    text-align: right;
+}
 
-    // 最初は仮の位置（秋田駅）で地図を準備（ズームは少し近めの15に設定）
-    const map = L.map('map').setView([39.7169, 140.1267], 15);
+/* 入力フォーム（ログイン・登録画面用） */
+input {
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    border: 1px solid #ccd0d5;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    outline: none;
+}
 
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+input:focus {
+    border-color: #1877f2;
+}
 
-    // 自分の現在地を表示するためのピン（マーカー）を用意
-    const userMarker = L.marker([39.7169, 140.1267]).addTo(map)
-        .bindPopup('あなたの現在地（読み込み中...）');
+.page button:not(.postButton) {
+    background-color: #42b72a; /* 登録・ログインは安心感のある緑ボタン */
+    color: #ffffff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.2s;
+}
 
-    window.myAppMap = map;
-
-    // --- 現在地をリアルタイムに追いかける機能 (GPS連携) ---
-    if ("geolocation" in navigator) {
-        // watchPositionを使うことで、移動すると自動的に何度も実行されます
-        navigator.geolocation.watchPosition(
-            (position) => {
-                const lat = position.coords.latitude;  // 緯度
-                const lng = position.coords.longitude; // 経度
-
-                // 1. 自分のピンを今の位置に移動
-                userMarker.setLatLng([lat, lng]);
-                userMarker.getPopup().setContent('ここにいるっす！');
-
-                // 2. 地図の中心を自分の位置にスムーズに移動
-                map.panTo([lat, lng]);
-                
-                console.log("現在地を更新しました:", lat, lng);
-            },
-            (error) => {
-                console.error("位置情報の取得に失敗しました:", error.message);
-                userMarker.getPopup().setContent('GPSをオンにしてけれ！');
-            },
-            {
-                enableHighAccuracy: true, // 高精度な位置情報を要求（GPSを使用）
-                timeout: 10000,           // 10秒でタイムアウト
-                maximumAge: 0             // 常に最新の情報を取得
-            }
-        );
-    } else {
-        alert("お使いのブラウザは位置情報（GPS）に対応していません。");
-    }
-
-    // 既存の showPage を拡張して、Akitamonが開かれたら地図を表示更新する
-    const originalShowPage = window.showPage;
-    window.showPage = function(id) {
-        originalShowPage(id);
-        
-        if (id === 'akitamonPage') {
-            setTimeout(() => {
-                map.invalidateSize();
-            }, 100);
-        }
-    };
-});
+.page button:not(.postButton):hover {
+    background-color: #36a420;
+}
