@@ -30,11 +30,30 @@ async function addPost() {
         {
             text,
             nickname: currentUser?.nickname || "名無し",
+            accountId: currentUser?.accountId || "", // タグ判定用に作成者のIDも保存
+            role: currentUser?.role || "user",       // 投稿時のロールも保存
             createdAt: fs.serverTimestamp()
         }
     );
 
     input.value = "";
+}
+
+// =====================
+// ロールに応じたバッジ（タグ）のHTMLを生成する関数
+// =====================
+function getRoleBadge(role) {
+    if (!role) return "";
+    
+    // ownerは金、SMODは赤、JMODも赤（少し色味を変えて識別しやすくしています）
+    if (role === "owner") {
+        return `<span style="background-color: #FFD700; color: #333; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; font-weight: bold; border: 1px solid #DAA520;">OWNER</span>`;
+    } else if (role === "SMOD") {
+        return `<span style="background-color: #FF4500; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; font-weight: bold;">SMOD</span>`;
+    } else if (role === "JMOD") {
+        return `<span style="background-color: #FF6347; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; font-weight: bold;">JMOD</span>`;
+    }
+    return "";
 }
 
 // =====================
@@ -74,13 +93,16 @@ function loadPosts() {
                 timeText = `${yyyy}/${mm}/${dd} ${hh}:${mi}`;
             }
 
+            // ロールに応じたバッジを取得
+            const badgeHtml = getRoleBadge(p.role);
+
             const div = document.createElement("div");
 
             div.className = "post";
 
             div.innerHTML = `
                 <div class="postHeader">
-                    <b>${p.nickname || "名無し"}</b>
+                    <b>${p.nickname || "名無し"}</b>${badgeHtml}
                 </div>
 
                 <div class="postText">
@@ -121,7 +143,9 @@ async function register() {
 
             nickname: name,
 
-            password: pw
+            password: pw,
+            
+            role: "user" // 新規登録時は一律一般ユーザー
 
         }
 
@@ -148,6 +172,8 @@ async function login() {
 
     );
 
+    let loggedInUser = null;
+
     snap.forEach(doc => {
 
         const u = doc.data();
@@ -160,19 +186,16 @@ async function login() {
 
         ) {
 
-            currentUser = u;
-
-            localStorage.setItem(
-
-                "user",
-
-                JSON.stringify(u)
-
-            );
+            loggedInUser = u;
 
         }
 
     });
+
+    if (loggedInUser) {
+        currentUser = loggedInUser;
+        localStorage.setItem("user", JSON.stringify(loggedInUser));
+    }
 
     updateTopRight();
 
@@ -246,9 +269,13 @@ function renderProfile() {
 
     if (!el || !currentUser) return;
 
+    // プロフィール画面にもロールバッジを表示
+    const badgeHtml = getRoleBadge(currentUser.role);
+
     el.innerHTML = `
         <p>ID: ${currentUser.accountId}</p>
-        <p>名前: ${currentUser.nickname}</p>
+        <p>名前: ${currentUser.nickname} ${badgeHtml}</p>
+        <p>権限: ${currentUser.role || "user"}</p>
     `;
 
 }
@@ -324,17 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const userMarker = L.marker([39.7169, 140.1267]).addTo(map)
         .bindPopup('あなたの現在地（読み込み中...）');
 
-    window.myAppMap = map;
-
-    // --- マップ上にアイテム（ピン）を配置 ---
-    // アイテム1：なまはげの盾
-    const item1 = L.marker([39.7180, 140.1280]).addTo(map)
-        .bindPopup('<b>【レアアイテム】</b><br>なまはげの盾を見つけたっす！');
-
-    // アイテム2：きりたんぽ
-    const item2 = L.marker([39.7155, 140.1245]).addTo(map)
-        .bindPopup('<b>【回復アイテム】</b><br>ほかほかのきりたんぽっす！');
-
+  
 
     // --- 現在地をリアルタイムに追いかける機能 (GPS連携) ---
     if ("geolocation" in navigator) {
