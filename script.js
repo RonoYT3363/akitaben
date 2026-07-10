@@ -179,6 +179,7 @@ async function login() {
     showPage("homePage");
 
 }
+
 // =====================
 // ユーザー読込
 // =====================
@@ -195,38 +196,45 @@ function loadUser() {
 }
 
 // =====================
-// 右上ボタン更新
+// 右上ボタンおよびメニュー表示の更新
 // =====================
 function updateTopRight() {
 
     const btn = document.getElementById("accountBtn");
+    
+    // 左メニューのボタンたちを取得
+    const loginBtn = document.querySelector("#leftMenu button[onclick*='loginPage']");
+    const registerBtn = document.querySelector("#leftMenu button[onclick*='registerPage']");
+    const profileBtn = document.querySelector("#leftMenu button[onclick*='profilePage']");
 
     if (!btn) return;
 
     if (!currentUser) {
-
+        // ログイン【前】のとき
         btn.textContent = "アカウント作成";
-
         btn.onclick = () => {
-
             showPage("registerPage");
-
         };
+
+        // ログイン・登録ボタンは表示、プロフィールは非表示
+        if (loginBtn) loginBtn.style.display = "block";
+        if (registerBtn) registerBtn.style.display = "block";
+        if (profileBtn) profileBtn.style.display = "none";
 
     } else {
-
+        // ログイン【後】のとき
         btn.textContent = currentUser.nickname;
-
         btn.onclick = () => {
-
             showPage("profilePage");
-
         };
 
+        // ログイン・登録ボタンは非表示、プロフィールを表示
+        if (loginBtn) loginBtn.style.display = "none";
+        if (registerBtn) registerBtn.style.display = "none";
+        if (profileBtn) profileBtn.style.display = "block";
+
         renderProfile();
-
     }
-
 }
 
 // =====================
@@ -299,12 +307,12 @@ window.showPage = showPage;
 
 
 // ==========================================
-// 追加：現在地追跡（GPS連携）付きのLeaflet初期化
+// 地図（Leaflet）初期化 ＆ アイテム配置
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
     if (!document.getElementById('map')) return;
 
-    // 最初は仮の位置（秋田駅）で地図を準備（ズームは少し近めの15に設定）
+    // 最初は秋田駅周辺で地図を準備
     const map = L.map('map').setView([39.7169, 140.1267], 15);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -312,25 +320,34 @@ document.addEventListener("DOMContentLoaded", () => {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // 自分の現在地を表示するためのピン（マーカー）を用意
+    // 自分の現在地を表示するためのピン
     const userMarker = L.marker([39.7169, 140.1267]).addTo(map)
         .bindPopup('あなたの現在地（読み込み中...）');
 
     window.myAppMap = map;
 
+    // --- マップ上にアイテム（ピン）を配置 ---
+    // アイテム1：なまはげの盾
+    const item1 = L.marker([39.7180, 140.1280]).addTo(map)
+        .bindPopup('<b>【レアアイテム】</b><br>なまはげの盾を見つけたっす！');
+
+    // アイテム2：きりたんぽ
+    const item2 = L.marker([39.7155, 140.1245]).addTo(map)
+        .bindPopup('<b>【回復アイテム】</b><br>ほかほかのきりたんぽっす！');
+
+
     // --- 現在地をリアルタイムに追いかける機能 (GPS連携) ---
     if ("geolocation" in navigator) {
-        // watchPositionを使うことで、移動すると自動的に何度も実行されます
         navigator.geolocation.watchPosition(
             (position) => {
                 const lat = position.coords.latitude;  // 緯度
                 const lng = position.coords.longitude; // 経度
 
-                // 1. 自分のピンを今の位置に移動
+                // 自分のピンを今の位置に移動
                 userMarker.setLatLng([lat, lng]);
                 userMarker.getPopup().setContent('ここにいるっす！');
 
-                // 2. 地図の中心を自分の位置にスムーズに移動
+                // 地図の中心を自分の位置に移動
                 map.panTo([lat, lng]);
                 
                 console.log("現在地を更新しました:", lat, lng);
@@ -340,16 +357,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 userMarker.getPopup().setContent('GPSをオンにしてけれ！');
             },
             {
-                enableHighAccuracy: true, // 高精度な位置情報を要求（GPSを使用）
-                timeout: 10000,           // 10秒でタイムアウト
-                maximumAge: 0             // 常に最新の情報を取得
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
             }
         );
     } else {
         alert("お使いのブラウザは位置情報（GPS）に対応していません。");
     }
 
-    // 既存の showPage を拡張して、Akitamonが開かれたら地図を表示更新する
+    // Akitamonが開かれたら地図を表示更新する
     const originalShowPage = window.showPage;
     window.showPage = function(id) {
         originalShowPage(id);
