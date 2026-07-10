@@ -261,7 +261,7 @@ function updateTopRight() {
 }
 
 // =====================
-// プロフィール表示
+// プロフィール表示（ここに安全にログアウト処理を足したっす！）
 // =====================
 function renderProfile() {
 
@@ -272,11 +272,32 @@ function renderProfile() {
     // プロフィール画面にもロールバッジを表示
     const badgeHtml = getRoleBadge(currentUser.role);
 
+    // プロフィール情報と一緒に「ログアウトボタン」を流し込む
+    // ※style.cssの既存デザインに影響されないよう、ボタンに直接赤いスタイルを当てています
     el.innerHTML = `
         <p>ID: ${currentUser.accountId}</p>
         <p>名前: ${currentUser.nickname} ${badgeHtml}</p>
         <p>権限: ${currentUser.role || "user"}</p>
+        <button id="logoutBtn" style="background-color: #ff4d4d; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; transition: background-color 0.2s;">
+            ログアウト
+        </button>
     `;
+
+    // 流し込んだログアウトボタンにクリックイベントを設定
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+        // マウスを乗せたときに少し暗い赤にするエフェクト
+        logoutBtn.onmouseenter = () => logoutBtn.style.backgroundColor = "#e60000";
+        logoutBtn.onmouseleave = () => logoutBtn.style.backgroundColor = "#ff4d4d";
+        
+        logoutBtn.onclick = () => {
+            if (confirm("本当にログアウトするべが？")) {
+                localStorage.removeItem("user"); // ストレージからユーザー情報を消去
+                alert("ログアウトしたっす！また来ての〜👋");
+                window.location.reload();        // 画面をリロードして初期状態に戻す
+            }
+        };
+    }
 
 }
 
