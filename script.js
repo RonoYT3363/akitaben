@@ -57,16 +57,25 @@ function getRoleBadge(role) {
 }
 
 // =====================
-// 投稿取得
+// 投稿取得（最新10件制限版）
 // =====================
 function loadPosts() {
 
     const posts = document.getElementById("posts");
 
-    const q = fs.query(
-        fs.collection(db, "posts"),
-        fs.orderBy("createdAt", "desc")
-    );
+    let q;
+    if (typeof fs.limit === "function") {
+        q = fs.query(
+            fs.collection(db, "posts"),
+            fs.orderBy("createdAt", "desc"),
+            fs.limit(10)
+        );
+    } else {
+        q = fs.query(
+            fs.collection(db, "posts"),
+            fs.orderBy("createdAt", "desc")
+        );
+    }
 
     fs.onSnapshot(q, (snap) => {
 
@@ -120,6 +129,79 @@ function loadPosts() {
 
     });
 
+}
+
+// =====================
+// 投稿検索（新しく追加したっす！）
+// =====================
+async function searchPosts() {
+    const input = document.getElementById("searchInput");
+    const resultsDiv = document.getElementById("searchResults");
+    
+    const keyword = input.value.trim();
+    if (!keyword) {
+        alert("キーワードを入力してけれ！");
+        return;
+    }
+
+    resultsDiv.innerHTML = "<p style='color: #65676b;'>検索中だす、ちょっと待ってけれ...</p>";
+
+    try {
+        // 最新の投稿を多め（50件）に取得して、そこからキーワードが含まれるものを探す
+        const q = fs.query(
+            fs.collection(db, "posts"),
+            fs.orderBy("createdAt", "desc"),
+            fs.limit(50)
+        );
+        
+        const snap = await fs.getDocs(q);
+        resultsDiv.innerHTML = "";
+        let count = 0;
+
+        snap.forEach(doc => {
+            const p = doc.data();
+            
+            // 投稿本文（p.text）の中にキーワードが含まれているかチェック
+            if (p.text && p.text.includes(keyword)) {
+                count++;
+
+                let timeText = "不明な時間";
+                if (p.createdAt) {
+                    const date = p.createdAt.toDate();
+                    const yyyy = date.getFullYear();
+                    const mm = String(date.getMonth() + 1).padStart(2, "0");
+                    const dd = String(date.getDate()).padStart(2, "0");
+                    const hh = String(date.getHours()).padStart(2, "0");
+                    const mi = String(date.getMinutes()).padStart(2, "0");
+                    timeText = `${yyyy}/${mm}/${dd} ${hh}:${mi}`;
+                }
+
+                const badgeHtml = getRoleBadge(p.role);
+                const div = document.createElement("div");
+                div.className = "post";
+                div.innerHTML = `
+                    <div class="postHeader">
+                        <b>${p.nickname || "名無し"}</b>${badgeHtml}
+                    </div>
+                    <div class="postText">
+                        ${p.text || ""}
+                    </div>
+                    <div class="postTime">
+                        ${timeText}
+                    </div>
+                `;
+                resultsDiv.appendChild(div);
+            }
+        });
+
+        if (count === 0) {
+            resultsDiv.innerHTML = `<p style='color: #65676b;'>「${keyword}」が含まれる投稿は見つからねがったっす…涙</p>`;
+        }
+
+    } catch (error) {
+        console.error("検索中にエラーが起きたっす:", error);
+        resultsDiv.innerHTML = "<p style='color: red;'>エラーが起きて検索できなかったっす…</p>";
+    }
 }
 
 // =====================
@@ -261,7 +343,7 @@ function updateTopRight() {
 }
 
 // =====================
-// プロフィール表示（ここに安全にログアウト処理を足したっす！）
+// プロフィール表示
 // =====================
 function renderProfile() {
 
@@ -273,7 +355,6 @@ function renderProfile() {
     const badgeHtml = getRoleBadge(currentUser.role);
 
     // プロフィール情報と一緒に「ログアウトボタン」を流し込む
-    // ※style.cssの既存デザインに影響されないよう、ボタンに直接赤いスタイルを当てています
     el.innerHTML = `
         <p>ID: ${currentUser.accountId}</p>
         <p>名前: ${currentUser.nickname} ${badgeHtml}</p>
@@ -286,15 +367,14 @@ function renderProfile() {
     // 流し込んだログアウトボタンにクリックイベントを設定
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
-        // マウスを乗せたときに少し暗い赤にするエフェクト
         logoutBtn.onmouseenter = () => logoutBtn.style.backgroundColor = "#e60000";
         logoutBtn.onmouseleave = () => logoutBtn.style.backgroundColor = "#ff4d4d";
         
         logoutBtn.onclick = () => {
             if (confirm("本当にログアウトするべが？")) {
-                localStorage.removeItem("user"); // ストレージからユーザー情報を消去
+                localStorage.removeItem("user");
                 alert("ログアウトしたっす！また来ての〜👋");
-                window.location.reload();        // 画面をリロードして初期状態に戻す
+                window.location.reload();
             }
         };
     }
@@ -352,6 +432,7 @@ window.addPost = addPost;
 window.register = register;
 window.login = login;
 window.showPage = showPage;
+window.searchPosts = searchPosts; // ←検索関数を外部公開！
 
 
 // ==========================================
@@ -371,8 +452,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // 自分の現在地を表示するためのピン
     const userMarker = L.marker([39.7169, 140.1267]).addTo(map)
         .bindPopup('あなたの現在地（読み込み中...）');
-
-  
 
     // --- 現在地をリアルタイムに追いかける機能 (GPS連携) ---
     if ("geolocation" in navigator) {
