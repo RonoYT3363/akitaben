@@ -35,7 +35,7 @@ body {
     color: #ffffff;
 }
 
-/* メインの左右分割コンテナ */
+/* メメインの左右分割コンテナ */
 #container {
     display: flex;
     max-width: 1200px;
@@ -208,4 +208,35 @@ input:focus {
 
 .page button:not(.postButton):hover {
     background-color: #36a420;
+}
+
+/* ==========================================
+   追加：検索画面用専用スタイル
+   ========================================== */
+.searchForm {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.searchForm input {
+    margin-bottom: 0; /* 横並びにするため下マージンをリセット */
+    flex: 1;
+}
+
+.searchButton {
+    background-color: #1877f2 !important; /* 青い検索ボタン */
+    color: white;
+    border: none;
+    padding: 12px 24px !important;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: auto !important; /* 横幅100%を打ち消して中身に合わせる */
+    transition: background-color 0.2s;
+}
+
+.searchButton:hover {
+    background-color: #166fe5 !important;
 }
