@@ -29,7 +29,7 @@
 
     <div id="leftMenu">
         <button onclick="showPage('homePage')">ホーム</button>
-        <button onclick="showPage('akitamonPage')">Akitamon</button>
+        <button onclick="showPage('searchPage')">検索</button> <button onclick="showPage('akitamonPage')">Akitamon</button>
         <button onclick="showPage('loginPage')">ログイン</button>
         <button onclick="showPage('registerPage')">登録</button>
         <button onclick="showPage('profilePage')">プロフィール</button>
@@ -55,16 +55,21 @@
             <div id="posts"></div>
         </div>
 
+        <div id="searchPage" class="page" style="display:none;">
+            <h2>投稿検索</h2>
+            <div class="searchForm">
+                <input id="searchInput" placeholder="検索したいキーワードを入力してけれ...">
+                <button onclick="searchPosts()" class="searchButton">検索するべ</button>
+            </div>
+            <div id="searchResults" style="margin-top: 20px; display: flex; flex-direction: column; gap: 16px;"></div>
+        </div>
+
         <div id="akitamonPage" class="page" style="display:none;">
             <h2>Akitamon</h2>
             <div id="map"></div>
         </div>
 
-        <div
-            id="loginPage"
-            class="page"
-            style="display:none;"
-        >
+        <div id="loginPage" class="page" style="display:none;">
             <h2>ログイン</h2>
 
             <input
@@ -83,11 +88,7 @@
             </button>
         </div>
 
-        <div
-            id="registerPage"
-            class="page"
-            style="display:none;"
-        >
+        <div id="registerPage" class="page" style="display:none;">
             <h2>登録</h2>
 
             <input
@@ -111,11 +112,7 @@
             </button>
         </div>
 
-        <div
-            id="profilePage"
-            class="page"
-            style="display:none;"
-        >
+        <div id="profilePage" class="page" style="display:none;">
             <h2>プロフィール</h2>
 
             <div id="profileInfo"></div>
@@ -136,6 +133,7 @@ import {
     addDoc,
     query,
     orderBy,
+    limit,
     onSnapshot,
     getDocs,
     serverTimestamp
@@ -161,6 +159,7 @@ window.fs = {
     addDoc,
     query,
     orderBy,
+    limit,
     onSnapshot,
     getDocs,
     serverTimestamp
