@@ -4,39 +4,42 @@ let currentUser = null;
 // 初期化
 // =====================
 window.addEventListener("load", () => {
-    loadUser();
-    updateTopRight();
-    loadPosts();
+    try {
+        loadUser();
+        updateTopRight();
+        loadPosts();
+    } catch (e) {
+        console.error("初期化エラー:", e);
+    }
 });
 
 // =====================
 // 投稿作成
 // =====================
 async function addPost() {
+    try {
+        const input = document.getElementById("postInput");
+        let text = input.value.trim();
 
-    const input = document.getElementById("postInput");
+        if (!text) return;
 
-    let text = input.value.trim();
+        // 【修正】秋田弁への自動変換処理を完全に削除しました。入力されたテキストがそのまま送信されます。
 
-    if (!text) return;
+        await fs.addDoc(
+            fs.collection(db, "posts"),
+            {
+                text,
+                nickname: currentUser?.nickname || "名無し",
+                accountId: currentUser?.accountId || "", // タグ判定用に作成者のIDも保存
+                role: currentUser?.role || "user",       // 投稿時のロールも保存
+                createdAt: fs.serverTimestamp()
+            }
+        );
 
-    // 秋田弁へ変換
-    if (typeof convertToAkita === "function") {
-        text = convertToAkita(text);
+        input.value = "";
+    } catch (e) {
+        console.error("投稿の作成に失敗しました:", e);
     }
-
-    await fs.addDoc(
-        fs.collection(db, "posts"),
-        {
-            text,
-            nickname: currentUser?.nickname || "名無し",
-            accountId: currentUser?.accountId || "", // タグ判定用に作成者のIDも保存
-            role: currentUser?.role || "user",       // 投稿時のロールも保存
-            createdAt: fs.serverTimestamp()
-        }
-    );
-
-    input.value = "";
 }
 
 // =====================
@@ -45,13 +48,14 @@ async function addPost() {
 function getRoleBadge(role) {
     if (!role) return "";
     
-    // ownerは金、SMODは赤、JMODも赤（少し色味を変えて識別しやすくしています）
-    if (role === "owner") {
-        return `<span style="background-color: #FFD700; color: #333; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; font-weight: bold; border: 1px solid #DAA520;">OWNER</span>`;
-    } else if (role === "SMOD") {
-        return `<span style="background-color: #FF4500; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; font-weight: bold;">SMOD</span>`;
-    } else if (role === "JMOD") {
-        return `<span style="background-color: #FF6347; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; font-weight: bold;">JMOD</span>`;
+    const cleanRole = String(role).trim().toLowerCase();
+    
+    if (cleanRole === "owner") {
+        return `<span style="background-color: #FFD700; color: #333; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; font-weight: bold; border: 1px solid #DAA520; display: inline-block; vertical-align: middle;">OWNER</span>`;
+    } else if (cleanRole === "smod") {
+        return `<span style="background-color: #FF4500; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; font-weight: bold; display: inline-block; vertical-align: middle;">SMOD</span>`;
+    } else if (cleanRole === "jmod") {
+        return `<span style="background-color: #FF6347; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; font-weight: bold; display: inline-block; vertical-align: middle;">JMOD</span>`;
     }
     return "";
 }
@@ -60,94 +64,83 @@ function getRoleBadge(role) {
 // 投稿取得（最新10件制限版）
 // =====================
 function loadPosts() {
+    try {
+        const posts = document.getElementById("posts");
+        if (!posts) return;
 
-    const posts = document.getElementById("posts");
+        let q;
+        if (window.fs && typeof fs.limit === "function") {
+            q = fs.query(
+                fs.collection(db, "posts"),
+                fs.orderBy("createdAt", "desc"),
+                fs.limit(10)
+            );
+        } else {
+            q = fs.query(
+                fs.collection(db, "posts"),
+                fs.orderBy("createdAt", "desc")
+            );
+        }
 
-    let q;
-    if (typeof fs.limit === "function") {
-        q = fs.query(
-            fs.collection(db, "posts"),
-            fs.orderBy("createdAt", "desc"),
-            fs.limit(10)
-        );
-    } else {
-        q = fs.query(
-            fs.collection(db, "posts"),
-            fs.orderBy("createdAt", "desc")
-        );
-    }
+        fs.onSnapshot(q, (snap) => {
+            console.log("posts:", snap.size);
+            posts.innerHTML = "";
 
-    fs.onSnapshot(q, (snap) => {
+            snap.forEach(doc => {
+                const p = doc.data();
+                let timeText = "送信中...";
 
-        console.log("posts:", snap.size);
+                if (p.createdAt) {
+                    const date = p.createdAt.toDate();
+                    const yyyy = date.getFullYear();
+                    const mm = String(date.getMonth() + 1).padStart(2, "0");
+                    const dd = String(date.getDate()).padStart(2, "0");
+                    const hh = String(date.getHours()).padStart(2, "0");
+                    const mi = String(date.getMinutes()).padStart(2, "0");
+                    timeText = `${yyyy}/${mm}/${dd} ${hh}:${mi}`;
+                }
 
-        posts.innerHTML = "";
+                const badgeHtml = getRoleBadge(p.role);
 
-        snap.forEach(doc => {
-
-            const p = doc.data();
-
-            let timeText = "送信中...";
-
-            if (p.createdAt) {
-
-                const date = p.createdAt.toDate();
-
-                const yyyy = date.getFullYear();
-                const mm = String(date.getMonth() + 1).padStart(2, "0");
-                const dd = String(date.getDate()).padStart(2, "0");
-                const hh = String(date.getHours()).padStart(2, "0");
-                const mi = String(date.getMinutes()).padStart(2, "0");
-
-                timeText = `${yyyy}/${mm}/${dd} ${hh}:${mi}`;
-            }
-
-            // ロールに応じたバッジを取得
-            const badgeHtml = getRoleBadge(p.role);
-
-            const div = document.createElement("div");
-
-            div.className = "post";
-
-            div.innerHTML = `
-                <div class="postHeader">
-                    <b>${p.nickname || "名無し"}</b>${badgeHtml}
-                </div>
-
-                <div class="postText">
-                    ${p.text || ""}
-                </div>
-
-                <div class="postTime">
-                    ${timeText}
-                </div>
-            `;
-
-            posts.appendChild(div);
-
+                const div = document.createElement("div");
+                div.className = "post";
+                div.innerHTML = `
+                    <div class="postHeader">
+                        <b>${p.nickname || "名無し"}</b>${badgeHtml}
+                    </div>
+                    <div class="postText">
+                        ${p.text || ""}
+                    </div>
+                    <div class="postTime">
+                        ${timeText}
+                    </div>
+                `;
+                posts.appendChild(div);
+            });
         });
-
-    });
-
+    } catch (e) {
+        console.error("タイムライン読み込みエラー:", e);
+    }
 }
 
 // =====================
-// 投稿検索（新しく追加したっす！）
+// 投稿検索
 // =====================
 async function searchPosts() {
     const input = document.getElementById("searchInput");
     const resultsDiv = document.getElementById("searchResults");
     
+    if (!input || !resultsDiv) return;
+
     const keyword = input.value.trim();
     if (!keyword) {
-        alert("キーワードを入力してけれ！");
+        alert("キーワードを入力してください。");
         return;
     }
 
-    resultsDiv.innerHTML = "<p style='color: #65676b;'>検索中だす、ちょっと待ってけれ...</p>";
+    resultsDiv.innerHTML = "<p style='color: #65676b;'>検索中...</p>";
 
     try {
-        // 最新の投稿を多め（50件）に取得して、そこからキーワードが含まれるものを探す
         const q = fs.query(
             fs.collection(db, "posts"),
             fs.orderBy("createdAt", "desc"),
@@ -161,7 +154,6 @@ async function searchPosts() {
         snap.forEach(doc => {
             const p = doc.data();
             
-            // 投稿本文（p.text）の中にキーワードが含まれているかチェック
             if (p.text && p.text.includes(keyword)) {
                 count++;
 
@@ -195,12 +187,12 @@ async function searchPosts() {
         });
 
         if (count === 0) {
-            resultsDiv.innerHTML = `<p style='color: #65676b;'>「${keyword}」が含まれる投稿は見つからねがったっす…涙</p>`;
+            resultsDiv.innerHTML = `<p style='color: #65676b;'>「${keyword}」が含まれる投稿は見つかりませんでした。</p>`;
         }
 
     } catch (error) {
-        console.error("検索中にエラーが起きたっす:", error);
-        resultsDiv.innerHTML = "<p style='color: red;'>エラーが起きて検索できなかったっす…</p>";
+        console.error("検索エラー:", error);
+        resultsDiv.innerHTML = "<p style='color: red;'>エラーが発生したため検索できませんでした。</p>";
     }
 }
 
@@ -208,137 +200,115 @@ async function searchPosts() {
 // 登録
 // =====================
 async function register() {
+    try {
+        const id = document.getElementById("regId").value;
+        const name = document.getElementById("regName").value;
+        const pw = document.getElementById("regPw").value;
 
-    const id = document.getElementById("regId").value;
+        await fs.addDoc(
+            fs.collection(db, "users"),
+            {
+                accountId: id,
+                nickname: name,
+                password: pw,
+                role: "user"
+            }
+        );
 
-    const name = document.getElementById("regName").value;
-
-    const pw = document.getElementById("regPw").value;
-
-    await fs.addDoc(
-
-        fs.collection(db, "users"),
-
-        {
-
-            accountId: id,
-
-            nickname: name,
-
-            password: pw,
-            
-            role: "user" // 新規登録時は一律一般ユーザー
-
-        }
-
-    );
-
-    alert("登録完了");
-
-    showPage("loginPage");
-
+        alert("登録が完了しました。ログインしてください。");
+        showPage("loginPage");
+    } catch (e) {
+        console.error("登録エラー:", e);
+    }
 }
 
 // =====================
 // ログイン
 // =====================
 async function login() {
+    try {
+        const id = document.getElementById("loginId").value;
+        const pw = document.getElementById("loginPw").value;
 
-    const id = document.getElementById("loginId").value;
+        const snap = await fs.getDocs(
+            fs.collection(db, "users")
+        );
 
-    const pw = document.getElementById("loginPw").value;
+        let loggedInUser = null;
 
-    const snap = await fs.getDocs(
+        snap.forEach(doc => {
+            const u = doc.data();
+            if (u.accountId === id && u.password === pw) {
+                loggedInUser = u;
+            }
+        });
 
-        fs.collection(db, "users")
-
-    );
-
-    let loggedInUser = null;
-
-    snap.forEach(doc => {
-
-        const u = doc.data();
-
-        if (
-
-            u.accountId === id &&
-
-            u.password === pw
-
-        ) {
-
-            loggedInUser = u;
-
+        if (loggedInUser) {
+            currentUser = loggedInUser;
+            localStorage.setItem("user", JSON.stringify(loggedInUser));
+            updateTopRight();
+            showPage("homePage");
+        } else {
+            alert("IDまたはパスワードが間違っています。");
         }
-
-    });
-
-    if (loggedInUser) {
-        currentUser = loggedInUser;
-        localStorage.setItem("user", JSON.stringify(loggedInUser));
+    } catch (e) {
+        console.error("ログインエラー:", e);
     }
-
-    updateTopRight();
-
-    showPage("homePage");
-
 }
 
 // =====================
 // ユーザー読込
 // =====================
 function loadUser() {
-
-    const u = localStorage.getItem("user");
-
-    if (u) {
-
-        currentUser = JSON.parse(u);
-
+    try {
+        const u = localStorage.getItem("user");
+        if (u) {
+            currentUser = JSON.parse(u);
+        }
+    } catch (e) {
+        console.error("ユーザー読み込みエラー:", e);
+        localStorage.removeItem("user");
+        currentUser = null;
     }
-
 }
 
 // =====================
 // 右上ボタンおよびメニュー表示の更新
 // =====================
 function updateTopRight() {
+    try {
+        const btn = document.getElementById("accountBtn");
+        
+        const loginBtn = document.querySelector("#leftMenu button[onclick*='loginPage']");
+        const registerBtn = document.querySelector("#leftMenu button[onclick*='registerPage']");
+        const profileBtn = document.querySelector("#leftMenu button[onclick*='profilePage']");
 
-    const btn = document.getElementById("accountBtn");
-    
-    // 左メニューのボタンたちを取得
-    const loginBtn = document.querySelector("#leftMenu button[onclick*='loginPage']");
-    const registerBtn = document.querySelector("#leftMenu button[onclick*='registerPage']");
-    const profileBtn = document.querySelector("#leftMenu button[onclick*='profilePage']");
+        if (!btn) return;
 
-    if (!btn) return;
+        if (!currentUser) {
+            btn.textContent = "アカウント作成";
+            btn.onclick = () => {
+                showPage("registerPage");
+            };
 
-    if (!currentUser) {
-        // ログイン【前】のとき
-        btn.textContent = "アカウント作成";
-        btn.onclick = () => {
-            showPage("registerPage");
-        };
+            if (loginBtn) loginBtn.style.display = "block";
+            if (registerBtn) registerBtn.style.display = "block";
+            if (profileBtn) profileBtn.style.display = "none";
 
-        // ログイン・登録ボタンは表示、プロフィールは非表示
-        if (loginBtn) loginBtn.style.display = "block";
-        if (registerBtn) registerBtn.style.display = "block";
-        if (profileBtn) profileBtn.style.display = "none";
+        } else {
+            btn.textContent = currentUser.nickname;
+            btn.onclick = () => {
+                showPage("profilePage");
+            };
 
-    } else {
-        // ログイン【後】のとき
-        btn.textContent = currentUser.nickname;
-        btn.onclick = () => {
-            showPage("profilePage");
-        };
+            if (loginBtn) loginBtn.style.display = "none";
+            if (registerBtn) registerBtn.style.display = "none";
+            if (profileBtn) profileBtn.style.display = "block";
 
-        // ログイン・登録ボタンは非表示、プロフィールを表示
-        if (loginBtn) loginBtn.style.display = "none";
-        if (registerBtn) registerBtn.style.display = "none";
-        if (profileBtn) profileBtn.style.display = "block";
-
-        renderProfile();
+            renderProfile();
+        }
+    } catch (e) {
+        console.error("UI更新エラー:", e);
     }
 }
 
@@ -346,83 +316,69 @@ function updateTopRight() {
 // プロフィール表示
 // =====================
 function renderProfile() {
+    try {
+        const el = document.getElementById("profileInfo");
+        if (!el || !currentUser) return;
 
-    const el = document.getElementById("profileInfo");
+        const badgeHtml = getRoleBadge(currentUser.role);
 
-    if (!el || !currentUser) return;
+        el.innerHTML = `
+            <p style="font-size: 16px; margin: 8px 0;"><b>ID:</b> ${currentUser.accountId}</p>
+            <p style="font-size: 16px; margin: 8px 0; display: flex; align-items: center;">
+                <b>名前:</b> <span style="margin-left: 6px;">${currentUser.nickname}</span> ${badgeHtml}
+            </p>
+            <p style="font-size: 16px; margin: 8px 0;"><b>権限:</b> ${currentUser.role || "user"}</p>
+            <button id="logoutBtn" style="background-color: #ff4d4d; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; transition: background-color 0.2s;">
+                ログアウト
+            </button>
+        `;
 
-    // プロフィール画面にもロールバッジを表示
-    const badgeHtml = getRoleBadge(currentUser.role);
-
-    // プロフィール情報と一緒に「ログアウトボタン」を流し込む
-    el.innerHTML = `
-        <p>ID: ${currentUser.accountId}</p>
-        <p>名前: ${currentUser.nickname} ${badgeHtml}</p>
-        <p>権限: ${currentUser.role || "user"}</p>
-        <button id="logoutBtn" style="background-color: #ff4d4d; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; transition: background-color 0.2s;">
-            ログアウト
-        </button>
-    `;
-
-    // 流し込んだログアウトボタンにクリックイベントを設定
-    const logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) {
-        logoutBtn.onmouseenter = () => logoutBtn.style.backgroundColor = "#e60000";
-        logoutBtn.onmouseleave = () => logoutBtn.style.backgroundColor = "#ff4d4d";
-        
-        logoutBtn.onclick = () => {
-            if (confirm("本当にログアウトするべが？")) {
-                localStorage.removeItem("user");
-                alert("ログアウトしたっす！また来ての〜👋");
-                window.location.reload();
-            }
-        };
+        const logoutBtn = document.getElementById("logoutBtn");
+        if (logoutBtn) {
+            logoutBtn.onmouseenter = () => logoutBtn.style.backgroundColor = "#e60000";
+            logoutBtn.onmouseleave = () => logoutBtn.style.backgroundColor = "#ff4d4d";
+            
+            logoutBtn.onclick = () => {
+                if (confirm("本当にログアウトしますか？")) {
+                    localStorage.removeItem("user");
+                    currentUser = null;
+                    alert("ログアウトしました。");
+                    window.location.reload();
+                }
+            };
+        }
+    } catch (e) {
+        console.error("プロフィールレンダリングエラー:", e);
     }
-
 }
 
 // =====================
 // ページ切替
 // =====================
 function showPage(id) {
-
     document.querySelectorAll(".page").forEach(page => {
-
         page.style.display = "none";
-
     });
 
     const target = document.getElementById(id);
-
     if (target) {
-
         target.style.display = "block";
-
     }
-
 }
 
 // =====================
 // Enterキーで投稿
 // =====================
 document.addEventListener("DOMContentLoaded", () => {
-
     const input = document.getElementById("postInput");
-
     if (!input) return;
 
     input.addEventListener("keydown", (e) => {
-
         if (e.key === "Enter" && !e.shiftKey) {
-
             e.preventDefault();
-
             addPost();
-
         }
-
     });
-
 });
 
 // =====================
@@ -432,16 +388,14 @@ window.addPost = addPost;
 window.register = register;
 window.login = login;
 window.showPage = showPage;
-window.searchPosts = searchPosts; // ←検索関数を外部公開！
-
+window.searchPosts = searchPosts;
 
 // ==========================================
-// 地図（Leaflet）初期化 ＆ アイテム配置
+// 地図（Leaflet）初期化
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
     if (!document.getElementById('map')) return;
 
-    // 最初は秋田駅周辺で地図を準備
     const map = L.map('map').setView([39.7169, 140.1267], 15);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -449,29 +403,22 @@ document.addEventListener("DOMContentLoaded", () => {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // 自分の現在地を表示するためのピン
     const userMarker = L.marker([39.7169, 140.1267]).addTo(map)
         .bindPopup('あなたの現在地（読み込み中...）');
 
-    // --- 現在地をリアルタイムに追いかける機能 (GPS連携) ---
     if ("geolocation" in navigator) {
         navigator.geolocation.watchPosition(
             (position) => {
-                const lat = position.coords.latitude;  // 緯度
-                const lng = position.coords.longitude; // 経度
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
 
-                // 自分のピンを今の位置に移動
                 userMarker.setLatLng([lat, lng]);
-                userMarker.getPopup().setContent('ここにいるっす！');
-
-                // 地図の中心を自分の位置に移動
+                userMarker.getPopup().setContent('現在地にピンを配置しました');
                 map.panTo([lat, lng]);
-                
-                console.log("現在地を更新しました:", lat, lng);
             },
             (error) => {
-                console.error("位置情報の取得に失敗しました:", error.message);
-                userMarker.getPopup().setContent('GPSをオンにしてけれ！');
+                console.error("位置情報の取得失敗:", error.message);
+                userMarker.getPopup().setContent('GPSをONにしてください。');
             },
             {
                 enableHighAccuracy: true,
@@ -483,11 +430,9 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("お使いのブラウザは位置情報（GPS）に対応していません。");
     }
 
-    // Akitamonが開かれたら地図を表示更新する
     const originalShowPage = window.showPage;
     window.showPage = function(id) {
         originalShowPage(id);
-        
         if (id === 'akitamonPage') {
             setTimeout(() => {
                 map.invalidateSize();
