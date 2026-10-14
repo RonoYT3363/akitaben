@@ -1,242 +1,310 @@
 /* ==========================================
-   んだっす 0.4.0 専用スタイルシート (左メニュー固定版)
+   SAY-さい- 0.4.4-α 専用スタイルシート (モダン・洗練デザイン版)
    ========================================== */
 
 /* 全体の基本設定 */
+:root {
+    --primary-color: #6366f1;       /* 洗練されたインディゴブルー */
+    --primary-hover: #4f46e5;
+    --bg-color: #f8fafc;            /* 非常にクリーンな薄いブルーグレー */
+    --surface-color: #ffffff;       /* カード等の背景色 */
+    --text-main: #1e293b;           /* 濃いスレート色で引き締める */
+    --text-sub: #64748b;            /* 控えめなグレー */
+    --border-color: #e2e8f0;        /* 繊細なボーダー */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+}
+
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
-    background-color: #f0f2f5; /* 優しいグレーの背景 */
-    color: #333333;
+    font-family: 'Inter', 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
 }
 
 /* 右上のアカウントボタンエリア */
 #topRight {
     position: absolute;
-    top: 15px;
-    right: 20px;
+    top: 20px;
+    right: 24px;
     z-index: 10;
 }
 
 #accountBtn {
-    background-color: #ffffff;
-    color: #1877f2;
-    border: 2px solid #1877f2;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-weight: bold;
+    background-color: var(--surface-color);
+    color: var(--primary-color);
+    border: 1px solid var(--border-color);
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 14px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #accountBtn:hover {
-    background-color: #1877f2;
+    background-color: var(--primary-color);
     color: #ffffff;
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
 }
 
-/* メメインの左右分割コンテナ */
+/* メインの左右分割コンテナ */
 #container {
     display: flex;
-    max-width: 1200px;
+    max-width: 1240px;
     margin: 0 auto;
-    padding-top: 60px; /* 上部に少し余白 */
+    padding-top: 40px;
     min-height: 100vh;
+    box-sizing: border-box;
 }
 
 /* 左側メニュー（左端固定・スクロールしても動かない） */
 #leftMenu {
-    width: 240px;
-    padding: 20px;
+    width: 260px;
+    padding: 24px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
     
-    position: fixed;            /* 画面に対して位置を完全に固定 */
-    top: 60px;                  /* 画面の上端から少し下げた位置に固定 */
-    left: 0;                    /* 左端にぴったりくっつける */
-    height: calc(100vh - 60px); /* 画面の高さに合わせる */
-    overflow-y: auto;           /* ボタンが増えてもメニュー内だけでスクロール可能に */
+    position: fixed;
+    top: 40px;
+    left: 0;
+    height: calc(100vh - 40px);
+    overflow-y: auto;
+    background-color: transparent;
 }
 
 #leftMenu button {
-    background-color: #ffffff;
-    color: #333333;
+    background-color: transparent;
+    color: var(--text-main);
     border: none;
-    padding: 14px 20px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
+    padding: 14px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 600;
     text-align: left;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     transition: all 0.2s ease;
 }
 
 #leftMenu button:hover {
-    background-color: #1877f2;
-    color: #ffffff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(24, 119, 242, 0.2);
+    background-color: rgba(99, 102, 241, 0.08);
+    color: var(--primary-color);
+    transform: translateX(4px);
 }
 
-/* 右側メインコンテンツエリア（固定メニューの裏に隠れないよう余白を追加） */
+/* 右側メインコンテンツエリア */
 #main {
     flex: 1;
-    padding: 20px;
+    padding: 0 24px 40px 24px;
     box-sizing: border-box;
-    margin-left: 240px; /* メニューの横幅分、右にずらす */
+    margin-left: 260px;
 }
 
 /* 各ページの白いカードデザイン */
 .page {
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    margin-bottom: 20px;
+    background-color: var(--surface-color);
+    padding: 36px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    margin-bottom: 24px;
 }
 
 .page h2 {
     margin-top: 0;
-    margin-bottom: 20px;
-    color: #111111;
-    border-bottom: 2px solid #f0f2f5;
-    padding-bottom: 10px;
+    margin-bottom: 24px;
+    color: var(--text-main);
+    font-size: 22px;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 16px;
 }
 
 /* 投稿フォームのスタイル */
 #postInput {
     width: 100%;
-    height: 100px;
-    padding: 15px;
+    height: 110px;
+    padding: 16px;
     box-sizing: border-box;
-    border: 1px solid #ccd0d5;
-    border-radius: 8px;
-    font-size: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
     resize: none;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
     outline: none;
-    transition: border-color 0.2s;
+    background-color: #fafafa;
+    transition: all 0.2s ease;
 }
 
 #postInput:focus {
-    border-color: #1877f2;
+    border-color: var(--primary-color);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
 .postButton {
-    background-color: #1877f2;
+    background-color: var(--primary-color);
     color: #ffffff;
     border: none;
-    padding: 10px 24px;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: bold;
+    padding: 11px 24px;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
     float: right;
-    transition: background-color 0.2s;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
 }
 
 .postButton:hover {
-    background-color: #166fe5;
+    background-color: var(--primary-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
 }
 
 /* 投稿一覧（タイムライン）のスタイル */
 #posts {
-    margin-top: 60px;
+    margin-top: 70px;
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
 .post {
-    background-color: #f8f9fa;
-    border: 1px solid #e4e6eb;
-    border-radius: 8px;
-    padding: 16px;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.post:hover {
+    box-shadow: var(--shadow-md);
 }
 
 .postHeader {
     font-size: 14px;
-    color: #1c1e21;
-    margin-bottom: 8px;
+    color: var(--text-main);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
 }
 
 .postText {
-    font-size: 16px;
-    line-height: 1.5;
-    color: #050505;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-main);
     white-space: pre-wrap;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .postTime {
     font-size: 12px;
-    color: #65676b;
+    color: var(--text-sub);
     text-align: right;
 }
 
 /* 入力フォーム（ログイン・登録画面用） */
 input {
     width: 100%;
-    padding: 12px;
+    padding: 14px 16px;
     box-sizing: border-box;
-    border: 1px solid #ccd0d5;
-    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
     font-size: 14px;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
     outline: none;
+    background-color: #fafafa;
+    transition: all 0.2s ease;
 }
 
 input:focus {
-    border-color: #1877f2;
+    border-color: var(--primary-color);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
 .page button:not(.postButton) {
-    background-color: #42b72a; /* 登録・ログインは安心感のある緑ボタン */
+    background-color: var(--primary-color);
     color: #ffffff;
     border: none;
-    padding: 12px 20px;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: bold;
+    padding: 14px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
     width: 100%;
-    transition: background-color 0.2s;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
 }
 
 .page button:not(.postButton):hover {
-    background-color: #36a420;
+    background-color: var(--primary-hover);
+    box-shadow: var(--shadow-md);
 }
 
 /* ==========================================
-   追加：検索画面用専用スタイル
+   検索画面用専用スタイル
    ========================================== */
 .searchForm {
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-bottom: 24px;
 }
 
 .searchForm input {
-    margin-bottom: 0; /* 横並びにするため下マージンをリセット */
+    margin-bottom: 0;
     flex: 1;
 }
 
 .searchButton {
-    background-color: #1877f2 !important; /* 青い検索ボタン */
+    background-color: var(--primary-color) !important;
     color: white;
     border: none;
-    padding: 12px 24px !important;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: bold;
+    padding: 0 24px !important;
+    border-radius: var(--radius-sm) !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
     cursor: pointer;
-    width: auto !important; /* 横幅100%を打ち消して中身に合わせる */
-    transition: background-color 0.2s;
+    width: auto !important;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
 }
 
 .searchButton:hover {
-    background-color: #166fe5 !important;
+    background-color: var(--primary-hover) !important;
+    box-shadow: var(--shadow-md);
+}
+
+/* Akitamonページ専用の地図スタイル */
+#map {
+    width: 100%;
+    height: 500px;
+    margin-top: 15px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    z-index: 1;
+}
+
+/* オーナー専用位置偽装コントロールパネル */
+#ownerPanel {
+    background-color: #fef9c3;
+    border: 1px solid #fde047;
+    padding: 20px;
+    border-radius: var(--radius-md);
+    margin-top: 20px;
+    color: #854d0e;
+    box-shadow: var(--shadow-sm);
 }
