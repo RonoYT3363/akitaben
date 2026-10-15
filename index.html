@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>SAY-さい- 0.5.1-α</title>
+    <title>SAY-さい- 0.5.0-α</title>
     <link rel="stylesheet" href="style.css">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -44,7 +44,7 @@
         <button onclick="showPage('homePage')">ホーム</button>
         <button onclick="showPage('searchPage')">検索</button> 
         <button onclick="showPage('akitamonPage')">Akitamon</button>
-        <button onclick="showPage('minigamePage')">ミニゲーム</button> <!-- ← ミニゲームボタンを追加！ -->
+        <button onclick="showPage('minigamePage')">ミニゲーム</button>
         <button onclick="showPage('loginPage')">ログイン</button>
         <button onclick="showPage('registerPage')">登録</button>
         <button onclick="showPage('profilePage')">プロフィール</button>
@@ -96,17 +96,34 @@
             </div>
         </div>
 
-        <!-- ミニゲームページ（新規追加枠） -->
+        <!-- ミニゲームページ -->
         <div id="minigamePage" class="page" style="display:none;">
-            <h2>竿灯お囃子太鼓</h2>
-            <p style="color: #65676b; margin-bottom: 20px;">竿灯のリズムに合わせて太鼓を叩き、Akita Tokenをゲットしよう！</p>
+            <h2>🏮 竿灯お囃子太鼓</h2>
+            <p style="color: #65676b; margin-bottom: 20px;">流れてくる提灯が赤い判定ラインに重なった瞬間に「ドンッ！」と叩いてTokenを稼ごう！（10点先取でクリア！）</p>
             
-            <div style="background: #fdf6e2; border: 2px dashed #d97706; padding: 30px; border-radius: 12px; text-align: center;">
-                <h3 style="color: #b45309; margin-top: 0;">🏮 準備中 🏮</h3>
-                <p>ここに竿灯リズム太鼓ゲームが実装されるよ！</p>
-                <button style="background-color: #d97706; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px;">
-                    ゲームをはじめる（準備中）
-                </button>
+            <div style="background: #fdf6e2; border: 2px solid #d97706; padding: 20px; border-radius: 12px; text-align: center;">
+                <div style="font-size: 18px; font-weight: bold; color: #b45309; margin-bottom: 10px;">
+                    スコア: <span id="gameScore">0</span> Token
+                </div>
+
+                <!-- ゲームトラック -->
+                <div id="gameTrack" style="position: relative; width: 100%; height: 120px; background: #fff; border: 2px solid #cbd5e1; border-radius: 8px; overflow: hidden; margin-bottom: 20px;">
+                    <div style="position: absolute; left: 20%; top: 0; bottom: 0; width: 4px; background: #ef4444; z-index: 2;"></div>
+                    <div style="position: absolute; left: 19%; top: 40%; font-size: 12px; color: #ef4444; font-weight: bold; z-index: 3;">判定ライン</div>
+                </div>
+
+                <div id="gameFeedback" style="font-size: 16px; font-weight: bold; color: #64748b; height: 30px; margin-bottom: 15px;">
+                    「ゲームをはじめる」を押してね！
+                </div>
+
+                <div style="display: flex; gap: 15px; justify-content: center;">
+                    <button id="gameStartBtn" onclick="startKantoGame()" style="background-color: #d97706; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer;">
+                        🎮 ゲームをはじめる
+                    </button>
+                    <button onclick="hitTaiko()" style="background-color: #dc2626; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; font-size: 18px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        🥁 ドンッ！（叩く）
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -179,7 +196,8 @@ import {
     getDocs,
     serverTimestamp,
     doc,        
-    deleteDoc   
+    deleteDoc,
+    updateDoc
 }
 from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
@@ -207,7 +225,8 @@ window.fs = {
     getDocs,
     serverTimestamp,
     doc,        
-    deleteDoc   
+    deleteDoc,
+    updateDoc
 };
 
 </script>
