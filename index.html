@@ -31,7 +31,7 @@
 <body>
 
 <div id="topRight" style="display: flex; align-items: center; gap: 10px;">
-    <!-- ヘッダー用のトークン表示エリア（初期状態は非表示） -->
+    <!-- ヘッダー用のトークン表示エリア -->
     <div id="headerToken" style="background-color: #ffffff; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 14px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: none; color: #d97706;">
         🪙 <span id="tokenCount">0</span> Token
     </div>
@@ -44,6 +44,7 @@
         <button onclick="showPage('homePage')">ホーム</button>
         <button onclick="showPage('searchPage')">検索</button> 
         <button onclick="showPage('akitamonPage')">Akitamon</button>
+        <button onclick="showPage('minigamePage')">ミニゲーム</button> <!-- ← ミニゲームボタンを追加！ -->
         <button onclick="showPage('loginPage')">ログイン</button>
         <button onclick="showPage('registerPage')">登録</button>
         <button onclick="showPage('profilePage')">プロフィール</button>
@@ -91,6 +92,20 @@
                 </div>
                 <button onclick="applySpoofedLocation()" style="background-color: #ffc107; color: #212529; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">
                     位置を偽装（適用）
+                </button>
+            </div>
+        </div>
+
+        <!-- ミニゲームページ（新規追加枠） -->
+        <div id="minigamePage" class="page" style="display:none;">
+            <h2>竿灯お囃子太鼓</h2>
+            <p style="color: #65676b; margin-bottom: 20px;">竿灯のリズムに合わせて太鼓を叩き、Akita Tokenをゲットしよう！</p>
+            
+            <div style="background: #fdf6e2; border: 2px dashed #d97706; padding: 30px; border-radius: 12px; text-align: center;">
+                <h3 style="color: #b45309; margin-top: 0;">🏮 準備中 🏮</h3>
+                <p>ここに竿灯リズム太鼓ゲームが実装されるよ！</p>
+                <button style="background-color: #d97706; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px;">
+                    ゲームをはじめる（準備中）
                 </button>
             </div>
         </div>
@@ -163,8 +178,8 @@ import {
     onSnapshot,
     getDocs,
     serverTimestamp,
-    doc,        /* 削除機能のために追加 */
-    deleteDoc   /* 削除機能のために追加 */
+    doc,        
+    deleteDoc   
 }
 from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
@@ -191,8 +206,8 @@ window.fs = {
     onSnapshot,
     getDocs,
     serverTimestamp,
-    doc,        /* グローバル公開 */
-    deleteDoc   /* グローバル公開 */
+    doc,        
+    deleteDoc   
 };
 
 </script>
