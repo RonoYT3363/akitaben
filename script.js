@@ -215,7 +215,7 @@ async function register() {
                 nickname: name,
                 password: pw,
                 role: "user",
-                tokens: 0 // ← 新規登録時はトークン0で初期化
+                tokens: 0
             }
         );
 
@@ -244,9 +244,9 @@ async function login() {
             const u = docSnap.data();
             if (u.accountId === id && u.password === pw) {
                 loggedInUser = {
-                    id: docSnap.id,
+                    docId: docSnap.id, // FirestoreのドキュメントIDを保持（更新用）
                     ...u,
-                    tokens: u.tokens !== undefined ? u.tokens : 0 // 既存ユーザーでフィールドがない場合は0を補う
+                    tokens: u.tokens !== undefined ? u.tokens : 0
                 };
             }
         });
@@ -272,7 +272,6 @@ function loadUser() {
         const u = localStorage.getItem("user");
         if (u) {
             currentUser = JSON.parse(u);
-            // 念のためtokensがundefinedなら0補正
             if (currentUser.tokens === undefined) {
                 currentUser.tokens = 0;
             }
@@ -281,6 +280,34 @@ function loadUser() {
         console.error("ユーザー読み込みエラー:", e);
         localStorage.removeItem("user");
         currentUser = null;
+    }
+}
+
+// =====================
+// トークン加算およびFirestore更新関数
+// =====================
+async function addTokensToUser(amount) {
+    if (!currentUser) {
+        alert("ログインしていません。ゲームで獲得したトークンは保存されません。");
+        return;
+    }
+
+    try {
+        currentUser.tokens = (currentUser.tokens || 0) + amount;
+
+        // もしFirestoreのdocIdがある場合はデータベースを更新
+        if (currentUser.docId) {
+            const userRef = fs.doc(db, "users", currentUser.docId);
+            await fs.updateDoc(userRef, { tokens: currentUser.tokens });
+        }
+
+        // ローカルストレージも更新
+        localStorage.setItem("user", JSON.stringify(currentUser));
+        
+        // 画面の表示を最新に更新
+        updateTopRight();
+    } catch (e) {
+        console.error("トークン更新エラー:", e);
     }
 }
 
@@ -305,7 +332,6 @@ function updateTopRight() {
                 showPage("registerPage");
             };
 
-            // 未ログイン時はヘッダーのトークンを非表示
             if (headerToken) headerToken.style.display = "none";
 
             if (loginBtn) loginBtn.style.display = "block";
@@ -318,7 +344,6 @@ function updateTopRight() {
                 showPage("profilePage");
             };
 
-            // ログイン時はヘッダーにトークンを表示
             if (headerToken && tokenCountSpan) {
                 tokenCountSpan.textContent = currentUser.tokens !== undefined ? currentUser.tokens : 0;
                 headerToken.style.display = "block";
@@ -352,7 +377,7 @@ function renderProfile() {
                 <b>名前:</b> <span style="margin-left: 6px;">${currentUser.nickname}</span> ${badgeHtml}
             </p>
             <p style="font-size: 16px; margin: 8px 0;"><b>権限:</b> ${currentUser.role || "user"}</p>
-            <p style="font-size: 16px; margin: 8px 0; color: #d97706; font-weight: bold;"><b>You have:</b> 🪙 ${userTokens} Akita Token(s)</p>
+            <p style="font-size: 16px; margin: 8px 0; color: #d97706; font-weight: bold;"><b>所持 Akita Token:</b> 🪙 ${userTokens} 枚</p>
             <button id="logoutBtn" style="background-color: #ff4d4d; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; transition: background-color 0.2s;">
                 ログアウト
             </button>
@@ -406,6 +431,176 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+// ==========================================
+// 🏮 竿灯お囃子太鼓ミニゲームロジック
+// ==========================================
+let gameInterval = null;
+let notes = [];
+let gameScore = 0;
+let gameActive = false;
+let noteTimer = 0;
+
+function startKantoGame() {
+    const gameArea = document.getElementById("gameArea");
+    const startBtn = document.getElementById("gameStartBtn");
+    const scoreDisplay = document.getElementById("gameScore");
+    const feedback = document.getElementById("gameFeedback");
+
+    if (!gameArea) return;
+
+    // ゲーム初期化
+    gameScore = 0;
+    notes = [];
+    gameActive = true;
+    noteTimer = 0;
+    if (startBtn) startBtn.style.display = "none";
+    if (scoreDisplay) scoreDisplay.textContent = gameScore;
+    if (feedback) feedback.textContent = "どっこいしょー！リズムに乗ろう！";
+
+    // ノーツを生成するタイミング（例：1.5秒ごとに流れてくる）
+    gameInterval = setInterval(() => {
+        if (!gameActive) return;
+
+        // ノーツオブジェクト（x座標を右端の100%からスタート）
+        const note = {
+            id: Math.random(),
+            x: 100 // パーセンテージ
+        };
+        notes.push(note);
+        renderGame();
+    }, 1200);
+
+    // ゲームループ（アニメーション＆判定移動）
+    window.requestAnimationFrame(updateGameLoop);
+}
+
+function updateGameLoop() {
+    if (!gameActive) return;
+
+    // ノーツを左へ移動させる
+    for (let i = notes.length - 1; i >= 0; i--) {
+        notes[i].x -= 1.2; // 速度
+
+        // 画面外（左側）に消えたらMISS
+        if (notes[i].x < -5) {
+            notes.splice(i, 1);
+            showFeedback("MISS...", "#ef4444");
+        }
+    }
+
+    renderGame();
+
+    if (gameActive) {
+        window.requestAnimationFrame(updateGameLoop);
+    }
+}
+
+function renderGame() {
+    const track = document.getElementById("gameTrack");
+    if (!track) return;
+
+    // トラック内を一旦クリアして再描画
+    // 判定ラインは左から20%の位置に固定
+    track.innerHTML = `
+        <div style="position: absolute; left: 20%; top: 0; bottom: 0; width: 4px; background: #ef4444; z-index: 2;"></div>
+        <div style="position: absolute; left: 19%; top: 40%; font-size: 12px; color: #ef4444; font-weight: bold; z-index: 3;">判定ライン</div>
+    `;
+
+    notes.forEach(note => {
+        const noteEl = document.createElement("div");
+        noteEl.style.position = "absolute";
+        noteEl.style.left = `${note.x}%`;
+        noteEl.style.top = "20px";
+        noteEl.style.width = "40px";
+        noteEl.style.height = "80px";
+        noteEl.style.backgroundColor = "#dc2626";
+        noteEl.style.borderRadius = "20px";
+        noteEl.style.border = "2px solid #b91c1c";
+        noteEl.style.boxShadow = "0 4px 6px rgba(0,0,0,0.1)";
+        noteEl.style.display = "flex";
+        noteEl.style.alignItems = "center";
+        noteEl.style.justifyContent = "center";
+        noteEl.style.color = "#fbbf24";
+        noteEl.style.fontWeight = "bold";
+        noteEl.style.fontSize = "18px";
+        noteEl.innerHTML = "🏮";
+        track.appendChild(noteEl);
+    });
+}
+
+function hitTaiko() {
+    if (!gameActive) return;
+
+    const feedback = document.getElementById("gameFeedback");
+    const scoreDisplay = document.getElementById("gameScore");
+
+    // 判定ライン（20%）に一番近いノーツを探す
+    let hitIndex = -1;
+    let minDiff = 999;
+
+    notes.forEach((note, index) => {
+        const diff = Math.abs(note.x - 20);
+        if (diff < minDiff) {
+            minDiff = diff;
+            hitIndex = index;
+        }
+    });
+
+    // 許容範囲内なら判定
+    if (hitIndex !== -1 && minDiff < 6) {
+        let earned = 0;
+        if (minDiff < 2) {
+            showFeedback("✨ PERFECT! ドンッ！！ (+3 Token)", "#10b981");
+            earned = 3;
+        } else if (minDiff < 4) {
+            showFeedback("👍 GREAT! ポンッ！ (+1 Token)", "#3b82f6");
+            earned = 1;
+        } else {
+            showFeedback("🙂 GOOD (+1 Token)", "#f59e0b");
+            earned = 1;
+        }
+
+        gameScore += earned;
+        if (scoreDisplay) scoreDisplay.textContent = gameScore;
+
+        // 叩いたノーツを消す
+        notes.splice(hitIndex, 1);
+
+        // 10点貯まったら自動クリア！
+        if (gameScore >= 10) {
+            endKantoGame(true);
+        }
+    } else {
+        showFeedback("💥 スカッ…！", "#ef4444");
+    }
+}
+
+function showFeedback(text, color) {
+    const feedback = document.getElementById("gameFeedback");
+    if (feedback) {
+        feedback.textContent = text;
+        feedback.style.color = color;
+    }
+}
+
+async function endKantoGame(success) {
+    gameActive = false;
+    clearInterval(gameInterval);
+
+    const startBtn = document.getElementById("gameStartBtn");
+    const feedback = document.getElementById("gameFeedback");
+
+    if (startBtn) startBtn.style.display = "inline-block";
+
+    if (success) {
+        if (feedback) feedback.textContent = `🎉 大成功！ Akita Token ${gameScore}枚ゲットしました！`;
+        await addTokensToUser(gameScore);
+        alert(`お見事！竿灯お囃子ゲームクリア！\n🪙 ${gameScore} Akita Tokenを獲得しました！`);
+    } else {
+        if (feedback) feedback.textContent = "ゲーム終了！";
+    }
+}
+
 // =====================
 // グローバル公開
 // =====================
@@ -414,6 +609,8 @@ window.register = register;
 window.login = login;
 window.showPage = showPage;
 window.searchPosts = searchPosts;
+window.startKantoGame = startKantoGame;
+window.hitTaiko = hitTaiko;
 
 // ==========================================
 // 地図（Leaflet）初期化
