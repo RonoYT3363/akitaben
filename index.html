@@ -30,7 +30,11 @@
 </head>
 <body>
 
-<div id="topRight">
+<div id="topRight" style="display: flex; align-items: center; gap: 10px;">
+    <!-- ヘッダー用のトークン表示エリア（初期状態は非表示） -->
+    <div id="headerToken" style="background-color: #ffffff; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 14px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: none; color: #d97706;">
+        🪙 <span id="tokenCount">0</span> Token
+    </div>
     <button id="accountBtn">アカウント作成</button>
 </div>
 
