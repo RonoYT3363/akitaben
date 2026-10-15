@@ -438,48 +438,44 @@ let gameInterval = null;
 let notes = [];
 let gameScore = 0;
 let gameActive = false;
-let noteTimer = 0;
 
 function startKantoGame() {
-    const gameArea = document.getElementById("gameArea");
     const startBtn = document.getElementById("gameStartBtn");
     const scoreDisplay = document.getElementById("gameScore");
     const feedback = document.getElementById("gameFeedback");
-
-    if (!gameArea) return;
 
     // ゲーム初期化
     gameScore = 0;
     notes = [];
     gameActive = true;
-    noteTimer = 0;
     if (startBtn) startBtn.style.display = "none";
     if (scoreDisplay) scoreDisplay.textContent = gameScore;
     if (feedback) feedback.textContent = "どっこいしょー！リズムに乗ろう！";
 
-    // ノーツを生成するタイミング（例：1.5秒ごとに流れてくる）
+    // 既存のインターバルがあればクリア
+    if (gameInterval) clearInterval(gameInterval);
+
+    // 一定間隔でノーツを生成
     gameInterval = setInterval(() => {
         if (!gameActive) return;
 
-        // ノーツオブジェクト（x座標を右端の100%からスタート）
         const note = {
             id: Math.random(),
-            x: 100 // パーセンテージ
+            x: 100 // 右端（100%）からスタート
         };
         notes.push(note);
-        renderGame();
     }, 1200);
 
-    // ゲームループ（アニメーション＆判定移動）
+    // アニメーションループ開始
     window.requestAnimationFrame(updateGameLoop);
 }
 
 function updateGameLoop() {
     if (!gameActive) return;
 
-    // ノーツを左へ移動させる
+    // ノーツを左へ移動
     for (let i = notes.length - 1; i >= 0; i--) {
-        notes[i].x -= 1.2; // 速度
+        notes[i].x -= 1.0; // 速度調整
 
         // 画面外（左側）に消えたらMISS
         if (notes[i].x < -5) {
@@ -499,42 +495,26 @@ function renderGame() {
     const track = document.getElementById("gameTrack");
     if (!track) return;
 
-    // トラック内を一旦クリアして再描画
-    // 判定ラインは左から20%の位置に固定
-    track.innerHTML = `
+    // 判定ライン（20%の位置）を維持したまま、ノーツを描画
+    let html = `
         <div style="position: absolute; left: 20%; top: 0; bottom: 0; width: 4px; background: #ef4444; z-index: 2;"></div>
         <div style="position: absolute; left: 19%; top: 40%; font-size: 12px; color: #ef4444; font-weight: bold; z-index: 3;">判定ライン</div>
     `;
 
     notes.forEach(note => {
-        const noteEl = document.createElement("div");
-        noteEl.style.position = "absolute";
-        noteEl.style.left = `${note.x}%`;
-        noteEl.style.top = "20px";
-        noteEl.style.width = "40px";
-        noteEl.style.height = "80px";
-        noteEl.style.backgroundColor = "#dc2626";
-        noteEl.style.borderRadius = "20px";
-        noteEl.style.border = "2px solid #b91c1c";
-        noteEl.style.boxShadow = "0 4px 6px rgba(0,0,0,0.1)";
-        noteEl.style.display = "flex";
-        noteEl.style.alignItems = "center";
-        noteEl.style.justifyContent = "center";
-        noteEl.style.color = "#fbbf24";
-        noteEl.style.fontWeight = "bold";
-        noteEl.style.fontSize = "18px";
-        noteEl.innerHTML = "🏮";
-        track.appendChild(noteEl);
+        html += `
+            <div style="position: absolute; left: ${note.x}%; top: 20px; width: 40px; height: 80px; background-color: #dc2626; border-radius: 20px; border: 2px solid #b91c1c; display: flex; align-items: center; justify-content: center; color: #fbbf24; font-weight: bold; font-size: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                🏮
+            </div>
+        `;
     });
+
+    track.innerHTML = html;
 }
 
 function hitTaiko() {
     if (!gameActive) return;
 
-    const feedback = document.getElementById("gameFeedback");
-    const scoreDisplay = document.getElementById("gameScore");
-
-    // 判定ライン（20%）に一番近いノーツを探す
     let hitIndex = -1;
     let minDiff = 999;
 
@@ -546,13 +526,12 @@ function hitTaiko() {
         }
     });
 
-    // 許容範囲内なら判定
-    if (hitIndex !== -1 && minDiff < 6) {
+    if (hitIndex !== -1 && minDiff < 7) {
         let earned = 0;
-        if (minDiff < 2) {
+        if (minDiff < 2.5) {
             showFeedback("✨ PERFECT! ドンッ！！ (+3 Token)", "#10b981");
             earned = 3;
-        } else if (minDiff < 4) {
+        } else if (minDiff < 5) {
             showFeedback("👍 GREAT! ポンッ！ (+1 Token)", "#3b82f6");
             earned = 1;
         } else {
@@ -561,12 +540,11 @@ function hitTaiko() {
         }
 
         gameScore += earned;
+        const scoreDisplay = document.getElementById("gameScore");
         if (scoreDisplay) scoreDisplay.textContent = gameScore;
 
-        // 叩いたノーツを消す
         notes.splice(hitIndex, 1);
 
-        // 10点貯まったら自動クリア！
         if (gameScore >= 10) {
             endKantoGame(true);
         }
@@ -585,7 +563,7 @@ function showFeedback(text, color) {
 
 async function endKantoGame(success) {
     gameActive = false;
-    clearInterval(gameInterval);
+    if (gameInterval) clearInterval(gameInterval);
 
     const startBtn = document.getElementById("gameStartBtn");
     const feedback = document.getElementById("gameFeedback");
@@ -600,7 +578,6 @@ async function endKantoGame(success) {
         if (feedback) feedback.textContent = "ゲーム終了！";
     }
 }
-
 // =====================
 // グローバル公開
 // =====================
