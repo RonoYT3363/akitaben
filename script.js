@@ -23,8 +23,6 @@ async function addPost() {
 
         if (!text) return;
 
-        // 【修正】秋田弁への自動変換処理を完全に削除しました。入力されたテキストがそのまま送信されます。
-
         await fs.addDoc(
             fs.collection(db, "posts"),
             {
@@ -201,9 +199,14 @@ async function searchPosts() {
 // =====================
 async function register() {
     try {
-        const id = document.getElementById("regId").value;
-        const name = document.getElementById("regName").value;
+        const id = document.getElementById("regId").value.trim();
+        const name = document.getElementById("regName").value.trim();
         const pw = document.getElementById("regPw").value;
+
+        if (!id || !name || !pw) {
+            alert("すべての項目を入力してください。");
+            return;
+        }
 
         await fs.addDoc(
             fs.collection(db, "users"),
@@ -211,7 +214,8 @@ async function register() {
                 accountId: id,
                 nickname: name,
                 password: pw,
-                role: "user"
+                role: "user",
+                tokens: 0 // ← 新規登録時はトークン0で初期化
             }
         );
 
@@ -227,7 +231,7 @@ async function register() {
 // =====================
 async function login() {
     try {
-        const id = document.getElementById("loginId").value;
+        const id = document.getElementById("loginId").value.trim();
         const pw = document.getElementById("loginPw").value;
 
         const snap = await fs.getDocs(
@@ -236,10 +240,14 @@ async function login() {
 
         let loggedInUser = null;
 
-        snap.forEach(doc => {
-            const u = doc.data();
+        snap.forEach(docSnap => {
+            const u = docSnap.data();
             if (u.accountId === id && u.password === pw) {
-                loggedInUser = u;
+                loggedInUser = {
+                    id: docSnap.id,
+                    ...u,
+                    tokens: u.tokens !== undefined ? u.tokens : 0 // 既存ユーザーでフィールドがない場合は0を補う
+                };
             }
         });
 
@@ -264,6 +272,10 @@ function loadUser() {
         const u = localStorage.getItem("user");
         if (u) {
             currentUser = JSON.parse(u);
+            // 念のためtokensがundefinedなら0補正
+            if (currentUser.tokens === undefined) {
+                currentUser.tokens = 0;
+            }
         }
     } catch (e) {
         console.error("ユーザー読み込みエラー:", e);
@@ -278,6 +290,8 @@ function loadUser() {
 function updateTopRight() {
     try {
         const btn = document.getElementById("accountBtn");
+        const headerToken = document.getElementById("headerToken");
+        const tokenCountSpan = document.getElementById("tokenCount");
         
         const loginBtn = document.querySelector("#leftMenu button[onclick*='loginPage']");
         const registerBtn = document.querySelector("#leftMenu button[onclick*='registerPage']");
@@ -291,6 +305,9 @@ function updateTopRight() {
                 showPage("registerPage");
             };
 
+            // 未ログイン時はヘッダーのトークンを非表示
+            if (headerToken) headerToken.style.display = "none";
+
             if (loginBtn) loginBtn.style.display = "block";
             if (registerBtn) registerBtn.style.display = "block";
             if (profileBtn) profileBtn.style.display = "none";
@@ -300,6 +317,12 @@ function updateTopRight() {
             btn.onclick = () => {
                 showPage("profilePage");
             };
+
+            // ログイン時はヘッダーにトークンを表示
+            if (headerToken && tokenCountSpan) {
+                tokenCountSpan.textContent = currentUser.tokens !== undefined ? currentUser.tokens : 0;
+                headerToken.style.display = "block";
+            }
 
             if (loginBtn) loginBtn.style.display = "none";
             if (registerBtn) registerBtn.style.display = "none";
@@ -321,6 +344,7 @@ function renderProfile() {
         if (!el || !currentUser) return;
 
         const badgeHtml = getRoleBadge(currentUser.role);
+        const userTokens = currentUser.tokens !== undefined ? currentUser.tokens : 0;
 
         el.innerHTML = `
             <p style="font-size: 16px; margin: 8px 0;"><b>ID:</b> ${currentUser.accountId}</p>
@@ -328,6 +352,7 @@ function renderProfile() {
                 <b>名前:</b> <span style="margin-left: 6px;">${currentUser.nickname}</span> ${badgeHtml}
             </p>
             <p style="font-size: 16px; margin: 8px 0;"><b>権限:</b> ${currentUser.role || "user"}</p>
+            <p style="font-size: 16px; margin: 8px 0; color: #d97706; font-weight: bold;"><b>所持 Akita Token:</b> 🪙 ${userTokens} 枚</p>
             <button id="logoutBtn" style="background-color: #ff4d4d; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; transition: background-color 0.2s;">
                 ログアウト
             </button>
