@@ -352,7 +352,7 @@ function renderProfile() {
                 <b>名前:</b> <span style="margin-left: 6px;">${currentUser.nickname}</span> ${badgeHtml}
             </p>
             <p style="font-size: 16px; margin: 8px 0;"><b>権限:</b> ${currentUser.role || "user"}</p>
-            <p style="font-size: 16px; margin: 8px 0; color: #d97706; font-weight: bold;"><b>所持 Akita Token:</b> 🪙 ${userTokens} 枚</p>
+            <p style="font-size: 16px; margin: 8px 0; color: #d97706; font-weight: bold;"><b>You have:</b> 🪙 ${userTokens} Akita Token(s)</p>
             <button id="logoutBtn" style="background-color: #ff4d4d; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; transition: background-color 0.2s;">
                 ログアウト
             </button>
