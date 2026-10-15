@@ -244,9 +244,10 @@ async function login() {
             const u = docSnap.data();
             if (u.accountId === id && u.password === pw) {
                 loggedInUser = {
-                    docId: docSnap.id, // FirestoreのドキュメントIDを保持（更新用）
+                    docId: docSnap.id, // FirestoreのドキュメントIDを保持
                     ...u,
-                    tokens: u.tokens !== undefined ? u.tokens : 0
+                    // tokensが未設定の古いアカウントでも安全に0をセット
+                    tokens: (u.tokens !== undefined && u.tokens !== null) ? u.tokens : 0
                 };
             }
         });
@@ -288,14 +289,15 @@ function loadUser() {
 // =====================
 async function addTokensToUser(amount) {
     if (!currentUser) {
-        alert("ログインしていません。ゲームで獲得したトークンは保存されません。");
+        alert("ログインしていません。");
         return;
     }
 
     try {
         currentUser.tokens = (currentUser.tokens || 0) + amount;
+        if (currentUser.tokens < 0) currentUser.tokens = 0; // マイナス防止
 
-        // もしFirestoreのdocIdがある場合はデータベースを更新
+        // Firestoreのドキュメントを更新
         if (currentUser.docId) {
             const userRef = fs.doc(db, "users", currentUser.docId);
             await fs.updateDoc(userRef, { tokens: currentUser.tokens });
@@ -444,7 +446,6 @@ function startKantoGame() {
     const scoreDisplay = document.getElementById("gameScore");
     const feedback = document.getElementById("gameFeedback");
 
-    // ゲーム初期化
     gameScore = 0;
     notes = [];
     gameActive = true;
@@ -452,32 +453,27 @@ function startKantoGame() {
     if (scoreDisplay) scoreDisplay.textContent = gameScore;
     if (feedback) feedback.textContent = "どっこいしょー！リズムに乗ろう！";
 
-    // 既存のインターバルがあればクリア
     if (gameInterval) clearInterval(gameInterval);
 
-    // 一定間隔でノーツを生成
     gameInterval = setInterval(() => {
         if (!gameActive) return;
 
         const note = {
             id: Math.random(),
-            x: 100 // 右端（100%）からスタート
+            x: 100
         };
         notes.push(note);
     }, 1200);
 
-    // アニメーションループ開始
     window.requestAnimationFrame(updateGameLoop);
 }
 
 function updateGameLoop() {
     if (!gameActive) return;
 
-    // ノーツを左へ移動
     for (let i = notes.length - 1; i >= 0; i--) {
-        notes[i].x -= 1.0; // 速度調整
+        notes[i].x -= 1.0;
 
-        // 画面外（左側）に消えたらMISS
         if (notes[i].x < -5) {
             notes.splice(i, 1);
             showFeedback("MISS...", "#ef4444");
@@ -495,7 +491,6 @@ function renderGame() {
     const track = document.getElementById("gameTrack");
     if (!track) return;
 
-    // 判定ライン（20%の位置）を維持したまま、ノーツを描画
     let html = `
         <div style="position: absolute; left: 20%; top: 0; bottom: 0; width: 4px; background: #ef4444; z-index: 2;"></div>
         <div style="position: absolute; left: 19%; top: 40%; font-size: 12px; color: #ef4444; font-weight: bold; z-index: 3;">判定ライン</div>
@@ -578,6 +573,61 @@ async function endKantoGame(success) {
         if (feedback) feedback.textContent = "ゲーム終了！";
     }
 }
+
+// ==========================================
+// 🎁 ガチャ機能ロジック
+// ==========================================
+const gachaItems = [
+    { name: "【ノーマル】 お祭りハッピ", rate: 50 },
+    { name: "【ノーマル】 ババヘラアイス引換券", rate: 30 },
+    { name: "【レア】 黄金の提灯ホルダー", rate: 15 },
+    { name: "【激レア】 伝説の竿灯達人称号", rate: 5 }
+];
+
+async function pullGacha() {
+    const cost = 1; // 1回あたりのコスト
+
+    if (!currentUser || (currentUser.tokens || 0) < cost) {
+        alert("Tokenが足りません！竿灯リズム太鼓ゲームで遊んでTokenを稼ごう！");
+        return;
+    }
+
+    // Tokenを1枚消費してクラウド＆ローカルを更新
+    await addTokensToUser(-cost);
+
+    // 抽選処理
+    const wonItem = lotteryGacha();
+
+    // 結果表示モーダル操作
+    const modal = document.getElementById("gachaModal");
+    const resultText = document.getElementById("gachaResultText");
+    
+    if (modal && resultText) {
+        resultText.textContent = `✨ ${wonItem} をゲット！`;
+        modal.style.display = "flex";
+    }
+}
+
+function lotteryGacha() {
+    const randomNum = Math.random() * 100;
+    let cumulative = 0;
+
+    for (const item of gachaItems) {
+        cumulative += item.rate;
+        if (randomNum < cumulative) {
+            return item.name;
+        }
+    }
+    return gachaItems[0].name;
+}
+
+function closeGachaModal() {
+    const modal = document.getElementById("gachaModal");
+    if (modal) {
+        modal.style.display = "none";
+    }
+}
+
 // =====================
 // グローバル公開
 // =====================
@@ -588,6 +638,8 @@ window.showPage = showPage;
 window.searchPosts = searchPosts;
 window.startKantoGame = startKantoGame;
 window.hitTaiko = hitTaiko;
+window.pullGacha = pullGacha;
+window.closeGachaModal = closeGachaModal;
 
 // ==========================================
 // 地図（Leaflet）初期化
