@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AKITA PACHINKO - Board Editor</title>
+  <link rel="stylesheet" href="./editor.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="../" class="back">← シミュレーターへ</a>
+    <div><p class="eyebrow">AKITA PACHINKO / CREATOR</p><h1>盤面エディター</h1></div>
+    <span class="save-state" id="save-state">未保存の変更なし</span>
+  </header>
+  <main class="layout">
+    <aside class="tools panel">
+      <h2>編集ツール</h2>
+      <div class="tool-list" role="group" aria-label="編集ツール">
+        <button class="tool active" data-tool="select">選択・移動</button>
+        <button class="tool" data-tool="add">釘を追加</button>
+        <button class="tool" data-tool="delete">釘を削除</button>
+      </div>
+      <p class="hint">選択・移動：釘をドラッグ<br>追加：盤面をクリック<br>削除：釘をクリック</p>
+      <hr>
+      <h2>選択中の釘</h2>
+      <p id="selection-label" class="muted">釘が選択されていません</p>
+      <label>釘の半径 <output id="peg-radius-value">3.2</output>
+        <input id="peg-radius" type="range" min="1.5" max="8" step="0.1" value="3.2">
+      </label>
+      <button id="delete-selected" class="danger" disabled>選択した釘を削除</button>
+      <hr>
+      <h2>盤面操作</h2>
+      <button id="add-peg-center">中央に釘を追加</button>
+      <button id="clear-pegs" class="danger">すべての釘を削除</button>
+      <button id="reset-board">初期配置に戻す</button>
+    </aside>
+
+    <section class="workspace">
+      <div class="canvas-toolbar panel">
+        <strong>盤面プレビュー</strong>
+        <span id="peg-count">釘 0 本</span>
+        <label class="toggle"><input id="grid-toggle" type="checkbox" checked> グリッド</label>
+        <label class="toggle"><input id="preview-toggle" type="checkbox"> 玉の試運転</label>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="editor-canvas" width="420" height="640" aria-label="編集するパチンコ盤面"></canvas>
+      </div>
+      <p class="hint">盤面を拡大縮小せず、実際のシミュレーターと同じ420×640座標で編集します。</p>
+    </section>
+
+    <aside class="settings panel">
+      <h2>玉・物理設定</h2>
+      <label>重力 <output id="gravity-value">520</output>
+        <input id="gravity" type="range" min="100" max="1000" step="10" value="520">
+      </label>
+      <label>反発係数 <output id="bounce-value">0.72</output>
+        <input id="bounce" type="range" min="0.1" max="1" step="0.01" value="0.72">
+      </label>
+      <hr>
+      <h2>打ち出し設定</h2>
+      <label>発射X座標 <output id="launch-x-value">48</output>
+        <input id="launch-x" type="range" min="25" max="395" step="1" value="48">
+      </label>
+      <label>発射Y座標 <output id="launch-y-value">72</output>
+        <input id="launch-y" type="range" min="30" max="300" step="1" value="72">
+      </label>
+      <label>横方向速度 <output id="launch-vx-value">265</output>
+        <input id="launch-vx" type="range" min="-500" max="500" step="5" value="265">
+      </label>
+      <label>縦方向速度 <output id="launch-vy-value">-125</output>
+        <input id="launch-vy" type="range" min="-400" max="400" step="5" value="-125">
+      </label>
+      <hr>
+      <h2>保存・読み込み</h2>
+      <button id="save-board" class="primary">このブラウザに保存</button>
+      <button id="export-board">JSONを書き出す</button>
+      <label class="file-button">JSONを読み込む<input id="import-board" type="file" accept="application/json,.json"></label>
+      <p class="hint">保存した盤面は、同じブラウザのシミュレーターで読み込まれます。</p>
+      <p id="message" class="message" role="status"></p>
+    </aside>
+  </main>
+  <script type="module" src="./editor.js"></script>
+</body>
+</html>
