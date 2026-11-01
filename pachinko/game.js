@@ -53,6 +53,7 @@ try {
 const pegs = Array.isArray(boardConfig?.pegs) ? boardConfig.pegs : defaultPegs;
 const physicsConfig = boardConfig?.physics || {};
 const launcher = boardConfig?.launcher || { x: 48 * SCALE_X, y: 72, vx: 265, vy: -125 };
+const hesoHitbox = boardConfig?.hitbox || { x: 228.6, y: 542, width: 142.9, height: 20 };
 setPhysicsConfig(physicsConfig);
 let balls = [];
 let firing = false;
@@ -236,15 +237,7 @@ function drawMachine() {
   ctx.font = "bold 18px sans-serif";
   ctx.fillText("AKITA CHANCE", 210, 145);
 
-  // 釘・風車
-  for (const peg of pegs) {
-    ctx.fillStyle = "#536b87";
-    ctx.beginPath(); ctx.arc(peg.x + 1, peg.y + 2, 5, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#e8edf5";
-    ctx.beginPath(); ctx.arc(peg.x, peg.y, peg.radius, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#ffffff";
-    ctx.beginPath(); ctx.arc(peg.x - 1, peg.y - 1, 1.5, 0, Math.PI * 2); ctx.fill();
-  }
+  // 釘は600px座標のまま、静的な筐体アートとは別スケールで描画する。
   // 左右の風車風パーツ
   for (const x of [54, 366]) {
     ctx.save(); ctx.translate(x, 390); ctx.rotate(Math.PI / 4);
@@ -271,6 +264,16 @@ function drawMachine() {
   ctx.fillStyle = "#a7b8d0";
   ctx.fillText("OUT", 210, 598);
 
+  ctx.restore();
+  // 釘と玉は盤面の600×640座標で描画する。
+  for (const peg of pegs) {
+    ctx.fillStyle = "#536b87";
+    ctx.beginPath(); ctx.arc(peg.x + 1, peg.y + 2, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#e8edf5";
+    ctx.beginPath(); ctx.arc(peg.x, peg.y, peg.radius, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath(); ctx.arc(peg.x - 1, peg.y - 1, 1.5, 0, Math.PI * 2); ctx.fill();
+  }
   // 玉の描画
   for (const ball of balls) {
     const shine = ctx.createRadialGradient(ball.x - 2, ball.y - 2, 1, ball.x, ball.y, ball.radius + 1);
@@ -280,7 +283,6 @@ function drawMachine() {
     ctx.fillStyle = shine;
     ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2); ctx.fill();
   }
-  ctx.restore();
 }
 
 function animate(time) {
@@ -297,7 +299,7 @@ function animate(time) {
     const alive = stepBall(ball, { width: BOARD_WIDTH, height: 610 }, pegs, delta);
     if (!alive) return false;
     // ヘソの入賞エリアに到達した玉は入賞扱い。
-    if (ball.y >= 542 && ball.x >= 160 && ball.x <= 260) {
+    if (ball.x >= hesoHitbox.x && ball.x <= hesoHitbox.x + hesoHitbox.width && ball.y >= hesoHitbox.y && ball.y <= hesoHitbox.y + hesoHitbox.height) {
       addHold();
       return false;
     }
