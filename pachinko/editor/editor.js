@@ -1,4 +1,5 @@
 import { createBall, stepBall, setPhysicsConfig } from "../physics.js";
+import { SYMBOLS } from "../config.js";
 
 const STORAGE_KEY = "akitaPachinkoBoardV1";
 const BOARD_WIDTH = 600;
@@ -18,6 +19,9 @@ let previewFrame = 0;
 let lastPreviewTime = 0;
 let previewing = false;
 let settings = { gravity: initialConfig?.physics?.gravity ?? 520, restitution: initialConfig?.physics?.restitution ?? 0.72, launchX: initialConfig?.launcher?.x ?? 48*SCALE_X, launchY: initialConfig?.launcher?.y ?? 72, launchVx: initialConfig?.launcher?.vx ?? 265, launchVy: initialConfig?.launcher?.vy ?? -125 };
+const symbolDefaults=Object.fromEntries(SYMBOLS.map(s=>[s.value,s.weight]));
+const reachSymbolDefaults=Object.fromEntries(SYMBOLS.map(s=>[s.value,s.weight*s.weight]));
+let lotterySettings={jackpotDenominator:initialConfig?.lottery?.jackpotDenominator??52,symbolWeights:{...symbolDefaults,...(initialConfig?.lottery?.symbolWeights||{})},reachSymbolWeights:{...reachSymbolDefaults,...(initialConfig?.lottery?.reachSymbolWeights||{})}};
 
 function makeDefaultPegs() {
   const result = [];
@@ -73,12 +77,29 @@ for (const [id,key] of [["gravity","gravity"],["bounce","restitution"],["launch-
   $("#"+id).value = settings[key];
   $("#"+id+"-value").textContent = id === "bounce" ? settings[key].toFixed(2) : String(settings[key]);
 }
-function getConfig(){return{version:3,pegs,hitbox:{...hitbox},physics:{gravity:settings.gravity,restitution:settings.restitution},launcher:{x:settings.launchX,y:settings.launchY,vx:settings.launchVx,vy:settings.launchVy}};}
-function applyConfig(config){if(!config||!Array.isArray(config.pegs)||config.pegs.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)||!Number.isFinite(p.radius)))throw new Error("盤面データの形式が正しくありません");pegs=config.pegs.map(p=>({x:p.x,y:p.y,radius:p.radius}));hitbox={...defaultHitbox,...(config.hitbox||{})};settings={gravity:config.physics?.gravity??520,restitution:config.physics?.restitution??.72,launchX:config.launcher?.x??48,launchY:config.launcher?.y??72,launchVx:config.launcher?.vx??265,launchVy:config.launcher?.vy??-125};const vals={gravity:settings.gravity,bounce:settings.restitution,"launch-x":settings.launchX,"launch-y":settings.launchY,"launch-vx":settings.launchVx,"launch-vy":settings.launchVy};for(const[id,value]of Object.entries(vals)){$("#"+id).value=value;$("#"+id+"-value").textContent=id==="bounce"?Number(value).toFixed(2):String(value);}setPhysicsConfig({gravity:settings.gravity,restitution:settings.restitution});selected=-1;updateSelection();markDirty();drawBoard();}
+function getConfig(){return{version:3,pegs,hitbox:{...hitbox},physics:{gravity:settings.gravity,restitution:settings.restitution},launcher:{x:settings.launchX,y:settings.launchY,vx:settings.launchVx,vy:settings.launchVy},lottery:JSON.parse(JSON.stringify(lotterySettings))};}
+function applyConfig(config){if(!config||!Array.isArray(config.pegs)||config.pegs.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)||!Number.isFinite(p.radius)))throw new Error("盤面データの形式が正しくありません");pegs=config.pegs.map(p=>({x:p.x,y:p.y,radius:p.radius}));hitbox={...defaultHitbox,...(config.hitbox||{})};lotterySettings={jackpotDenominator:config.lottery?.jackpotDenominator??52,symbolWeights:{...symbolDefaults,...(config.lottery?.symbolWeights||{})},reachSymbolWeights:{...reachSymbolDefaults,...(config.lottery?.reachSymbolWeights||{})}};renderLotteryControls();settings={gravity:config.physics?.gravity??520,restitution:config.physics?.restitution??.72,launchX:config.launcher?.x??48,launchY:config.launcher?.y??72,launchVx:config.launcher?.vx??265,launchVy:config.launcher?.vy??-125};const vals={gravity:settings.gravity,bounce:settings.restitution,"launch-x":settings.launchX,"launch-y":settings.launchY,"launch-vx":settings.launchVx,"launch-vy":settings.launchVy};for(const[id,value]of Object.entries(vals)){$("#"+id).value=value;$("#"+id+"-value").textContent=id==="bounce"?Number(value).toFixed(2):String(value);}setPhysicsConfig({gravity:settings.gravity,restitution:settings.restitution});selected=-1;updateSelection();markDirty();drawBoard();}
 $("#save-board").addEventListener("click",()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(getConfig()));dirty=false;$("#save-state").textContent="保存済み";$("#message").textContent="保存しました。シミュレーターを再読み込みすると反映されます。";}catch(error){$("#message").textContent="保存できませんでした: "+error.message;}});
 $("#export-board").addEventListener("click",()=>{const blob=new Blob([JSON.stringify(getConfig(),null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="akita-pachinko-board.json";a.click();URL.revokeObjectURL(url);});
 $("#import-board").addEventListener("change",async event=>{const file=event.target.files?.[0];if(!file)return;try{applyConfig(JSON.parse(await file.text()));$("#message").textContent="読み込みました。保存するとシミュレーターに反映されます。";}catch(error){$("#message").textContent="読み込み失敗: "+error.message;}event.target.value="";});
 $("#grid-toggle").addEventListener("change",drawBoard);
+function renderLotteryControls(){
+  $("#jackpot-denominator").value=lotterySettings.jackpotDenominator;
+  const makeRows=(containerId,weights,prefix)=>{
+    const container=$("#"+containerId);container.replaceChildren();
+    for(const symbol of SYMBOLS){
+      const row=document.createElement("label");row.className="weight-row";
+      const name=document.createElement("span");name.textContent="図柄 "+symbol.value;
+      const input=document.createElement("input");input.type="number";input.min="0";input.max="1000000";input.step="1";input.value=weights[symbol.value]??0;input.setAttribute("aria-label",prefix+" 図柄 "+symbol.value);
+      input.addEventListener("change",()=>{weights[symbol.value]=Math.max(0,Number(input.value)||0);markDirty();});
+      row.append(name,input);container.append(row);
+    }
+  };
+  makeRows("symbol-weight-controls",lotterySettings.symbolWeights,"出現比率");
+  makeRows("reach-weight-controls",lotterySettings.reachSymbolWeights,"リーチ図柄振分");
+}
+$("#jackpot-denominator").addEventListener("change",event=>{lotterySettings.jackpotDenominator=Math.max(1,Math.floor(Number(event.target.value)||1));event.target.value=lotterySettings.jackpotDenominator;markDirty();});
+renderLotteryControls();
 function previewStep(time){const dt=lastPreviewTime?Math.min((time-lastPreviewTime)/1000,1/30):0;lastPreviewTime=time;if(balls.length===0)balls.push(createBall(settings.launchX,settings.launchY,settings.launchVx,settings.launchVy));balls=balls.filter(ball=>stepBall(ball,{width:BOARD_WIDTH,height:610},pegs,dt));drawBoard();if(previewing)previewFrame=requestAnimationFrame(previewStep);}
 $("#preview-toggle").addEventListener("change",event=>{previewing=event.target.checked;if(previewing){balls=[];lastPreviewTime=0;setPhysicsConfig({gravity:settings.gravity,restitution:settings.restitution});previewFrame=requestAnimationFrame(previewStep);}else{cancelAnimationFrame(previewFrame);balls=[];drawBoard();}});
 window.addEventListener("beforeunload",event=>{if(dirty){event.preventDefault();event.returnValue="";}});
