@@ -21,14 +21,25 @@ const holdCountElement = document.querySelector("#hold-count");
 const holdLamps = [...document.querySelectorAll("#hold-lamps i")];
 
 const pegs = [];
-for (let row = 0; row < 10; row++) {
-  for (let column = 0; column < 8; column++) {
-    const x = 43 + column * 48 + (row % 2 ? 24 : 0);
-    const y = 105 + row * 47;
-    // 大型液晶の周囲には釘を配置し、中央の画面領域は空ける。
-    if (x > 88 && x < 332 && y > 160 && y < 365) continue;
-    pegs.push({ x, y, radius: 4 });
+// 実機風の密な千鳥配置。液晶まわりとヘソの入口だけを避ける。
+for (let row = 0; row < 17; row++) {
+  const y = 88 + row * 27;
+  for (let column = 0; column < 15; column++) {
+    const x = 34 + column * 25 + (row % 2 ? 12 : 0);
+    if (x > 395 || y > 535) continue;
+    // 大型液晶の領域は避け、左右の脇と下側に釘を密集させる。
+    if (x > 72 && x < 348 && y > 145 && y < 382) continue;
+    // ヘソ直前には玉が通れる細い入賞ルートを残す。
+    if (y > 505 && x > 157 && x < 263) continue;
+    const jitterX = (Math.random() - 0.5) * 3;
+    const jitterY = (Math.random() - 0.5) * 3;
+    pegs.push({ x: x + jitterX, y: y + jitterY, radius: 3.2 });
   }
+}
+// 左下から中央ヘソへ向かう導線の両脇にガイド釘を追加。
+for (let i = 0; i < 6; i++) {
+  pegs.push({ x: 82 + i * 13, y: 465 + i * 10, radius: 3.5 });
+  pegs.push({ x: 270 - i * 9, y: 465 + i * 10, radius: 3.5 });
 }
 
 let balls = [];
@@ -58,9 +69,10 @@ function updateHolds() {
 }
 
 function launchBall() {
-  // 発射口から少しずつ角度を変えて玉を連続投入する。
-  const angle = (Math.random() - 0.5) * 0.34;
-  balls.push(createBall(210 + (Math.random() - 0.5) * 8, 48, Math.sin(angle) * 115, Math.cos(angle) * 15));
+  // 右上から打ち出し、まず左側へ走ってから重力と釘で中央下部へ流す。
+  const vx = -265 + (Math.random() - 0.5) * 24;
+  const vy = -125 + (Math.random() - 0.5) * 16;
+  balls.push(createBall(372 + (Math.random() - 0.5) * 4, 72, vx, vy));
 }
 
 function addHold() {
@@ -78,15 +90,18 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function spinReel(element, finalSymbol, duration) {
-  return new Promise(resolve => {
-    const symbols = ["1","2","3","4","5","6","7","8","9","S"];
-    element.classList.add("reel--spinning");
-    element.classList.remove("reel--jackpot");
-    let index = 0;
-    const interval = setInterval(() => {
-      element.textContent = symbols[index++ % symbols.length];
-    }, 65);
+function beginReel(element) {
+  const symbols = ["1","2","3","4","5","6","7","8","9","S"];
+  // 前回転の停止図柄をそのまま残して回転開始する。
+  let index = Math.max(0, symbols.indexOf(element.textContent.trim()));
+  element.classList.add("reel--spinning");
+  element.classList.remove("reel--jackpot", "reel--stopped");
+  const interval = setInterval(() => {
+    index = (index + 1) % symbols.length;
+    element.textContent = symbols[index];
+  }, 65);
+
+  return (finalSymbol, duration) => new Promise(resolve => {
     setTimeout(() => {
       clearInterval(interval);
       element.textContent = finalSymbol;
@@ -103,16 +118,16 @@ async function playOutcome(outcome) {
   resultElement.textContent = "変動中…";
   resultElement.classList.remove("result-label--jackpot");
   routeElement.textContent = "変動開始";
-  // 左 → 右 → 中央の順。配列の並びは左・中央・右。
+  // 左・中央・右を同時に回し始め、停止だけ左→右→中央の順に見せる。
   const [left, center, right] = outcome.symbols;
-  const spinPromises = reelElements.map(element => {
-    element.textContent = "1";
-    element.classList.add("reel--spinning");
-  });
+  const stopLeft = beginReel(reelElements[0]);
+  const stopCenter = beginReel(reelElements[1]);
+  const stopRight = beginReel(reelElements[2]);
+
   await sleep(420);
-  await spinReel(reelElements[0], left, 720);
+  await stopLeft(left, 720);
   await sleep(220);
-  await spinReel(reelElements[2], right, 760);
+  await stopRight(right, 760);
 
   if (outcome.reach) {
     routeElement.textContent = outcome.routeLabel;
@@ -125,7 +140,7 @@ async function playOutcome(outcome) {
     await sleep(180);
   }
 
-  await spinReel(reelElements[1], center, outcome.rainbowHold ? 1500 : outcome.route === "sp-reach" ? 1100 : 780);
+  await stopCenter(center, outcome.rainbowHold ? 1500 : outcome.route === "sp-reach" ? 1100 : 780);
   reelElements.forEach(element => {
     element.classList.remove("reel--jackpot");
     if (outcome.type === "jackpot") element.classList.add("reel--jackpot");
