@@ -45,7 +45,7 @@ function drawCenterSymbol(excludedValue, symbols) {
 export function drawOutcome() {
   const settings = getLotterySettings();
   const symbols = buildSymbols(settings.symbolWeights);
-  const reachSymbols = buildSymbols(settings.reachSymbolWeights);
+  const reachSymbols = SYMBOLS.map(symbol => ({ ...symbol, weight: Number.isFinite(Number(settings.reachSymbolWeights[symbol.value])) ? Math.max(0, Number(settings.reachSymbolWeights[symbol.value])) : symbol.weight * symbol.weight }));
   const jackpot = Math.random() < 1 / settings.jackpotDenominator;
   // 虹保留は大当たりの一部として扱い、全体の大当たり確率は設定値どおりに保つ。
   const rainbowHold = jackpot && Math.floor(Math.random() * RAINBOW_HOLD_DENOMINATOR) === 0;
