@@ -1,4 +1,4 @@
-import { createBall, stepBall } from "./physics.js";
+import { createBall, stepBall, setPhysicsConfig } from "./physics.js";
 import { drawOutcome } from "./lottery.js";
 import { showEffect } from "./effects/effects.js";
 
@@ -20,28 +20,41 @@ const jackpotRateElement = document.querySelector("#jackpot-rate");
 const holdCountElement = document.querySelector("#hold-count");
 const holdLamps = [...document.querySelectorAll("#hold-lamps i")];
 
-const pegs = [];
-// 実機風の密な千鳥配置。液晶まわりとヘソの入口だけを避ける。
+const STORAGE_KEY = "akitaPachinkoBoardV1";
+const BOARD_WIDTH = 600;
+const SCALE_X = BOARD_WIDTH / 420;
+const defaultPegs = [];
+// 初期盤面。エディターで保存した配置があればそちらを優先します。
 for (let row = 0; row < 17; row++) {
   const y = 88 + row * 27;
   for (let column = 0; column < 15; column++) {
-    const x = 34 + column * 25 + (row % 2 ? 12 : 0);
-    if (x > 395 || y > 535) continue;
-    // 大型液晶の領域は避け、左右の脇と下側に釘を密集させる。
-    if (x > 72 && x < 348 && y > 145 && y < 382) continue;
-    // ヘソ直前には玉が通れる細い入賞ルートを残す。
-    if (y > 505 && x > 157 && x < 263) continue;
-    const jitterX = (Math.random() - 0.5) * 3;
-    const jitterY = (Math.random() - 0.5) * 3;
-    pegs.push({ x: x + jitterX, y: y + jitterY, radius: 3.2 });
+    const x = (34 + column * 25 + (row % 2 ? 12 : 0)) * SCALE_X;
+    if (x > BOARD_WIDTH - 25 || y > 535) continue;
+    if (x > 72 * SCALE_X && x < 348 * SCALE_X && y > 145 && y < 382) continue;
+    if (y > 505 && x > 157 * SCALE_X && x < 263 * SCALE_X) continue;
+    defaultPegs.push({ x: x + (Math.random() - 0.5) * 3 * SCALE_X, y: y + (Math.random() - 0.5) * 3, radius: 3.2 });
   }
 }
-// 左下から中央ヘソへ向かう導線の両脇にガイド釘を追加。
 for (let i = 0; i < 6; i++) {
-  pegs.push({ x: 82 + i * 13, y: 465 + i * 10, radius: 3.5 });
-  pegs.push({ x: 270 - i * 9, y: 465 + i * 10, radius: 3.5 });
+  defaultPegs.push({ x: (82 + i * 13) * SCALE_X, y: 465 + i * 10, radius: 3.5 });
+  defaultPegs.push({ x: (270 - i * 9) * SCALE_X, y: 465 + i * 10, radius: 3.5 });
 }
-
+let boardConfig = null;
+try {
+  boardConfig = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+  if (boardConfig && boardConfig.version < 2) {
+    boardConfig.pegs?.forEach(peg => peg.x *= SCALE_X);
+    if (boardConfig.launcher) boardConfig.launcher.x *= SCALE_X;
+    boardConfig.version = 2;
+  }
+} catch {
+  boardConfig = null;
+}
+const pegs = Array.isArray(boardConfig?.pegs) ? boardConfig.pegs : defaultPegs;
+const physicsConfig = boardConfig?.physics || {};
+const launcher = { x: 48 * SCALE_X, y: 72, vx: 265, vy: -125, intervalMs: 340, ...(boardConfig?.launcher || {}) };
+const hesoHitbox = boardConfig?.hitbox || { x: 228.6, y: 542, width: 142.9, height: 20 };
+setPhysicsConfig(physicsConfig);
 let balls = [];
 let firing = false;
 let previousTime = 0;
@@ -70,9 +83,9 @@ function updateHolds() {
 
 function launchBall() {
   // 左側から右方向へ打ち出し、重力と釘で盤面中央下部へ流す。
-  const vx = 265 + (Math.random() - 0.5) * 24;
-  const vy = -125 + (Math.random() - 0.5) * 16;
-  balls.push(createBall(48 + (Math.random() - 0.5) * 4, 72, vx, vy));
+  const vx = (launcher.vx ?? 265) + (Math.random() - 0.5) * 24;
+  const vy = (launcher.vy ?? -125) + (Math.random() - 0.5) * 16;
+  balls.push(createBall((launcher.x ?? 48) + (Math.random() - 0.5) * 4, launcher.y ?? 72, vx, vy));
 }
 
 function addHold() {
@@ -179,6 +192,8 @@ function drawMachine() {
   if (!context || !canvas) return;
   const ctx = context;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.scale(SCALE_X, 1);
 
   // 外枠・盤面ガラス
   const bg = ctx.createLinearGradient(0, 0, 420, 640);
@@ -222,15 +237,7 @@ function drawMachine() {
   ctx.font = "bold 18px sans-serif";
   ctx.fillText("AKITA CHANCE", 210, 145);
 
-  // 釘・風車
-  for (const peg of pegs) {
-    ctx.fillStyle = "#536b87";
-    ctx.beginPath(); ctx.arc(peg.x + 1, peg.y + 2, 5, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#e8edf5";
-    ctx.beginPath(); ctx.arc(peg.x, peg.y, peg.radius, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#ffffff";
-    ctx.beginPath(); ctx.arc(peg.x - 1, peg.y - 1, 1.5, 0, Math.PI * 2); ctx.fill();
-  }
+  // 釘は600px座標のまま、静的な筐体アートとは別スケールで描画する。
   // 左右の風車風パーツ
   for (const x of [54, 366]) {
     ctx.save(); ctx.translate(x, 390); ctx.rotate(Math.PI / 4);
@@ -257,6 +264,16 @@ function drawMachine() {
   ctx.fillStyle = "#a7b8d0";
   ctx.fillText("OUT", 210, 598);
 
+  ctx.restore();
+  // 釘と玉は盤面の600×640座標で描画する。
+  for (const peg of pegs) {
+    ctx.fillStyle = "#536b87";
+    ctx.beginPath(); ctx.arc(peg.x + 1, peg.y + 2, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#e8edf5";
+    ctx.beginPath(); ctx.arc(peg.x, peg.y, peg.radius, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath(); ctx.arc(peg.x - 1, peg.y - 1, 1.5, 0, Math.PI * 2); ctx.fill();
+  }
   // 玉の描画
   for (const ball of balls) {
     const shine = ctx.createRadialGradient(ball.x - 2, ball.y - 2, 1, ball.x, ball.y, ball.radius + 1);
@@ -273,21 +290,22 @@ function animate(time) {
   previousTime = time;
   launchAccumulator += delta;
 
-  if (firing && launchAccumulator >= 0.34) {
-    launchAccumulator = 0;
+  const launchInterval = Math.max(50, Number(launcher.intervalMs) || 340) / 1000;
+  if (firing && launchAccumulator >= launchInterval) {
+    launchAccumulator %= launchInterval;
     launchBall();
   }
 
   balls = balls.filter(ball => {
-    const alive = stepBall(ball, { width: canvas.width, height: 610 }, pegs, delta);
+    const alive = stepBall(ball, { width: BOARD_WIDTH, height: 610 }, pegs, delta);
     if (!alive) return false;
     // ヘソの入賞エリアに到達した玉は入賞扱い。
-    if (ball.y >= 542 && ball.x >= 160 && ball.x <= 260) {
+    if (ball.x >= hesoHitbox.x && ball.x <= hesoHitbox.x + hesoHitbox.width && ball.y >= hesoHitbox.y && ball.y <= hesoHitbox.y + hesoHitbox.height) {
       addHold();
       return false;
     }
     // 盤面下部・左右のアウトへ抜けた玉は回収。
-    if (ball.y > 610 || ball.x < 24 || ball.x > 396) return false;
+    if (ball.y > 610 || ball.x < 24 * SCALE_X || ball.x > 396 * SCALE_X) return false;
     return true;
   });
 
