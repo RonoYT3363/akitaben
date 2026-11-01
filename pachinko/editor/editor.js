@@ -1,4 +1,4 @@
-import { createBall, stepBall, setPhysicsConfig } from "../physics.js";
+import { createBall, stepBall, setPhysicsConfig, resolveBallCollisions } from "../physics.js";
 import { SYMBOLS } from "../config.js";
 
 const STORAGE_KEY = "akitaPachinkoBoardV1";
@@ -138,7 +138,7 @@ function renderLotteryControls(){
 }
 $("#jackpot-denominator").addEventListener("change",event=>{lotterySettings.jackpotDenominator=Math.max(1,Math.floor(Number(event.target.value)||1));event.target.value=lotterySettings.jackpotDenominator;markDirty();});
 renderLotteryControls();
-function previewStep(time){const dt=lastPreviewTime?Math.min((time-lastPreviewTime)/1000,1/30):0;lastPreviewTime=time;previewLaunchAccumulator+=dt;const interval=Math.max(50,launchIntervalMs)/1000;while(previewLaunchAccumulator>=interval){previewLaunchAccumulator-=interval;balls.push(createBall(settings.launchX,settings.launchY,settings.launchVx,settings.launchVy));}balls=balls.filter(ball=>stepBall(ball,{width:BOARD_WIDTH,height:610},pegs,dt));drawBoard();if(previewing)previewFrame=requestAnimationFrame(previewStep);}
+function previewStep(time){const dt=lastPreviewTime?Math.min((time-lastPreviewTime)/1000,1/30):0;lastPreviewTime=time;previewLaunchAccumulator+=dt;const interval=Math.max(50,launchIntervalMs)/1000;while(previewLaunchAccumulator>=interval){previewLaunchAccumulator-=interval;balls.push(createBall(settings.launchX,settings.launchY,settings.launchVx,settings.launchVy));}balls=balls.filter(ball=>stepBall(ball,{width:BOARD_WIDTH,height:610},pegs,dt));resolveBallCollisions(balls);drawBoard();if(previewing)previewFrame=requestAnimationFrame(previewStep);}
 $("#preview-toggle").addEventListener("change",event=>{previewing=event.target.checked;if(previewing){balls=[];lastPreviewTime=0;previewLaunchAccumulator=0;setPhysicsConfig({gravity:settings.gravity,restitution:settings.restitution});previewFrame=requestAnimationFrame(previewStep);}else{cancelAnimationFrame(previewFrame);balls=[];previewLaunchAccumulator=0;drawBoard();}});
 window.addEventListener("beforeunload",event=>{if(dirty){event.preventDefault();event.returnValue="";}});
 updateCounts();updateSelection();setPhysicsConfig({gravity:settings.gravity,restitution:settings.restitution});drawBoard();
