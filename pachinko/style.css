@@ -18,6 +18,25 @@ input, button { min-height: 44px; border-radius: 9px; font: inherit; }
 input { min-width: 0; flex: 1; padding: 8px 12px; color: inherit; background: #0e1320; border: 1px solid #48516b; }
 button { padding: 8px 18px; border: 0; color: #10131c; background: #9eb2ff; font-weight: 700; cursor: pointer; }
 button:disabled { opacity: .5; cursor: not-allowed; }
+.reel-panel { padding: 18px; margin-bottom: 12px; border: 1px solid #46516d; border-radius: 14px; background: linear-gradient(145deg, #202b43, #141a29); text-align: center; }
+.reel-panel__label { margin: 0 0 10px; color: #9eb2ff; font-size: .72rem; letter-spacing: .2em; }
+.reels { display: flex; justify-content: center; gap: 10px; }
+.reel { display: grid; place-items: center; width: 76px; height: 86px; border: 2px solid #7f8fb8; border-radius: 10px; background: #f5f2e9; color: #1a2030; font-size: 2.8rem; font-weight: 850; box-shadow: inset 0 0 0 4px #d8d4c9; }
+.reel--jackpot { border-color: #ffd56a; color: #a51f39; background: #fff0b8; box-shadow: 0 0 18px #ffca55, inset 0 0 0 4px #f4d879; }
+.route-label { margin: 12px 0 4px; color: #c6d1f2; font-weight: 700; }
+.result-label { margin: 4px 0 0; min-height: 1.6em; font-size: 1.25rem; font-weight: 800; }
+.result-label--jackpot { color: #ffd56a; text-shadow: 0 0 12px #ffb52e; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+.stats div { padding: 10px 4px; border: 1px solid #353c50; border-radius: 10px; background: #1a2030; text-align: center; }
+.stats span, .stats strong { display: block; }
+.stats span { color: #aab0c0; font-size: .72rem; }
+.stats strong { margin-top: 4px; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
 .playfield { position: relative; width: min(100%, 420px); margin: auto; }
 canvas { display: block; width: 100%; height: auto; border: 2px solid #56617d; border-radius: 14px; background: #111a2a; }
 .status { padding: 12px; text-align: center; color: #dce3ff; }
+@media (max-width: 380px) {
+  .reel { width: 64px; height: 76px; font-size: 2.3rem; }
+  .stats { gap: 5px; }
+  .stats span { font-size: .65rem; }
+  .stats strong { font-size: .9rem; }
+}
