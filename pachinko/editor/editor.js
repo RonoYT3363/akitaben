@@ -17,7 +17,7 @@ let balls = [];
 let previewFrame = 0;
 let lastPreviewTime = 0;
 let previewing = false;
-let settings = { gravity: initialConfig?.physics?.gravity ?? 520, restitution: initialConfig?.physics?.restitution ?? 0.72, launchX: initialConfig?.launcher?.x ?? 48, launchY: initialConfig?.launcher?.y ?? 72, launchVx: initialConfig?.launcher?.vx ?? 265, launchVy: initialConfig?.launcher?.vy ?? -125 };
+let settings = { gravity: initialConfig?.physics?.gravity ?? 520, restitution: initialConfig?.physics?.restitution ?? 0.72, launchX: initialConfig?.launcher?.x ?? 48*SCALE_X, launchY: initialConfig?.launcher?.y ?? 72, launchVx: initialConfig?.launcher?.vx ?? 265, launchVy: initialConfig?.launcher?.vy ?? -125 };
 
 function makeDefaultPegs() {
   const result = [];
@@ -47,6 +47,7 @@ function drawBoard(){ctx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);ctx.save();ctx.
   if($("#grid-toggle").checked){ctx.save();ctx.strokeStyle="#ffffff12";ctx.lineWidth=1;for(let x=35;x<400;x+=25){ctx.beginPath();ctx.moveTo(x,25);ctx.lineTo(x,615);ctx.stroke();}for(let y=35;y<620;y+=25){ctx.beginPath();ctx.moveTo(25,y);ctx.lineTo(395,y);ctx.stroke();}ctx.restore();}
   pegs.forEach((peg,index)=>{ctx.fillStyle="#536b87";ctx.beginPath();ctx.arc(peg.x+1,peg.y+2,5,0,Math.PI*2);ctx.fill();ctx.fillStyle=index===selected?"#ffdf78":"#e8edf5";ctx.beginPath();ctx.arc(peg.x,peg.y,peg.radius,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(peg.x-1,peg.y-1,1.5,0,Math.PI*2);ctx.fill();if(index===selected){ctx.strokeStyle="#ffe17b";ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(peg.x,peg.y,peg.radius+5,0,Math.PI*2);ctx.stroke();}});
   balls.forEach(ball=>{ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(ball.x,ball.y,ball.radius,0,Math.PI*2);ctx.fill();});
+  ctx.restore();
 }
 let dragging=false;
 canvas.addEventListener("pointerdown",event=>{if(previewing)return;const p=getPoint(event);if(tool==="add"){pegs.push({x:p.x,y:p.y,radius:Number($("#peg-radius").value)||3.2});selected=pegs.length-1;markDirty();updateSelection();drawBoard();return;}if(tool==="delete"){selected=nearestPeg(p);if(selected>=0){pegs.splice(selected,1);selected=-1;markDirty();}updateSelection();drawBoard();return;}selected=nearestPeg(p);dragging=selected>=0;canvas.setPointerCapture(event.pointerId);updateSelection();drawBoard();});
