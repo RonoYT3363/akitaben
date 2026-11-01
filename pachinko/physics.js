@@ -10,6 +10,7 @@ export function stepBall(ball, bounds, pegs, deltaSeconds) {
   const dt = Math.min(deltaSeconds, 1 / 30);
 
   ball.vy += gravity * dt;
+  if (ball.y > 245 && ball.x < 132) ball.vx += 145 * dt;
   ball.x += ball.vx * dt;
   ball.y += ball.vy * dt;
 

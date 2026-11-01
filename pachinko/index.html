@@ -11,23 +11,43 @@
     <header class="machine__header">
       <p class="eyebrow">SAY-さい- MINI GAME</p>
       <h1>AKITA PACHINKO</h1>
-      <p class="muted">演出・物理演算テスト</p>
+      <p class="muted">連続打ち出し・入賞抽選テスト</p>
     </header>
 
-    <section class="settings" aria-label="ゲーム設定">
-      <label for="rate">1回転あたりのレート（Token）</label>
-      <div class="settings__row">
-        <input id="rate" type="number" min="1" step="1" value="1">
-        <button id="start-button" type="button">玉を発射</button>
-      </div>
-      <p class="muted">現在は試作画面です。既存のToken残高とはまだ接続していません。</p>
+    <section class="controls" aria-label="発射操作">
+      <button id="start-button" class="launch-button" type="button" aria-pressed="false">打ち出し ON</button>
+      <p id="status" class="status" role="status">打ち出しONで玉が流れます。ヘソ入賞で抽選開始！</p>
+      <p class="test-note">テストモード：Token残高は変化しません</p>
     </section>
 
     <section class="playfield" aria-label="パチンコ盤面">
       <canvas id="machine-canvas" width="420" height="640">
         Canvasに対応したブラウザで開いてください。
       </canvas>
-      <div id="status" class="status" role="status">発射ボタンでテストできます</div>
+      <section class="reel-panel" aria-label="液晶・図柄表示">
+        <p class="reel-panel__label">AKITA CHANCE</p>
+        <div class="reels" aria-live="polite">
+          <span class="reel" id="reel-left">1</span>
+          <span class="reel" id="reel-center">2</span>
+          <span class="reel" id="reel-right">3</span>
+        </div>
+        <p id="route-label" class="route-label">START</p>
+        <p id="result-label" class="result-label">ヘソ入賞を待っています</p>
+      </section>
+      <div class="hold-panel" aria-label="保留">
+        <span class="hold-title">保留</span>
+        <span id="hold-count" class="hold-count">0 / 4</span>
+        <div id="hold-lamps" class="hold-lamps">
+          <i></i><i></i><i></i><i></i>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="テスト統計">
+      <div><span>回転数</span><strong id="spin-count">0</strong></div>
+      <div><span>リーチ</span><strong id="reach-count">0</strong></div>
+      <div><span>大当たり</span><strong id="jackpot-count">0</strong></div>
+      <div><span>当選率</span><strong id="jackpot-rate">0.00%</strong></div>
     </section>
   </main>
   <script type="module" src="./game.js"></script>
