@@ -1,4 +1,4 @@
-import { createBall, stepBall, setPhysicsConfig } from "./physics.js";
+import { createBall, stepBall, setPhysicsConfig, resolveBallCollisions } from "./physics.js";
 import { drawOutcome } from "./lottery.js";
 import { showEffect } from "./effects/effects.js";
 
@@ -296,9 +296,10 @@ function animate(time) {
     launchBall();
   }
 
+  // まず全玉を個別に進め、その後に玉同士の衝突をまとめて解決する。
+  balls = balls.filter(ball => stepBall(ball, { width: BOARD_WIDTH, height: 610 }, pegs, delta));
+  resolveBallCollisions(balls);
   balls = balls.filter(ball => {
-    const alive = stepBall(ball, { width: BOARD_WIDTH, height: 610 }, pegs, delta);
-    if (!alive) return false;
     // ヘソの入賞エリアに到達した玉は入賞扱い。
     if (ball.x >= hesoHitbox.x && ball.x <= hesoHitbox.x + hesoHitbox.width && ball.y >= hesoHitbox.y && ball.y <= hesoHitbox.y + hesoHitbox.height) {
       addHold();
