@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Akita Pachinko</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main class="machine">
+    <header class="machine__header">
+      <p class="eyebrow">SAY-さい- MINI GAME</p>
+      <h1>AKITA PACHINKO</h1>
+      <p class="muted">演出・物理演算テスト</p>
+    </header>
+
+    <section class="settings" aria-label="ゲーム設定">
+      <label for="rate">1回転あたりのレート（Token）</label>
+      <div class="settings__row">
+        <input id="rate" type="number" min="1" step="1" value="1">
+        <button id="start-button" type="button">玉を発射</button>
+      </div>
+      <p class="muted">現在は試作画面です。既存のToken残高とはまだ接続していません。</p>
+    </section>
+
+    <section class="playfield" aria-label="パチンコ盤面">
+      <canvas id="machine-canvas" width="420" height="640">
+        Canvasに対応したブラウザで開いてください。
+      </canvas>
+      <div id="status" class="status" role="status">発射ボタンでテストできます</div>
+    </section>
+  </main>
+  <script type="module" src="./game.js"></script>
+</body>
+</html>
