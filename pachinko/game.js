@@ -7,6 +7,17 @@ const context = canvas?.getContext("2d");
 const startButton = document.querySelector("#start-button");
 const rateInput = document.querySelector("#rate");
 const statusElement = document.querySelector("#status");
+const reelElements = [
+  document.querySelector("#reel-left"),
+  document.querySelector("#reel-center"),
+  document.querySelector("#reel-right")
+];
+const routeElement = document.querySelector("#route-label");
+const resultElement = document.querySelector("#result-label");
+const spinCountElement = document.querySelector("#spin-count");
+const reachCountElement = document.querySelector("#reach-count");
+const jackpotCountElement = document.querySelector("#jackpot-count");
+const jackpotRateElement = document.querySelector("#jackpot-rate");
 
 const pegs = [];
 for (let row = 0; row < 8; row++) {
@@ -22,6 +33,37 @@ for (let row = 0; row < 8; row++) {
 let ball = null;
 let previousTime = 0;
 let animationId = 0;
+let spinCount = 0;
+let reachCount = 0;
+let jackpotCount = 0;
+
+function updateStats() {
+  spinCountElement.textContent = spinCount.toLocaleString();
+  reachCountElement.textContent = reachCount.toLocaleString();
+  jackpotCountElement.textContent = jackpotCount.toLocaleString();
+  jackpotRateElement.textContent = spinCount
+    ? `${(jackpotCount / spinCount * 100).toFixed(2)}%`
+    : "0.00%";
+}
+
+function displayOutcome(outcome) {
+  reelElements.forEach((element, index) => {
+    element.textContent = outcome.symbols[index];
+    element.classList.toggle("reel--jackpot", outcome.type === "jackpot");
+  });
+
+  routeElement.textContent = outcome.rainbowHold
+    ? "虹保留 → 確定全回転"
+    : outcome.routeLabel;
+  resultElement.textContent = outcome.type === "jackpot" ? "大当たり！" : "はずれ";
+  resultElement.classList.toggle("result-label--jackpot", outcome.type === "jackpot");
+
+  spinCount += 1;
+  if (outcome.reach) reachCount += 1;
+  if (outcome.type === "jackpot") jackpotCount += 1;
+  updateStats();
+  showEffect(statusElement, outcome);
+}
 
 function draw() {
   if (!context || !canvas) return;
@@ -61,8 +103,7 @@ function animate(time) {
     if (!alive) {
       ball = null;
       cancelAnimationFrame(animationId);
-      const outcome = drawOutcome();
-      showEffect(statusElement, outcome);
+      displayOutcome(drawOutcome());
       startButton.disabled = false;
     }
   }
@@ -78,12 +119,15 @@ startButton?.addEventListener("click", () => {
     return;
   }
 
-  // ここでは物理演算の試作のみ。Token残高の読み書きはまだ行いません。
+  // テスト専用。既存のAkita Token残高にはまだ接続しない。
   statusElement.textContent = `レート ${rate.toLocaleString()} Token／回転・玉を発射中…`;
   startButton.disabled = true;
+  resultElement.textContent = "抽選中…";
+  resultElement.classList.remove("result-label--jackpot");
   ball = createBall(canvas.width / 2, 48, (Math.random() - 0.5) * 90, 0);
   previousTime = 0;
   animationId = requestAnimationFrame(animate);
 });
 
 draw();
+updateStats();
