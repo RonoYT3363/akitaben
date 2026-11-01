@@ -52,7 +52,7 @@ try {
 }
 const pegs = Array.isArray(boardConfig?.pegs) ? boardConfig.pegs : defaultPegs;
 const physicsConfig = boardConfig?.physics || {};
-const launcher = boardConfig?.launcher || { x: 48 * SCALE_X, y: 72, vx: 265, vy: -125 };
+const launcher = { x: 48 * SCALE_X, y: 72, vx: 265, vy: -125, intervalMs: 340, ...(boardConfig?.launcher || {}) };
 const hesoHitbox = boardConfig?.hitbox || { x: 228.6, y: 542, width: 142.9, height: 20 };
 setPhysicsConfig(physicsConfig);
 let balls = [];
@@ -290,8 +290,9 @@ function animate(time) {
   previousTime = time;
   launchAccumulator += delta;
 
-  if (firing && launchAccumulator >= 0.34) {
-    launchAccumulator = 0;
+  const launchInterval = Math.max(50, Number(launcher.intervalMs) || 340) / 1000;
+  if (firing && launchAccumulator >= launchInterval) {
+    launchAccumulator %= launchInterval;
     launchBall();
   }
 
