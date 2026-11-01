@@ -19,6 +19,7 @@ let previewFrame = 0;
 let lastPreviewTime = 0;
 let previewing = false;
 let settings = { gravity: initialConfig?.physics?.gravity ?? 520, restitution: initialConfig?.physics?.restitution ?? 0.72, launchX: initialConfig?.launcher?.x ?? 48*SCALE_X, launchY: initialConfig?.launcher?.y ?? 72, launchVx: initialConfig?.launcher?.vx ?? 265, launchVy: initialConfig?.launcher?.vy ?? -125 };
+let launchSpeed = Math.hypot(settings.launchVx, settings.launchVy);
 const symbolDefaults=Object.fromEntries(SYMBOLS.map(s=>[s.value,s.weight]));
 const reachSymbolDefaults=Object.fromEntries(SYMBOLS.map(s=>[s.value,s.weight*s.weight]));
 let lotterySettings={jackpotDenominator:initialConfig?.lottery?.jackpotDenominator??52,symbolWeights:{...symbolDefaults,...(initialConfig?.lottery?.symbolWeights||{})},reachSymbolWeights:{...reachSymbolDefaults,...(initialConfig?.lottery?.reachSymbolWeights||{})}};
@@ -75,12 +76,34 @@ $("#clear-pegs").addEventListener("click",()=>{if(!confirm("盤面上の釘を�
 $("#reset-board").addEventListener("click",()=>{if(!confirm("初期配置に戻しますか？"))return;pegs=defaultPegs.map(peg=>({...peg}));selected=-1;markDirty();updateSelection();drawBoard();});
 function bindRange(id,key,format){const input=$("#"+id),output=$("#"+id+"-value");input.addEventListener("input",()=>{settings[key]=Number(input.value);output.textContent=format(settings[key]);markDirty();if(key==="gravity"||key==="restitution")setPhysicsConfig({gravity:settings.gravity,restitution:settings.restitution});});}
 bindRange("gravity","gravity",v=>String(v));bindRange("bounce","restitution",v=>v.toFixed(2));bindRange("launch-x","launchX",v=>String(v));bindRange("launch-y","launchY",v=>String(v));bindRange("launch-vx","launchVx",v=>String(v));bindRange("launch-vy","launchVy",v=>String(v));
+function syncLaunchSpeedFromComponents(){
+  launchSpeed=Math.hypot(settings.launchVx,settings.launchVy);
+  $("#launch-speed").value=Math.round(launchSpeed);
+  $("#launch-speed-value").textContent=String(Math.round(launchSpeed));
+}
+$("#launch-speed").addEventListener("input",event=>{
+  const next=Math.max(50,Number(event.target.value)||50);
+  const current=Math.hypot(settings.launchVx,settings.launchVy);
+  const angle=current>0?Math.atan2(settings.launchVy,settings.launchVx):Math.atan2(-125,265);
+  settings.launchVx=Math.cos(angle)*next;
+  settings.launchVy=Math.sin(angle)*next;
+  launchSpeed=next;
+  $("#launch-vx").value=settings.launchVx;
+  $("#launch-vx-value").textContent=settings.launchVx.toFixed(0);
+  $("#launch-vy").value=settings.launchVy;
+  $("#launch-vy-value").textContent=settings.launchVy.toFixed(0);
+  $("#launch-speed-value").textContent=String(Math.round(next));
+  markDirty();
+});
+for(const id of ["launch-vx","launch-vy"]) $("#"+id).addEventListener("input",syncLaunchSpeedFromComponents);
+
+$("#launch-speed").value=Math.round(launchSpeed);$("#launch-speed-value").textContent=String(Math.round(launchSpeed));
 for (const [id,key] of [["gravity","gravity"],["bounce","restitution"],["launch-x","launchX"],["launch-y","launchY"],["launch-vx","launchVx"],["launch-vy","launchVy"]]) {
   $("#"+id).value = settings[key];
   $("#"+id+"-value").textContent = id === "bounce" ? settings[key].toFixed(2) : String(settings[key]);
 }
 function getConfig(){return{version:3,pegs,hitbox:{...hitbox},physics:{gravity:settings.gravity,restitution:settings.restitution},launcher:{x:settings.launchX,y:settings.launchY,vx:settings.launchVx,vy:settings.launchVy},lottery:JSON.parse(JSON.stringify(lotterySettings))};}
-function applyConfig(config){if(!config||!Array.isArray(config.pegs)||config.pegs.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)||!Number.isFinite(p.radius)))throw new Error("盤面データの形式が正しくありません");pegs=config.pegs.map(p=>({x:p.x,y:p.y,radius:p.radius}));hitbox={...defaultHitbox,...(config.hitbox||{})};lotterySettings={jackpotDenominator:config.lottery?.jackpotDenominator??52,symbolWeights:{...symbolDefaults,...(config.lottery?.symbolWeights||{})},reachSymbolWeights:{...reachSymbolDefaults,...(config.lottery?.reachSymbolWeights||{})}};renderLotteryControls();settings={gravity:config.physics?.gravity??520,restitution:config.physics?.restitution??.72,launchX:config.launcher?.x??48,launchY:config.launcher?.y??72,launchVx:config.launcher?.vx??265,launchVy:config.launcher?.vy??-125};const vals={gravity:settings.gravity,bounce:settings.restitution,"launch-x":settings.launchX,"launch-y":settings.launchY,"launch-vx":settings.launchVx,"launch-vy":settings.launchVy};for(const[id,value]of Object.entries(vals)){$("#"+id).value=value;$("#"+id+"-value").textContent=id==="bounce"?Number(value).toFixed(2):String(value);}setPhysicsConfig({gravity:settings.gravity,restitution:settings.restitution});selected=-1;updateSelection();markDirty();drawBoard();}
+function applyConfig(config){if(!config||!Array.isArray(config.pegs)||config.pegs.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)||!Number.isFinite(p.radius)))throw new Error("盤面データの形式が正しくありません");pegs=config.pegs.map(p=>({x:p.x,y:p.y,radius:p.radius}));hitbox={...defaultHitbox,...(config.hitbox||{})};lotterySettings={jackpotDenominator:config.lottery?.jackpotDenominator??52,symbolWeights:{...symbolDefaults,...(config.lottery?.symbolWeights||{})},reachSymbolWeights:{...reachSymbolDefaults,...(config.lottery?.reachSymbolWeights||{})}};renderLotteryControls();settings={gravity:config.physics?.gravity??520,restitution:config.physics?.restitution??.72,launchX:config.launcher?.x??48,launchY:config.launcher?.y??72,launchVx:config.launcher?.vx??265,launchVy:config.launcher?.vy??-125};const vals={gravity:settings.gravity,bounce:settings.restitution,"launch-x":settings.launchX,"launch-y":settings.launchY,"launch-vx":settings.launchVx,"launch-vy":settings.launchVy};for(const[id,value]of Object.entries(vals)){$("#"+id).value=value;$("#"+id+"-value").textContent=id==="bounce"?Number(value).toFixed(2):String(value);}launchSpeed=Math.hypot(settings.launchVx,settings.launchVy);$("#launch-speed").value=Math.round(launchSpeed);$("#launch-speed-value").textContent=String(Math.round(launchSpeed));setPhysicsConfig({gravity:settings.gravity,restitution:settings.restitution});selected=-1;updateSelection();markDirty();drawBoard();}
 $("#save-board").addEventListener("click",()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(getConfig()));dirty=false;$("#save-state").textContent="保存済み";$("#message").textContent="保存しました。シミュレーターを再読み込みすると反映されます。";}catch(error){$("#message").textContent="保存できませんでした: "+error.message;}});
 $("#export-board").addEventListener("click",()=>{const blob=new Blob([JSON.stringify(getConfig(),null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="akita-pachinko-board.json";a.click();URL.revokeObjectURL(url);});
 $("#import-board").addEventListener("change",async event=>{const file=event.target.files?.[0];if(!file)return;try{applyConfig(JSON.parse(await file.text()));$("#message").textContent="読み込みました。保存するとシミュレーターに反映されます。";}catch(error){$("#message").textContent="読み込み失敗: "+error.message;}event.target.value="";});
