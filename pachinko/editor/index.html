@@ -71,6 +71,20 @@
         <input id="launch-vy" type="range" min="-400" max="400" step="5" value="-125">
       </label>
       <hr>
+      <h2>抽選設定</h2>
+      <label>大当たり確率（1 / N）
+        <input id="jackpot-denominator" type="number" min="1" max="1000000" step="1" value="52">
+      </label>
+      <p class="hint">この確率は1回転ごとの全体確率です。虹演出は大当たりの一部として発生します。</p>
+      <details open>
+        <summary>各図柄の出現比率</summary>
+        <div id="symbol-weight-controls" class="weight-controls"></div>
+      </details>
+      <details>
+        <summary>リーチ時の図柄振り分け</summary>
+        <div id="reach-weight-controls" class="weight-controls"></div>
+      </details>
+      <hr>
       <h2>保存・読み込み</h2>
       <button id="save-board" class="primary">このブラウザに保存</button>
       <button id="export-board">JSONを書き出す</button>
