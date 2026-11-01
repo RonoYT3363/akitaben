@@ -116,7 +116,7 @@ function beginReel(element) {
 async function playOutcome(outcome, queuedHolds = 0) {
   spinning = true;
   // 保留が多いほど変動テンポを上げる（最大約45%短縮）。
-  const speed = Math.max(0.55, 1 - queuedHolds * 0.12);
+  const speed = Math.max(0.55, 1 - queuedHolds * 0.15);
   const wait = ms => sleep(ms * speed);
   resultElement.textContent = "変動中…";
   resultElement.classList.remove("result-label--jackpot");
