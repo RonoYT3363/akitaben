@@ -5,7 +5,8 @@ const canvas = document.querySelector("#editor-canvas");
 const ctx = canvas.getContext("2d");
 const $ = selector => document.querySelector(selector);
 const defaultPegs = makeDefaultPegs();
-let pegs = loadInitialPegs();
+const initialConfig = loadInitialConfig();
+let pegs = initialConfig?.pegs ? initialConfig.pegs.map(p => ({...p})) : makeDefaultPegs();
 let tool = "select";
 let selected = -1;
 let dirty = false;
@@ -13,7 +14,7 @@ let balls = [];
 let previewFrame = 0;
 let lastPreviewTime = 0;
 let previewing = false;
-let settings = { gravity: 520, restitution: 0.72, launchX: 48, launchY: 72, launchVx: 265, launchVy: -125 };
+let settings = { gravity: initialConfig?.physics?.gravity ?? 520, restitution: initialConfig?.physics?.restitution ?? 0.72, launchX: initialConfig?.launcher?.x ?? 48, launchY: initialConfig?.launcher?.y ?? 72, launchVx: initialConfig?.launcher?.vx ?? 265, launchVy: initialConfig?.launcher?.vy ?? -125 };
 
 function makeDefaultPegs() {
   const result = [];
@@ -30,10 +31,10 @@ function makeDefaultPegs() {
   for(let i=0;i<6;i++){result.push({x:82+i*13,y:465+i*10,radius:3.5});result.push({x:270-i*9,y:465+i*10,radius:3.5});}
   return result;
 }
-function loadInitialPegs(){try{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY));if(Array.isArray(saved?.pegs))return saved.pegs;}catch{}return [...defaultPegs];}
+function loadInitialConfig(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");}catch{return null;}}
 function markDirty(){dirty=true;$("#save-state").textContent="未保存の変更あり";$("#message").textContent="変更があります。保存するとシミュレーターに反映されます。";updateCounts();}
 function updateCounts(){$("#peg-count").textContent=`釘 ${pegs.length} 本`;}
-function updateSelection(){const peg=pegs[selected];$("#selection-label").textContent=peg? `X: ${peg.x.toFixed(1)} / Y: ${peg.y.toFixed(1)}`:"釘が選択されていません";$("#delete-selected").disabled=!peg;$("#peg-radius").disabled=!peg;if(peg){$("#peg-radius").value=peg.radius;$("#peg-radius-value").textContent=peg.radius.toFixed(1);}}
+function updateSelection(){const peg=pegs[selected];$("#selection-label").textContent=peg? `X: ${peg.x.toFixed(1)} / Y: ${peg.y.toFixed(1)}`:"釘が選択されていません";$("#delete-selected").disabled=!peg;if(peg){$("#peg-radius").value=peg.radius;$("#peg-radius-value").textContent=peg.radius.toFixed(1);}}
 function getPoint(event){const rect=canvas.getBoundingClientRect();return{x:(event.clientX-rect.left)*canvas.width/rect.width,y:(event.clientY-rect.top)*canvas.height/rect.height};}
 function nearestPeg(point){let best=-1,bestDistance=15;pegs.forEach((peg,index)=>{const d=Math.hypot(peg.x-point.x,peg.y-point.y);if(d<bestDistance){best=index;bestDistance=d;}});return best;}
 function drawBoard(){ctx.clearRect(0,0,420,640);const bg=ctx.createLinearGradient(0,0,420,640);bg.addColorStop(0,"#172b46");bg.addColorStop(.55,"#0c1729");bg.addColorStop(1,"#263b58");ctx.fillStyle=bg;ctx.fillRect(9,9,402,622);ctx.strokeStyle="#d0b36b";ctx.lineWidth=5;ctx.strokeRect(14,14,392,612);ctx.strokeStyle="#6f8bad";ctx.lineWidth=1;ctx.strokeRect(23,23,374,594);
@@ -53,7 +54,7 @@ $("#peg-radius").addEventListener("input",event=>{if(selected<0)return;pegs[sele
 $("#delete-selected").addEventListener("click",()=>{if(selected<0)return;pegs.splice(selected,1);selected=-1;markDirty();updateSelection();drawBoard();});
 $("#add-peg-center").addEventListener("click",()=>{pegs.push({x:210,y:420,radius:Number($("#peg-radius").value)||3.2});selected=pegs.length-1;markDirty();updateSelection();drawBoard();});
 $("#clear-pegs").addEventListener("click",()=>{if(!confirm("盤面上の釘をすべて削除しますか？"))return;pegs=[];selected=-1;markDirty();updateSelection();drawBoard();});
-$("#reset-board").addEventListener("click",()=>{if(!confirm("初期配置に戻しますか？"))return;pegs=[...defaultPegs];selected=-1;markDirty();updateSelection();drawBoard();});
+$("#reset-board").addEventListener("click",()=>{if(!confirm("初期配置に戻しますか？"))return;pegs=defaultPegs.map(peg=>({...peg}));selected=-1;markDirty();updateSelection();drawBoard();});
 function bindRange(id,key,format){const input=$("#"+id),output=$("#"+id+"-value");input.addEventListener("input",()=>{settings[key]=Number(input.value);output.textContent=format(settings[key]);markDirty();if(key==="gravity"||key==="restitution")setPhysicsConfig({gravity:settings.gravity,restitution:settings.restitution});});}
 bindRange("gravity","gravity",v=>String(v));bindRange("bounce","restitution",v=>v.toFixed(2));bindRange("launch-x","launchX",v=>String(v));bindRange("launch-y","launchY",v=>String(v));bindRange("launch-vx","launchVx",v=>String(v));bindRange("launch-vy","launchVy",v=>String(v));
 function getConfig(){return{version:1,pegs,physics:{gravity:settings.gravity,restitution:settings.restitution},launcher:{x:settings.launchX,y:settings.launchY,vx:settings.launchVx,vy:settings.launchVy}};}
