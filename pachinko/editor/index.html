@@ -19,8 +19,20 @@
         <button class="tool" data-tool="select" aria-pressed="false">選択・移動</button>
         <button class="tool active" data-tool="place" aria-pressed="true">クリックで釘を配置（初期モード）</button>
         <button class="tool" data-tool="delete">釘を削除（ドラッグ対応）</button>
+        <button class="tool" data-tool="shape">図形で釘を配置</button>
       </div>
-      <p class="hint">クリック配置：盤面をクリック、または押したままドラッグすると釘を連続配置<br>選択・移動：釘をドラッグ<br>ヘソ当たり判定：黄色の枠をドラッグ<br>削除：釘をクリック、または押したままドラッグすると連続削除</p>
+      <p class="hint">クリック配置：盤面をクリック、または押したままドラッグすると釘を連続配置<br>図形配置：形と大きさを選び、盤面をクリックするとその位置を中心に配置<br>選択・移動：釘をドラッグ<br>ヘソ当たり判定：黄色の枠をドラッグ<br>削除：釘をクリック、または押したままドラッグすると連続削除</p>
+      <div class="shape-settings">
+        <label>配置する形
+          <select id="shape-type"><option value="circle">円</option><option value="rectangle">四角形</option><option value="triangle">三角形</option><option value="diamond">ひし形</option><option value="line">直線</option></select>
+        </label>
+        <label>大きさ <output id="shape-size-value">100</output> px
+          <input id="shape-size" type="range" min="30" max="220" step="5" value="100">
+        </label>
+        <label>釘の間隔 <output id="shape-spacing-value">18</output> px
+          <input id="shape-spacing" type="range" min="10" max="35" step="1" value="18">
+        </label>
+      </div>
       <hr>
       <h2>選択中の釘</h2>
       <p id="selection-label" class="muted">釘が選択されていません</p>
