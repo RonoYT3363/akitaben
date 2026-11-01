@@ -1,6 +1,9 @@
 import { createBall, stepBall, setPhysicsConfig } from "../physics.js";
 
 const STORAGE_KEY = "akitaPachinkoBoardV1";
+const BOARD_WIDTH = 600;
+const BOARD_HEIGHT = 640;
+const SCALE_X = BOARD_WIDTH / 420;
 const canvas = document.querySelector("#editor-canvas");
 const ctx = canvas.getContext("2d");
 const $ = selector => document.querySelector(selector);
@@ -21,23 +24,23 @@ function makeDefaultPegs() {
   for (let row=0; row<17; row++) {
     const y=88+row*27;
     for (let column=0; column<15; column++) {
-      const x=34+column*25+(row%2?12:0);
-      if(x>395||y>535)continue;
-      if(x>72&&x<348&&y>145&&y<382)continue;
-      if(y>505&&x>157&&x<263)continue;
-      result.push({x:x+(Math.random()-.5)*3,y:y+(Math.random()-.5)*3,radius:3.2});
+      const x=(34+column*25+(row%2?12:0))*SCALE_X;
+      if(x>BOARD_WIDTH-25||y>535)continue;
+      if(x>72*SCALE_X&&x<348*SCALE_X&&y>145&&y<382)continue;
+      if(y>505&&x>157*SCALE_X&&x<263*SCALE_X)continue;
+      result.push({x:x+(Math.random()-.5)*3*SCALE_X,y:y+(Math.random()-.5)*3,radius:3.2});
     }
   }
-  for(let i=0;i<6;i++){result.push({x:82+i*13,y:465+i*10,radius:3.5});result.push({x:270-i*9,y:465+i*10,radius:3.5});}
+  for(let i=0;i<6;i++){result.push({x:(82+i*13)*SCALE_X,y:465+i*10,radius:3.5});result.push({x:(270-i*9)*SCALE_X,y:465+i*10,radius:3.5});}
   return result;
 }
-function loadInitialConfig(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");}catch{return null;}}
+function loadInitialConfig(){try{const config=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");if(config&&config.version<2){config.pegs?.forEach(peg=>peg.x*=SCALE_X);if(config.launcher)config.launcher.x*=SCALE_X;config.version=2;}return config;}catch{return null;}}
 function markDirty(){dirty=true;$("#save-state").textContent="未保存の変更あり";$("#message").textContent="変更があります。保存するとシミュレーターに反映されます。";updateCounts();}
 function updateCounts(){$("#peg-count").textContent=`釘 ${pegs.length} 本`;}
 function updateSelection(){const peg=pegs[selected];$("#selection-label").textContent=peg? `X: ${peg.x.toFixed(1)} / Y: ${peg.y.toFixed(1)}`:"釘が選択されていません";$("#delete-selected").disabled=!peg;if(peg){$("#peg-radius").value=peg.radius;$("#peg-radius-value").textContent=peg.radius.toFixed(1);}}
 function getPoint(event){const rect=canvas.getBoundingClientRect();return{x:(event.clientX-rect.left)*canvas.width/rect.width,y:(event.clientY-rect.top)*canvas.height/rect.height};}
 function nearestPeg(point){let best=-1,bestDistance=15;pegs.forEach((peg,index)=>{const d=Math.hypot(peg.x-point.x,peg.y-point.y);if(d<bestDistance){best=index;bestDistance=d;}});return best;}
-function drawBoard(){ctx.clearRect(0,0,420,640);const bg=ctx.createLinearGradient(0,0,420,640);bg.addColorStop(0,"#172b46");bg.addColorStop(.55,"#0c1729");bg.addColorStop(1,"#263b58");ctx.fillStyle=bg;ctx.fillRect(9,9,402,622);ctx.strokeStyle="#d0b36b";ctx.lineWidth=5;ctx.strokeRect(14,14,392,612);ctx.strokeStyle="#6f8bad";ctx.lineWidth=1;ctx.strokeRect(23,23,374,594);
+function drawBoard(){ctx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);ctx.save();ctx.scale(SCALE_X,1);const bg=ctx.createLinearGradient(0,0,420,640);bg.addColorStop(0,"#172b46");bg.addColorStop(.55,"#0c1729");bg.addColorStop(1,"#263b58");ctx.fillStyle=bg;ctx.fillRect(9,9,402,622);ctx.strokeStyle="#d0b36b";ctx.lineWidth=5;ctx.strokeRect(14,14,392,612);ctx.strokeStyle="#6f8bad";ctx.lineWidth=1;ctx.strokeRect(23,23,374,594);
   ctx.fillStyle="#d6b86e";ctx.fillRect(175,30,70,9);ctx.fillStyle="#e8efff";ctx.font="bold 11px sans-serif";ctx.textAlign="center";ctx.fillText("AKITA PREMIUM",210,64);
   const screen=ctx.createLinearGradient(90,160,330,360);screen.addColorStop(0,"#3b234f");screen.addColorStop(.5,"#142c52");screen.addColorStop(1,"#482b4b");ctx.fillStyle="#d7b76b";ctx.fillRect(78,151,264,222);ctx.fillStyle=screen;ctx.fillRect(85,158,250,208);ctx.strokeStyle="#f4d58c";ctx.lineWidth=2;ctx.strokeRect(91,164,238,196);ctx.fillStyle="#f5d98f";ctx.fillText("AKITA CHANCE",210,145);
   ctx.fillStyle="#d9b45e";ctx.fillRect(151,548,118,15);ctx.fillStyle="#111a2b";ctx.fillRect(163,551,94,9);ctx.fillStyle="#ffe39a";ctx.font="bold 12px sans-serif";ctx.fillText("START / HESO",210,540);ctx.fillStyle="#d8e4f7";ctx.fillRect(58,520,42,8);ctx.fillRect(320,520,42,8);ctx.font="10px sans-serif";ctx.fillText("入賞口",79,513);ctx.fillText("入賞口",341,513);ctx.fillStyle="#080d17";ctx.fillRect(177,584,66,20);ctx.fillStyle="#a7b8d0";ctx.fillText("OUT",210,598);
@@ -47,12 +50,12 @@ function drawBoard(){ctx.clearRect(0,0,420,640);const bg=ctx.createLinearGradien
 }
 let dragging=false;
 canvas.addEventListener("pointerdown",event=>{if(previewing)return;const p=getPoint(event);if(tool==="add"){pegs.push({x:p.x,y:p.y,radius:Number($("#peg-radius").value)||3.2});selected=pegs.length-1;markDirty();updateSelection();drawBoard();return;}if(tool==="delete"){selected=nearestPeg(p);if(selected>=0){pegs.splice(selected,1);selected=-1;markDirty();}updateSelection();drawBoard();return;}selected=nearestPeg(p);dragging=selected>=0;canvas.setPointerCapture(event.pointerId);updateSelection();drawBoard();});
-canvas.addEventListener("pointermove",event=>{if(!dragging||selected<0)return;const p=getPoint(event);pegs[selected].x=Math.max(15,Math.min(405,p.x));pegs[selected].y=Math.max(20,Math.min(620,p.y));updateSelection();markDirty();drawBoard();});
+canvas.addEventListener("pointermove",event=>{if(!dragging||selected<0)return;const p=getPoint(event);pegs[selected].x=Math.max(15,Math.min(BOARD_WIDTH-15,p.x));pegs[selected].y=Math.max(20,Math.min(620,p.y));updateSelection();markDirty();drawBoard();});
 canvas.addEventListener("pointerup",()=>{dragging=false;});canvas.addEventListener("pointercancel",()=>{dragging=false;});
 document.querySelectorAll("[data-tool]").forEach(button=>button.addEventListener("click",()=>{tool=button.dataset.tool;document.querySelectorAll("[data-tool]").forEach(b=>b.classList.toggle("active",b===button));canvas.style.cursor=tool==="add"?"crosshair":tool==="delete"?"not-allowed":"grab";}));
 $("#peg-radius").addEventListener("input",event=>{if(selected<0)return;pegs[selected].radius=Number(event.target.value);$("#peg-radius-value").textContent=pegs[selected].radius.toFixed(1);markDirty();drawBoard();});
 $("#delete-selected").addEventListener("click",()=>{if(selected<0)return;pegs.splice(selected,1);selected=-1;markDirty();updateSelection();drawBoard();});
-$("#add-peg-center").addEventListener("click",()=>{pegs.push({x:210,y:420,radius:Number($("#peg-radius").value)||3.2});selected=pegs.length-1;markDirty();updateSelection();drawBoard();});
+$("#add-peg-center").addEventListener("click",()=>{pegs.push({x:BOARD_WIDTH/2,y:420,radius:Number($("#peg-radius").value)||3.2});selected=pegs.length-1;markDirty();updateSelection();drawBoard();});
 $("#clear-pegs").addEventListener("click",()=>{if(!confirm("盤面上の釘をすべて削除しますか？"))return;pegs=[];selected=-1;markDirty();updateSelection();drawBoard();});
 $("#reset-board").addEventListener("click",()=>{if(!confirm("初期配置に戻しますか？"))return;pegs=defaultPegs.map(peg=>({...peg}));selected=-1;markDirty();updateSelection();drawBoard();});
 function bindRange(id,key,format){const input=$("#"+id),output=$("#"+id+"-value");input.addEventListener("input",()=>{settings[key]=Number(input.value);output.textContent=format(settings[key]);markDirty();if(key==="gravity"||key==="restitution")setPhysicsConfig({gravity:settings.gravity,restitution:settings.restitution});});}
@@ -61,13 +64,13 @@ for (const [id,key] of [["gravity","gravity"],["bounce","restitution"],["launch-
   $("#"+id).value = settings[key];
   $("#"+id+"-value").textContent = id === "bounce" ? settings[key].toFixed(2) : String(settings[key]);
 }
-function getConfig(){return{version:1,pegs,physics:{gravity:settings.gravity,restitution:settings.restitution},launcher:{x:settings.launchX,y:settings.launchY,vx:settings.launchVx,vy:settings.launchVy}};}
+function getConfig(){return{version:2,pegs,physics:{gravity:settings.gravity,restitution:settings.restitution},launcher:{x:settings.launchX,y:settings.launchY,vx:settings.launchVx,vy:settings.launchVy}};}
 function applyConfig(config){if(!config||!Array.isArray(config.pegs)||config.pegs.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)||!Number.isFinite(p.radius)))throw new Error("盤面データの形式が正しくありません");pegs=config.pegs.map(p=>({x:p.x,y:p.y,radius:p.radius}));settings={gravity:config.physics?.gravity??520,restitution:config.physics?.restitution??.72,launchX:config.launcher?.x??48,launchY:config.launcher?.y??72,launchVx:config.launcher?.vx??265,launchVy:config.launcher?.vy??-125};const vals={gravity:settings.gravity,bounce:settings.restitution,"launch-x":settings.launchX,"launch-y":settings.launchY,"launch-vx":settings.launchVx,"launch-vy":settings.launchVy};for(const[id,value]of Object.entries(vals)){$("#"+id).value=value;$("#"+id+"-value").textContent=id==="bounce"?Number(value).toFixed(2):String(value);}setPhysicsConfig({gravity:settings.gravity,restitution:settings.restitution});selected=-1;updateSelection();markDirty();drawBoard();}
 $("#save-board").addEventListener("click",()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(getConfig()));dirty=false;$("#save-state").textContent="保存済み";$("#message").textContent="保存しました。シミュレーターを再読み込みすると反映されます。";}catch(error){$("#message").textContent="保存できませんでした: "+error.message;}});
 $("#export-board").addEventListener("click",()=>{const blob=new Blob([JSON.stringify(getConfig(),null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="akita-pachinko-board.json";a.click();URL.revokeObjectURL(url);});
 $("#import-board").addEventListener("change",async event=>{const file=event.target.files?.[0];if(!file)return;try{applyConfig(JSON.parse(await file.text()));$("#message").textContent="読み込みました。保存するとシミュレーターに反映されます。";}catch(error){$("#message").textContent="読み込み失敗: "+error.message;}event.target.value="";});
 $("#grid-toggle").addEventListener("change",drawBoard);
-function previewStep(time){const dt=lastPreviewTime?Math.min((time-lastPreviewTime)/1000,1/30):0;lastPreviewTime=time;if(balls.length===0)balls.push(createBall(settings.launchX,settings.launchY,settings.launchVx,settings.launchVy));balls=balls.filter(ball=>stepBall(ball,{width:420,height:610},pegs,dt));drawBoard();if(previewing)previewFrame=requestAnimationFrame(previewStep);}
+function previewStep(time){const dt=lastPreviewTime?Math.min((time-lastPreviewTime)/1000,1/30):0;lastPreviewTime=time;if(balls.length===0)balls.push(createBall(settings.launchX,settings.launchY,settings.launchVx,settings.launchVy));balls=balls.filter(ball=>stepBall(ball,{width:BOARD_WIDTH,height:610},pegs,dt));drawBoard();if(previewing)previewFrame=requestAnimationFrame(previewStep);}
 $("#preview-toggle").addEventListener("change",event=>{previewing=event.target.checked;if(previewing){balls=[];lastPreviewTime=0;setPhysicsConfig({gravity:settings.gravity,restitution:settings.restitution});previewFrame=requestAnimationFrame(previewStep);}else{cancelAnimationFrame(previewFrame);balls=[];drawBoard();}});
 window.addEventListener("beforeunload",event=>{if(dirty){event.preventDefault();event.returnValue="";}});
 updateCounts();updateSelection();setPhysicsConfig({gravity:settings.gravity,restitution:settings.restitution});drawBoard();
