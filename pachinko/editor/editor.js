@@ -92,7 +92,7 @@ function renderLotteryControls(){
       const row=document.createElement("label");row.className="weight-row";
       const name=document.createElement("span");name.textContent="図柄 "+symbol.value;
       const input=document.createElement("input");input.type="number";input.min="0";input.max="1000000";input.step="1";input.value=weights[symbol.value]??0;input.setAttribute("aria-label",prefix+" 図柄 "+symbol.value);
-      input.addEventListener("change",()=>{weights[symbol.value]=Math.max(0,Number(input.value)||0);markDirty();});
+      input.addEventListener("change",()=>{weights[symbol.value]=Math.max(0,Number(input.value)||0);if(Object.values(weights).every(value=>value<=0)){weights[symbol.value]=1;input.value="1";$("#message").textContent="すべて0にはできないため、最低1に調整しました";}markDirty();});
       row.append(name,input);container.append(row);
     }
   };
