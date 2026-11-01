@@ -48,3 +48,50 @@ export function stepBall(ball, bounds, pegs, deltaSeconds) {
   }
   return ball.y <= bounds.height + ball.radius;
 }
+
+// 玉同士の円形衝突を解決する。玉は同じ質量として扱い、個数は変更しない。
+export function resolveBallCollisions(balls) {
+  if (balls.length < 2) return;
+  // 位置補正を複数回行い、密集時のめり込みを減らす。
+  for (let iteration = 0; iteration < 2; iteration++) {
+    for (let i = 0; i < balls.length; i++) {
+      const a = balls[i];
+      for (let j = i + 1; j < balls.length; j++) {
+        const b = balls[j];
+        let dx = b.x - a.x;
+        let dy = b.y - a.y;
+        const minDistance = a.radius + b.radius;
+        let distanceSquared = dx * dx + dy * dy;
+        if (distanceSquared >= minDistance * minDistance) continue;
+
+        // 完全に同じ座標になった場合も、決定的な方向で押し分ける。
+        if (distanceSquared < 1e-10) {
+          dx = 1;
+          dy = 0;
+          distanceSquared = 1;
+        }
+        const distance = Math.sqrt(distanceSquared);
+        const nx = dx / distance;
+        const ny = dy / distance;
+        const overlap = minDistance - distance;
+
+        // 両方の玉を同じ距離だけ押し戻して、重なりを解消する。
+        const correction = overlap * 0.5;
+        a.x -= nx * correction;
+        a.y -= ny * correction;
+        b.x += nx * correction;
+        b.y += ny * correction;
+
+        // 接近している場合だけ、同じ質量の玉同士として反発させる。
+        const relativeNormalVelocity = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+        if (relativeNormalVelocity < 0) {
+          const impulse = -(1 + restitution) * relativeNormalVelocity * 0.5;
+          a.vx -= impulse * nx;
+          a.vy -= impulse * ny;
+          b.vx += impulse * nx;
+          b.vy += impulse * ny;
+        }
+      }
+    }
+  }
+}
