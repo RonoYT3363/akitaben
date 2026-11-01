@@ -1,0 +1,23 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: #10131c;
+  color: #f4f5f8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 24px 14px 40px; }
+.machine { width: min(100%, 560px); margin: 0 auto; }
+.machine__header { text-align: center; margin-bottom: 22px; }
+.machine__header h1 { margin: 4px 0; letter-spacing: .12em; font-size: clamp(1.5rem, 6vw, 2.2rem); }
+.eyebrow { color: #8ea7ff; font-size: .75rem; letter-spacing: .18em; }
+.muted { color: #aab0c0; font-size: .85rem; }
+.settings { padding: 16px; border: 1px solid #353c50; border-radius: 14px; background: #1a2030; margin-bottom: 16px; }
+.settings label { display: block; margin-bottom: 8px; font-weight: 650; }
+.settings__row { display: flex; gap: 10px; }
+input, button { min-height: 44px; border-radius: 9px; font: inherit; }
+input { min-width: 0; flex: 1; padding: 8px 12px; color: inherit; background: #0e1320; border: 1px solid #48516b; }
+button { padding: 8px 18px; border: 0; color: #10131c; background: #9eb2ff; font-weight: 700; cursor: pointer; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.playfield { position: relative; width: min(100%, 420px); margin: auto; }
+canvas { display: block; width: 100%; height: auto; border: 2px solid #56617d; border-radius: 14px; background: #111a2a; }
+.status { padding: 12px; text-align: center; color: #dce3ff; }
