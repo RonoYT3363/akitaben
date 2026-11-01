@@ -69,10 +69,10 @@ function updateHolds() {
 }
 
 function launchBall() {
-  // 右上から打ち出し、まず左側へ走ってから重力と釘で中央下部へ流す。
-  const vx = -265 + (Math.random() - 0.5) * 24;
+  // 左側から右方向へ打ち出し、重力と釘で盤面中央下部へ流す。
+  const vx = 265 + (Math.random() - 0.5) * 24;
   const vy = -125 + (Math.random() - 0.5) * 16;
-  balls.push(createBall(372 + (Math.random() - 0.5) * 4, 72, vx, vy));
+  balls.push(createBall(48 + (Math.random() - 0.5) * 4, 72, vx, vy));
 }
 
 function addHold() {
@@ -113,8 +113,11 @@ function beginReel(element) {
   });
 }
 
-async function playOutcome(outcome) {
+async function playOutcome(outcome, queuedHolds = 0) {
   spinning = true;
+  // 保留が多いほど変動テンポを上げる（最大約45%短縮）。
+  const speed = Math.max(0.55, 1 - queuedHolds * 0.12);
+  const wait = ms => sleep(ms * speed);
   resultElement.textContent = "変動中…";
   resultElement.classList.remove("result-label--jackpot");
   routeElement.textContent = "変動開始";
@@ -124,23 +127,23 @@ async function playOutcome(outcome) {
   const stopCenter = beginReel(reelElements[1]);
   const stopRight = beginReel(reelElements[2]);
 
-  await sleep(420);
-  await stopLeft(left, 720);
-  await sleep(220);
-  await stopRight(right, 760);
+  await wait(420);
+  await stopLeft(left, 720 * speed);
+  await wait(220);
+  await stopRight(right, 760 * speed);
 
   if (outcome.reach) {
     routeElement.textContent = outcome.routeLabel;
     resultElement.textContent = "リーチ！";
     resultElement.classList.add(`route--${outcome.route}`);
-    await showEffect(statusElement, outcome, 900);
-    await sleep(outcome.route === "sp-reach" ? 650 : 350);
+    await showEffect(statusElement, outcome, 900 * speed);
+    await wait(outcome.route === "sp-reach" ? 650 : 350);
   } else {
     routeElement.textContent = "通常変動";
-    await sleep(180);
+    await wait(180);
   }
 
-  await stopCenter(center, outcome.rainbowHold ? 1500 : outcome.route === "sp-reach" ? 1100 : 780);
+  await stopCenter(center, (outcome.rainbowHold ? 1500 : outcome.route === "sp-reach" ? 1100 : 780) * speed);
   reelElements.forEach(element => {
     element.classList.remove("reel--jackpot");
     if (outcome.type === "jackpot") element.classList.add("reel--jackpot");
@@ -159,6 +162,8 @@ async function playOutcome(outcome) {
   if (outcome.reach) reachCount += 1;
   if (outcome.type === "jackpot") jackpotCount += 1;
   updateStats();
+  // 全リール停止後、停止図柄を約1秒見せてから次の変動へ。
+  await sleep(1000);
   spinning = false;
   processQueue();
 }
@@ -167,7 +172,7 @@ async function processQueue() {
   if (spinning || holds <= 0) return;
   holds -= 1;
   updateHolds();
-  await playOutcome(drawOutcome());
+  await playOutcome(drawOutcome(), holds);
 }
 
 function drawMachine() {
