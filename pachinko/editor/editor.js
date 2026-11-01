@@ -82,7 +82,8 @@ function drawBoard(){ctx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);ctx.save();ctx.
   ctx.fillStyle="rgba(255,210,90,.16)";ctx.fillRect(hitbox.x,hitbox.y,hitbox.width,hitbox.height);
   ctx.strokeStyle="#ffd36b";ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.strokeRect(hitbox.x,hitbox.y,hitbox.width,hitbox.height);ctx.setLineDash([]);
   pegs.forEach((peg,index)=>{ctx.fillStyle="#536b87";ctx.beginPath();ctx.arc(peg.x+1,peg.y+2,5,0,Math.PI*2);ctx.fill();ctx.fillStyle=index===selected?"#ffdf78":"#e8edf5";ctx.beginPath();ctx.arc(peg.x,peg.y,peg.radius,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(peg.x-1,peg.y-1,1.5,0,Math.PI*2);ctx.fill();if(index===selected){ctx.strokeStyle="#ffe17b";ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(peg.x,peg.y,peg.radius+5,0,Math.PI*2);ctx.stroke();}});
-  if(tool==="shape"&&shapeStart&&shapeCurrent){const x=Math.min(shapeStart.x,shapeCurrent.x),y=Math.min(shapeStart.y,shapeCurrent.y),w=Math.abs(shapeCurrent.x-shapeStart.x),h=Math.abs(shapeCurrent.y-shapeStart.y);ctx.save();ctx.strokeStyle="#7ee7ff";ctx.fillStyle="rgba(126,231,255,.10)";ctx.lineWidth=1.5;ctx.setLineDash([5,4]);if($("#shape-type").value==="circle"){ctx.beginPath();ctx.ellipse(x+w/2,y+h/2,w/2,h/2,0,0,Math.PI*2);ctx.fill();ctx.stroke();}else if($("#shape-type").value==="triangle"){ctx.beginPath();ctx.moveTo(x+w/2,y);ctx.lineTo(x+w,y+h);ctx.lineTo(x,y+h);ctx.closePath();ctx.fill();ctx.stroke();}else if($("#shape-type").value==="diamond"){ctx.beginPath();ctx.moveTo(x+w/2,y);ctx.lineTo(x+w,y+h/2);ctx.lineTo(x+w/2,y+h);ctx.lineTo(x,y+h/2);ctx.closePath();ctx.fill();ctx.stroke();}else if($("#shape-type").value==="line"){ctx.beginPath();ctx.moveTo(shapeStart.x,shapeStart.y);ctx.lineTo(shapeCurrent.x,shapeCurrent.y);ctx.stroke();}else{ctx.fillRect(x,y,w,h);ctx.strokeRect(x,y,w,h);}ctx.restore();}\n  balls.forEach(ball=>{ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(ball.x,ball.y,ball.radius,0,Math.PI*2);ctx.fill();});
+  if(tool==="shape"&&shapeStart&&shapeCurrent){const x=Math.min(shapeStart.x,shapeCurrent.x),y=Math.min(shapeStart.y,shapeCurrent.y),w=Math.abs(shapeCurrent.x-shapeStart.x),h=Math.abs(shapeCurrent.y-shapeStart.y);ctx.save();ctx.strokeStyle="#7ee7ff";ctx.fillStyle="rgba(126,231,255,.10)";ctx.lineWidth=1.5;ctx.setLineDash([5,4]);if($("#shape-type").value==="circle"){ctx.beginPath();ctx.ellipse(x+w/2,y+h/2,w/2,h/2,0,0,Math.PI*2);ctx.fill();ctx.stroke();}else if($("#shape-type").value==="triangle"){ctx.beginPath();ctx.moveTo(x+w/2,y);ctx.lineTo(x+w,y+h);ctx.lineTo(x,y+h);ctx.closePath();ctx.fill();ctx.stroke();}else if($("#shape-type").value==="diamond"){ctx.beginPath();ctx.moveTo(x+w/2,y);ctx.lineTo(x+w,y+h/2);ctx.lineTo(x+w/2,y+h);ctx.lineTo(x,y+h/2);ctx.closePath();ctx.fill();ctx.stroke();}else if($("#shape-type").value==="line"){ctx.beginPath();ctx.moveTo(shapeStart.x,shapeStart.y);ctx.lineTo(shapeCurrent.x,shapeCurrent.y);ctx.stroke();}else{ctx.fillRect(x,y,w,h);ctx.strokeRect(x,y,w,h);}ctx.restore();}
+  balls.forEach(ball=>{ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(ball.x,ball.y,ball.radius,0,Math.PI*2);ctx.fill();});
   ctx.restore();
 }
 let dragging=false;
@@ -90,7 +91,8 @@ let placing=false;
 let lastPlacementPoint=null;
 let deleting=false;
 let lastDeletionPoint=null;
-let draggingHitbox=false;\nlet shapeStart=null;\nlet shapeCurrent=null;
+let draggingHitbox=false;
+let shapeStart=null;\nlet shapeCurrent=null;
 let hitboxDragOffset={x:0,y:0};
 const defaultHitbox={x:228.6,y:542,width:142.9,height:20};
 let hitbox=initialConfig?.hitbox?{...defaultHitbox,...initialConfig.hitbox}:{...defaultHitbox};
