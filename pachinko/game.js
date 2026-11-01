@@ -1,4 +1,4 @@
-import { createBall, stepBall } from "./physics.js";
+import { createBall, stepBall, setPhysicsConfig } from "./physics.js";
 import { drawOutcome } from "./lottery.js";
 import { showEffect } from "./effects/effects.js";
 
@@ -20,28 +20,33 @@ const jackpotRateElement = document.querySelector("#jackpot-rate");
 const holdCountElement = document.querySelector("#hold-count");
 const holdLamps = [...document.querySelectorAll("#hold-lamps i")];
 
-const pegs = [];
-// 実機風の密な千鳥配置。液晶まわりとヘソの入口だけを避ける。
+const STORAGE_KEY = "akitaPachinkoBoardV1";
+const defaultPegs = [];
+// 初期盤面。エディターで保存した配置があればそちらを優先します。
 for (let row = 0; row < 17; row++) {
   const y = 88 + row * 27;
   for (let column = 0; column < 15; column++) {
     const x = 34 + column * 25 + (row % 2 ? 12 : 0);
     if (x > 395 || y > 535) continue;
-    // 大型液晶の領域は避け、左右の脇と下側に釘を密集させる。
     if (x > 72 && x < 348 && y > 145 && y < 382) continue;
-    // ヘソ直前には玉が通れる細い入賞ルートを残す。
     if (y > 505 && x > 157 && x < 263) continue;
-    const jitterX = (Math.random() - 0.5) * 3;
-    const jitterY = (Math.random() - 0.5) * 3;
-    pegs.push({ x: x + jitterX, y: y + jitterY, radius: 3.2 });
+    defaultPegs.push({ x: x + (Math.random() - 0.5) * 3, y: y + (Math.random() - 0.5) * 3, radius: 3.2 });
   }
 }
-// 左下から中央ヘソへ向かう導線の両脇にガイド釘を追加。
 for (let i = 0; i < 6; i++) {
-  pegs.push({ x: 82 + i * 13, y: 465 + i * 10, radius: 3.5 });
-  pegs.push({ x: 270 - i * 9, y: 465 + i * 10, radius: 3.5 });
+  defaultPegs.push({ x: 82 + i * 13, y: 465 + i * 10, radius: 3.5 });
+  defaultPegs.push({ x: 270 - i * 9, y: 465 + i * 10, radius: 3.5 });
 }
-
+let boardConfig = null;
+try {
+  boardConfig = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+} catch {
+  boardConfig = null;
+}
+const pegs = Array.isArray(boardConfig?.pegs) ? boardConfig.pegs : defaultPegs;
+const physicsConfig = boardConfig?.physics || {};
+const launcher = boardConfig?.launcher || { x: 48, y: 72, vx: 265, vy: -125 };
+setPhysicsConfig(physicsConfig);
 let balls = [];
 let firing = false;
 let previousTime = 0;
@@ -70,9 +75,9 @@ function updateHolds() {
 
 function launchBall() {
   // 左側から右方向へ打ち出し、重力と釘で盤面中央下部へ流す。
-  const vx = 265 + (Math.random() - 0.5) * 24;
-  const vy = -125 + (Math.random() - 0.5) * 16;
-  balls.push(createBall(48 + (Math.random() - 0.5) * 4, 72, vx, vy));
+  const vx = (launcher.vx ?? 265) + (Math.random() - 0.5) * 24;
+  const vy = (launcher.vy ?? -125) + (Math.random() - 0.5) * 16;
+  balls.push(createBall((launcher.x ?? 48) + (Math.random() - 0.5) * 4, launcher.y ?? 72, vx, vy));
 }
 
 function addHold() {
