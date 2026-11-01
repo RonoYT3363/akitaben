@@ -46,3 +46,4 @@ canvas { display: block; width: 100%; height: auto; border-radius: 18px; filter:
   .hold-title, .hold-count { font-size: .6rem; }
   .hold-lamps i { width: 7px; height: 7px; }
 }
+.editor-link { display:inline-block; margin-top:6px; color:#f5d995; font-size:.82rem; text-decoration:none; border:1px solid #8b7446; border-radius:999px; padding:6px 14px; background:#17243a; } .editor-link:hover { background:#263b58; border-color:#f5d995; }
