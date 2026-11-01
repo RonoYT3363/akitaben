@@ -1,49 +1,73 @@
 import {
   SYMBOLS,
   REACH_ROUTES,
-  REACH_JACKPOT_RATES,
   RAINBOW_HOLD_DENOMINATOR
 } from "./config.js";
 
 function weightedPick(items) {
-  const total = items.reduce((sum, item) => sum + item.weight, 0);
+  const total = items.reduce((sum, item) => sum + Math.max(0, Number(item.weight) || 0), 0);
+  if (total <= 0) return items[0];
   let ticket = Math.random() * total;
   for (const item of items) {
-    ticket -= item.weight;
+    ticket -= Math.max(0, Number(item.weight) || 0);
     if (ticket < 0) return item;
   }
   return items[items.length - 1];
 }
 
-function drawSymbol() {
-  return weightedPick(SYMBOLS);
+function getLotterySettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("akitaPachinkoBoardV1") || "null")?.lottery || {};
+    return {
+      jackpotDenominator: Math.max(1, Math.floor(Number(saved.jackpotDenominator) || 52)),
+      symbolWeights: saved.symbolWeights || {},
+      reachSymbolWeights: saved.reachSymbolWeights || {}
+    };
+  } catch {
+    return { jackpotDenominator: 52, symbolWeights: {}, reachSymbolWeights: {} };
+  }
 }
 
-function drawCenterSymbol(excludedValue) {
-  const candidates = SYMBOLS.filter(symbol => symbol.value !== excludedValue);
+function buildSymbols(weights) {
+  return SYMBOLS.map(symbol => ({
+    ...symbol,
+    weight: Number.isFinite(Number(weights[symbol.value]))
+      ? Math.max(0, Number(weights[symbol.value]))
+      : symbol.weight
+  }));
+}
+
+function drawCenterSymbol(excludedValue, symbols) {
+  const candidates = symbols.filter(symbol => symbol.value !== excludedValue);
   return weightedPick(candidates);
 }
 
 export function drawOutcome() {
-  // 虹保留用の全回転抽選は、通常の図柄抽選とは独立させる。
-  const rainbowHold = Math.floor(Math.random() * RAINBOW_HOLD_DENOMINATOR) === 0;
-  const left = drawSymbol();
-  const right = drawSymbol();
+  const settings = getLotterySettings();
+  const symbols = buildSymbols(settings.symbolWeights);
+  const reachSymbols = buildSymbols(settings.reachSymbolWeights);
+  const jackpot = Math.random() < 1 / settings.jackpotDenominator;
+  // 虹保留は大当たりの一部として扱い、全体の大当たり確率は設定値どおりに保つ。
+  const rainbowHold = jackpot && Math.floor(Math.random() * RAINBOW_HOLD_DENOMINATOR) === 0;
 
-  if (rainbowHold) {
+  if (jackpot) {
+    const winning = weightedPick(symbols);
     return {
       type: "jackpot",
-      route: "full-spin",
-      routeLabel: "確定全回転",
-      symbols: [left.value, left.value, left.value],
-      rainbowHold: true,
-      reach: true
+      route: rainbowHold ? "full-spin" : "confirmed-reach",
+      routeLabel: rainbowHold ? "確定全回転" : "確定リーチ",
+      symbols: [winning.value, winning.value, winning.value],
+      rainbowHold,
+      reach: true,
+      matchedSymbol: winning.value
     };
   }
 
-  // 左右が異なる場合は通常変動。中図柄は即決し、三つ揃いを避ける。
+  const left = weightedPick(symbols);
+  const right = weightedPick(symbols);
+
   if (left.value !== right.value) {
-    const center = drawCenterSymbol(null);
+    const center = drawCenterSymbol(null, symbols);
     return {
       type: "miss",
       route: "normal",
@@ -54,11 +78,10 @@ export function drawOutcome() {
     };
   }
 
-  // リーチ成立時点では当否を決めず、図柄の tier から発展先を抽選する。
-  const route = weightedPick(REACH_ROUTES[left.tier]);
-  const jackpot = Math.random() < REACH_JACKPOT_RATES[route.type];
-  const center = jackpot ? left : drawCenterSymbol(left.value);
-
+  // リーチが成立した場合の図柄は、専用の振り分け比率から選ぶ。
+  const matched = weightedPick(reachSymbols);
+  const route = weightedPick(REACH_ROUTES[matched.tier]);
+  const center = drawCenterSymbol(matched.value, symbols);
   const labels = {
     "straight-miss": "直外れ",
     "weak-reach": "弱リーチ",
@@ -67,12 +90,12 @@ export function drawOutcome() {
   };
 
   return {
-    type: jackpot ? "jackpot" : "miss",
+    type: "miss",
     route: route.type,
     routeLabel: labels[route.type],
-    symbols: [left.value, center.value, right.value],
+    symbols: [matched.value, center.value, matched.value],
     rainbowHold: false,
     reach: true,
-    matchedSymbol: left.value
+    matchedSymbol: matched.value
   };
 }
