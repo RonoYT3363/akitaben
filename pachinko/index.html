@@ -11,7 +11,7 @@
     <header class="machine__header">
       <p class="eyebrow">SAY-さい- MINI GAME</p>
       <h1>AKITA PACHINKO</h1>
-      <p class="muted">演出・物理演算テスト</p>
+      <p class="muted">演出・抽選・物理演算テスト</p>
     </header>
 
     <section class="settings" aria-label="ゲーム設定">
@@ -20,7 +20,25 @@
         <input id="rate" type="number" min="1" step="1" value="1">
         <button id="start-button" type="button">玉を発射</button>
       </div>
-      <p class="muted">現在は試作画面です。既存のToken残高とはまだ接続していません。</p>
+      <p class="muted">テストモード：現在はToken残高を消費・加算しません。</p>
+    </section>
+
+    <section class="reel-panel" aria-label="図柄表示">
+      <p class="reel-panel__label">RESULT</p>
+      <div class="reels" aria-live="polite">
+        <span class="reel" id="reel-left">?</span>
+        <span class="reel" id="reel-center">?</span>
+        <span class="reel" id="reel-right">?</span>
+      </div>
+      <p id="route-label" class="route-label">発射すると抽選します</p>
+      <p id="result-label" class="result-label">—</p>
+    </section>
+
+    <section class="stats" aria-label="テスト統計">
+      <div><span>回転数</span><strong id="spin-count">0</strong></div>
+      <div><span>リーチ</span><strong id="reach-count">0</strong></div>
+      <div><span>大当たり</span><strong id="jackpot-count">0</strong></div>
+      <div><span>当選率</span><strong id="jackpot-rate">0.00%</strong></div>
     </section>
 
     <section class="playfield" aria-label="パチンコ盤面">
