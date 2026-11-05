@@ -86,6 +86,17 @@
       <label>縦方向速度 <output id="launch-vy-value">-125</output>
         <input id="launch-vy" type="range" min="-400" max="400" step="5" value="-125">
       </label>
+      <p class="hint">発射強度は基準の横方向速度に対する補正です。50%で従来速度、数値を上げるほど右方向へ強く打ち出します。</p>
+      <label>通常時の発射強度 <output id="normal-strength-value">50%</output>
+        <input id="normal-strength" type="range" min="0" max="100" step="1" value="50">
+      </label>
+      <label>大当たりラウンド中 <output id="round-strength-value">90%</output>
+        <input id="round-strength" type="range" min="0" max="100" step="1" value="90">
+      </label>
+      <label>ラッシュ中 <output id="rush-strength-value">85%</output>
+        <input id="rush-strength" type="range" min="0" max="100" step="1" value="85">
+      </label>
+      <p class="hint">ラウンド中は自動で専用強度に切り替わります。ラッシュ用の値も保存され、ラッシュ機能の実装時に使用できます。</p>
       <hr>
       <h2>抽選設定</h2>
       <label>大当たり確率（1 / N）
