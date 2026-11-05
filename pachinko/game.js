@@ -19,6 +19,11 @@ const jackpotCountElement = document.querySelector("#jackpot-count");
 const jackpotRateElement = document.querySelector("#jackpot-rate");
 const holdCountElement = document.querySelector("#hold-count");
 const holdLamps = [...document.querySelectorAll("#hold-lamps i")];
+const spentElement=document.querySelector("#spent-count");
+const paidElement=document.querySelector("#paid-count");
+const netElement=document.querySelector("#net-count");
+const payoutRateElement=document.querySelector("#payout-rate");
+const roundElement=document.querySelector("#round-progress");
 
 const STORAGE_KEY = "akitaPachinkoBoardV1";
 const BOARD_WIDTH = 600;
@@ -54,6 +59,7 @@ const pegs = Array.isArray(boardConfig?.pegs) ? boardConfig.pegs : defaultPegs;
 const physicsConfig = boardConfig?.physics || {};
 const launcher = { x: 48 * SCALE_X, y: 72, vx: 265, vy: -125, intervalMs: 340, ...(boardConfig?.launcher || {}) };
 const hesoHitbox = boardConfig?.hitbox || { x: 228.6, y: 542, width: 142.9, height: 20 };
+const attackerBox=boardConfig?.attacker||{x:230,y:478,width:140,height:30};
 setPhysicsConfig(physicsConfig);
 let balls = [];
 let firing = false;
@@ -66,6 +72,17 @@ let jackpotCount = 0;
 let holds = 0;
 let spinning = false;
 let lastLaunchAt = 0;
+let totalSpent=0,totalPaid=0;
+let outcomeQueue=[];
+let rainbowActive=false;
+let jackpotActive=false;
+let attackerOpen=false;
+let attackerHits=0;
+let jackpotRoundTarget=0;
+let completedRounds=0;
+let attackerReopenAt=0;
+
+function updatePayoutStats(){const net=totalPaid-totalSpent;spentElement.textContent=totalSpent.toLocaleString();paidElement.textContent=totalPaid.toLocaleString();netElement.textContent=(net>0?"+":"")+net.toLocaleString();payoutRateElement.textContent=totalSpent?`${(totalPaid/totalSpent*100).toFixed(2)}%`:"—";roundElement.textContent=jackpotActive?`${completedRounds}/${jackpotRoundTarget}R（${attackerHits}/10）`:"—";}
 
 function updateStats() {
   spinCountElement.textContent = spinCount.toLocaleString();
@@ -86,6 +103,7 @@ function launchBall() {
   const vx = (launcher.vx ?? 265) + (Math.random() - 0.5) * 24;
   const vy = (launcher.vy ?? -125) + (Math.random() - 0.5) * 16;
   balls.push(createBall((launcher.x ?? 48) + (Math.random() - 0.5) * 4, launcher.y ?? 72, vx, vy));
+  totalSpent+=1;updatePayoutStats();
 }
 
 function addHold() {
@@ -98,6 +116,10 @@ function addHold() {
   statusElement.textContent = "ヘソ入賞！ 抽選を保留しました";
   processQueue();
 }
+
+function getRoundCount(symbol){if(["2","4","6","8"].includes(symbol))return 5;if(["1","5","9"].includes(symbol))return 10;if(["3","7"].includes(symbol))return 20;return [30,40,50][Math.floor(Math.random()*3)];}
+function startJackpot(outcome){const symbol=outcome.symbols[0];jackpotRoundTarget=getRoundCount(symbol);completedRounds=0;attackerHits=0;attackerOpen=true;jackpotActive=true;attackerReopenAt=0;statusElement.textContent=`${symbol}図柄大当たり！ ${jackpotRoundTarget}R・10C15`;updatePayoutStats();ensureAnimation();}
+function registerAttackerHit(){if(!jackpotActive||!attackerOpen)return;attackerHits+=1;totalPaid+=15;if(attackerHits>=10){completedRounds+=1;attackerHits=0;attackerOpen=false;if(completedRounds>=jackpotRoundTarget){jackpotActive=false;attackerReopenAt=0;statusElement.textContent=`大当たり終了！ ${jackpotRoundTarget*150}玉払い出し`;processQueue();}else{attackerReopenAt=performance.now()+450;statusElement.textContent=`${completedRounds}R終了。次のラウンドへ`;}}updatePayoutStats();}
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -235,7 +257,7 @@ function drawMachine() {
   ctx.fill();
   ctx.fillStyle = "#f5d98f";
   ctx.font = "bold 18px sans-serif";
-  ctx.fillText("AKITA CHANCE", 210, 145);
+  ctx.fillText("AKITA CHANCE", 210, 145);\n  if(rainbowActive){const hue=(performance.now()/9)%360;const rainbow=ctx.createLinearGradient(85,158,335,366);for(let i=0;i<=6;i++)rainbow.addColorStop(i/6,`hsl(${(hue+i*55)%360} 100% 58%)`);ctx.save();ctx.beginPath();ctx.rect(85,158,250,208);ctx.clip();ctx.globalAlpha=.72;ctx.fillStyle=rainbow;ctx.shadowColor="#fff";ctx.shadowBlur=28;ctx.fillRect(85,158,250,208);ctx.globalAlpha=1;ctx.fillStyle="#fff";ctx.font="bold 28px sans-serif";ctx.shadowBlur=14;ctx.fillText("大当たり！",210,275);ctx.restore();}
 
   // 釘は600px座標のまま、静的な筐体アートとは別スケールで描画する。
   // 左右の風車風パーツ
@@ -311,7 +333,7 @@ function animate(time) {
   });
 
   drawMachine();
-  if (firing || balls.length || spinning || holds > 0) {
+  if (firing || balls.length || spinning || holds > 0 || jackpotActive || attackerReopenAt || rainbowActive) {
     animationId = requestAnimationFrame(animate);
   } else {
     animationId = 0;
