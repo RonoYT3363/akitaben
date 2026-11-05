@@ -24,6 +24,9 @@ const paidElement=document.querySelector("#paid-count");
 const netElement=document.querySelector("#net-count");
 const payoutRateElement=document.querySelector("#payout-rate");
 const roundElement=document.querySelector("#round-progress");
+const rushHoldCountElement=document.querySelector("#rush-hold-count");
+const rushHoldLamps=[...document.querySelectorAll("#rush-hold-lamps i")];
+const rushTestButton=document.querySelector("#rush-test-button");
 
 const STORAGE_KEY = "akitaPachinkoBoardV1";
 const BOARD_WIDTH = 600;
@@ -59,7 +62,8 @@ const pegs = Array.isArray(boardConfig?.pegs) ? boardConfig.pegs : defaultPegs;
 const physicsConfig = boardConfig?.physics || {};
 const launcher = { x: 48 * SCALE_X, y: 72, vx: 265, vy: -125, intervalMs: 340, ...(boardConfig?.launcher || {}) };
 const hesoHitbox = boardConfig?.hitbox || { x: 228.6, y: 542, width: 142.9, height: 20 };
-const attackerBox=boardConfig?.attacker||{x:230,y:478,width:140,height:30};
+const attackerBox=boardConfig?.attacker||{x:230,y:478,width:140,height:30,rotation:0};
+const rushSwitch=boardConfig?.rushSwitch||{x:250,y:420,width:100,height:18,rotation:0};
 setPhysicsConfig(physicsConfig);
 let balls = [];
 let firing = false;
@@ -81,8 +85,12 @@ let attackerHits=0;
 let jackpotRoundTarget=0;
 let completedRounds=0;
 let attackerReopenAt=0;
+let rushActive=false;
+let rushHolds=0;
+let rushRoundsRemaining=0;
+let rushProcessing=false;
 
-function updatePayoutStats(){const net=totalPaid-totalSpent;spentElement.textContent=totalSpent.toLocaleString();paidElement.textContent=totalPaid.toLocaleString();netElement.textContent=(net>0?"+":"")+net.toLocaleString();payoutRateElement.textContent=totalSpent?`${(totalPaid/totalSpent*100).toFixed(2)}%`:"—";roundElement.textContent=jackpotActive?`${completedRounds}/${jackpotRoundTarget}R（${attackerHits}/10）`:"—";}
+function updatePayoutStats(){const net=totalPaid-totalSpent;spentElement.textContent=totalSpent.toLocaleString();paidElement.textContent=totalPaid.toLocaleString();netElement.textContent=(net>0?"+":"")+net.toLocaleString();payoutRateElement.textContent=totalSpent?`${(totalPaid/totalSpent*100).toFixed(2)}%`:"—";roundElement.textContent=jackpotActive?`${completedRounds}/${jackpotRoundTarget}R（${attackerHits}/10）`:rushActive?`Rush 残り ${rushRoundsRemaining}R`:"—";}
 
 function updateStats() {
   spinCountElement.textContent = spinCount.toLocaleString();
@@ -122,6 +130,53 @@ function addHold() {
 function getRoundCount(symbol){if(["2","4","6","8"].includes(symbol))return 5;if(["1","5","9"].includes(symbol))return 10;if(["3","7"].includes(symbol))return 20;return [30,40,50][Math.floor(Math.random()*3)];}
 function startJackpot(outcome){const symbol=outcome.symbols[0];jackpotRoundTarget=getRoundCount(symbol);completedRounds=0;attackerHits=0;attackerOpen=true;jackpotActive=true;attackerReopenAt=0;statusElement.textContent=`${symbol}図柄大当たり！ ${jackpotRoundTarget}R・10C15`;updatePayoutStats();ensureAnimation();}
 function registerAttackerHit(){if(!jackpotActive||!attackerOpen)return;attackerHits+=1;totalPaid+=15;if(attackerHits>=10){completedRounds+=1;attackerHits=0;attackerOpen=false;if(completedRounds>=jackpotRoundTarget){jackpotActive=false;attackerReopenAt=0;statusElement.textContent=`大当たり終了！ ${jackpotRoundTarget*150}玉払い出し`;processQueue();}else{attackerReopenAt=performance.now()+450;statusElement.textContent=`${completedRounds}R終了。次のラウンドへ`;}}updatePayoutStats();}
+
+function updateRushHolds(){
+  if(rushHoldCountElement)rushHoldCountElement.textContent=`${rushHolds} / 4`;
+  rushHoldLamps.forEach((lamp,index)=>lamp.classList.toggle("is-lit",index<rushHolds));
+}
+function pointInRotatedBox(point,box){
+  const angle=-(Number(box.rotation)||0)*Math.PI/180;
+  const dx=point.x-(box.x+box.width/2),dy=point.y-(box.y+box.height/2);
+  const x=dx*Math.cos(angle)-dy*Math.sin(angle),y=dx*Math.sin(angle)+dy*Math.cos(angle);
+  return Math.abs(x)<=box.width/2&&Math.abs(y)<=box.height/2;
+}
+function addRushHold(){
+  if(!rushActive||rushHolds>=4)return;
+  rushHolds++;updateRushHolds();statusElement.textContent="Rushスルー通過！ 赤保留を獲得";
+  processRushRound();
+}
+function beginRush(initialRounds=10){
+  rushActive=true;rushHolds=0;rushRoundsRemaining=initialRounds;rushProcessing=false;
+  updateRushHolds();statusElement.textContent=`通常Rush開始！ ${initialRounds}Rスタート。スルー保留を待っています`;
+  if(rushTestButton)rushTestButton.textContent="Rush終了";
+  ensureAnimation();
+}
+function endRush(){
+  rushActive=false;rushHolds=0;rushProcessing=false;updateRushHolds();
+  if(rushTestButton)rushTestButton.textContent="Rushテスト開始（10R）";
+  statusElement.textContent="通常Rush終了！";
+}
+function processRushRound(){
+  if(!rushActive||rushProcessing||rushHolds<=0)return;
+  if(rushRoundsRemaining<=0){endRush();return;}
+  rushProcessing=true;rushHolds--;rushRoundsRemaining--;updateRushHolds();
+  const roll=Math.random();let label="ハズレ";let bonus=0;
+  if(roll>=0.50&&roll<0.854){label="偶数 +1R";bonus=1;}
+  else if(roll>=0.854&&roll<0.954){
+    label="159 +1R";bonus=1;
+    let loops=0;while(Math.random()<0.60){bonus++;loops++;}
+    label+=`（60%ループ ${loops}回）`;
+  }else if(roll>=0.954){label="3・7 +5R";bonus=5;}
+  rushRoundsRemaining+=bonus;
+  statusElement.textContent=`Rush：${label} ／ 残り ${rushRoundsRemaining}R`;
+  updatePayoutStats();
+  setTimeout(()=>{
+    rushProcessing=false;
+    if(rushRoundsRemaining<=0){endRush();return;}
+    if(rushHolds>0)processRushRound();
+  },350);
+}
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -295,7 +350,8 @@ function drawMachine() {
   ctx.fillText("OUT", 210, 598);
 
   ctx.restore();
-  ctx.save();ctx.fillStyle=attackerOpen?"rgba(255,75,75,.75)":"rgba(110,125,145,.55)";ctx.fillRect(attackerBox.x,attackerBox.y,attackerBox.width,attackerBox.height);ctx.strokeStyle=attackerOpen?"#fff1a8":"#aab6c8";ctx.lineWidth=2;ctx.strokeRect(attackerBox.x,attackerBox.y,attackerBox.width,attackerBox.height);ctx.fillStyle="#fff";ctx.font="bold 12px sans-serif";ctx.textAlign="center";ctx.fillText(attackerOpen?`アタッカー OPEN ${attackerHits}/10`:"アタッカー",attackerBox.x+attackerBox.width/2,attackerBox.y+attackerBox.height/2+4);ctx.restore();
+  ctx.save();ctx.translate(attackerBox.x+attackerBox.width/2,attackerBox.y+attackerBox.height/2);ctx.rotate((Number(attackerBox.rotation)||0)*Math.PI/180);ctx.fillStyle=attackerOpen?"rgba(255,75,75,.75)":"rgba(110,125,145,.55)";ctx.fillRect(-attackerBox.width/2,-attackerBox.height/2,attackerBox.width,attackerBox.height);ctx.strokeStyle=attackerOpen?"#fff1a8":"#aab6c8";ctx.lineWidth=2;ctx.strokeRect(-attackerBox.width/2,-attackerBox.height/2,attackerBox.width,attackerBox.height);ctx.fillStyle="#fff";ctx.font="bold 12px sans-serif";ctx.textAlign="center";ctx.fillText(attackerOpen?`アタッカー OPEN ${attackerHits}/10`:"アタッカー",0,4);ctx.restore();
+  ctx.save();ctx.translate(rushSwitch.x+rushSwitch.width/2,rushSwitch.y+rushSwitch.height/2);ctx.rotate((Number(rushSwitch.rotation)||0)*Math.PI/180);ctx.fillStyle=rushActive?"#d92345":"#7e3445";ctx.strokeStyle="#ffd6df";ctx.lineWidth=2;ctx.fillRect(-rushSwitch.width/2,-rushSwitch.height/2,rushSwitch.width,rushSwitch.height);ctx.strokeRect(-rushSwitch.width/2,-rushSwitch.height/2,rushSwitch.width,rushSwitch.height);ctx.fillStyle="#fff";ctx.font="bold 10px sans-serif";ctx.textAlign="center";ctx.fillText("RUSH THROUGH",0,4);ctx.restore();
   // 釘と玉は盤面の600×640座標で描画する。
   for (const peg of pegs) {
     ctx.fillStyle = "#536b87";
@@ -332,9 +388,10 @@ function animate(time) {
   resolveBallCollisions(balls);
   if(attackerReopenAt && time>=attackerReopenAt){attackerReopenAt=0;attackerOpen=true;statusElement.textContent=`${completedRounds+1}R開始`;updatePayoutStats();}
   balls = balls.filter(ball => {
-    if(attackerOpen&&ball.x>=attackerBox.x&&ball.x<=attackerBox.x+attackerBox.width&&ball.y>=attackerBox.y&&ball.y<=attackerBox.y+attackerBox.height){registerAttackerHit();return false;}
+    if(attackerOpen&&pointInRotatedBox(ball,attackerBox)){registerAttackerHit();return false;}
+    if(rushActive&&pointInRotatedBox(ball,rushSwitch)){addRushHold();return false;}
     // ヘソの入賞エリアに到達した玉は入賞扱い。
-    if (ball.x >= hesoHitbox.x && ball.x <= hesoHitbox.x + hesoHitbox.width && ball.y >= hesoHitbox.y && ball.y <= hesoHitbox.y + hesoHitbox.height) {
+    if (pointInRotatedBox(ball,hesoHitbox)) {
       addHold();
       return false;
     }
@@ -344,7 +401,7 @@ function animate(time) {
   });
 
   drawMachine();
-  if (firing || balls.length || spinning || holds > 0 || jackpotActive || attackerReopenAt || rainbowActive) {
+  if (firing || balls.length || spinning || holds > 0 || jackpotActive || attackerReopenAt || rainbowActive || rushActive) {
     animationId = requestAnimationFrame(animate);
   } else {
     animationId = 0;
@@ -369,6 +426,11 @@ startButton?.addEventListener("click", () => {
   if (firing) ensureAnimation();
 });
 
+rushTestButton?.addEventListener("click",()=>{
+  if(rushActive){endRush();return;}
+  beginRush(10);
+});
 drawMachine();
 updateStats();
 updateHolds();
+updateRushHolds();

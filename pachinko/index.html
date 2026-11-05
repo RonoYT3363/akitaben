@@ -19,6 +19,7 @@
       <button id="start-button" class="launch-button" type="button" aria-pressed="false">打ち出し ON</button>
       <p id="status" class="status" role="status">打ち出しONで玉が流れます。ヘソ入賞で抽選開始！</p>
       <p class="test-note">テストモード：Token残高は変化しません</p>
+      <button id="rush-test-button" class="rush-test-button" type="button">Rushテスト開始（10R）</button>
     </section>
 
     <section class="playfield" aria-label="パチンコ盤面">
@@ -42,6 +43,7 @@
           <i></i><i></i><i></i><i></i>
         </div>
       </div>
+      <div class="rush-hold-panel" aria-label="Rush保留"><span class="hold-title">Rush保留</span><span id="rush-hold-count" class="hold-count">0 / 4</span><div id="rush-hold-lamps" class="hold-lamps"><i></i><i></i><i></i><i></i></div></div>
     </section>
 
     <section class="stats" aria-label="テスト統計">

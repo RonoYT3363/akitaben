@@ -44,6 +44,13 @@
       <h2>ラッシュ専用ブロッカー</h2>
       <label class="toggle"><input id="blocker-enabled" type="checkbox" checked> ラッシュ中に有効</label>
       <p class="hint">青色のブロッカーを盤面上でドラッグして移動、四隅でサイズ変更できます。色は単色です。</p>
+      <label>回転するオブジェクト
+        <select id="rotation-target"><option value="hitbox">ヘソ判定枠</option><option value="attacker">アタッカー</option><option value="blocker">Rushブロッカー</option><option value="rushSwitch">Rushスルー</option></select>
+      </label>
+      <label>回転角度 <output id="object-rotation-value">0°</output>
+        <input id="object-rotation" type="range" min="-180" max="180" step="1" value="0">
+      </label>
+      <p class="hint">選択した判定枠は角度を変更できます。Rushスルーは盤面上で移動・サイズ変更もできます。</p>
       <hr>
       <h2>盤面操作</h2>
       <button id="add-peg-center">中央に釘を追加</button>
