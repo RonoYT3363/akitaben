@@ -91,6 +91,7 @@ function updateStats() {
   jackpotRateElement.textContent = spinCount
     ? `${(jackpotCount / spinCount * 100).toFixed(2)}%`
     : "0.00%";
+  updatePayoutStats();
 }
 
 function updateHolds() {
@@ -112,8 +113,9 @@ function addHold() {
     return;
   }
   holds += 1;
+  outcomeQueue.push(drawOutcome());
   updateHolds();
-  statusElement.textContent = "ヘソ入賞！ 抽選を保留しました";
+  statusElement.textContent = "ヘソ入賞！ 抽選結果を保留しました";
   processQueue();
 }
 
@@ -188,7 +190,11 @@ async function playOutcome(outcome, queuedHolds = 0) {
   resultElement.textContent = outcome.type === "jackpot" ? "大当たり！" : "はずれ";
   resultElement.classList.toggle("result-label--jackpot", outcome.type === "jackpot");
   if (outcome.type === "jackpot") {
-    statusElement.textContent = "大当たり！ おめでとう！";
+    statusElement.textContent = "大当たり！ 虹色演出中…";
+    rainbowActive=true;
+    await sleep(3000);
+    rainbowActive=false;
+    startJackpot(outcome);
   } else {
     statusElement.textContent = "変動終了。次の入賞を待っています";
   }
@@ -197,17 +203,18 @@ async function playOutcome(outcome, queuedHolds = 0) {
   if (outcome.reach) reachCount += 1;
   if (outcome.type === "jackpot") jackpotCount += 1;
   updateStats();
-  // 全リール停止後、停止図柄を約1秒見せてから次の変動へ。
-  await sleep(1000);
+  // 通常時は停止図柄を約1秒表示。大当たり時は3秒の虹演出後にアタッカーへ移行。
+  if(outcome.type!=="jackpot") await sleep(1000);
   spinning = false;
   processQueue();
 }
 
 async function processQueue() {
-  if (spinning || holds <= 0) return;
+  if (spinning || jackpotActive || holds <= 0) return;
   holds -= 1;
   updateHolds();
-  await playOutcome(drawOutcome(), holds);
+  const outcome=outcomeQueue.shift() || drawOutcome();
+  await playOutcome(outcome, holds);
 }
 
 function drawMachine() {
@@ -257,7 +264,8 @@ function drawMachine() {
   ctx.fill();
   ctx.fillStyle = "#f5d98f";
   ctx.font = "bold 18px sans-serif";
-  ctx.fillText("AKITA CHANCE", 210, 145);\n  if(rainbowActive){const hue=(performance.now()/9)%360;const rainbow=ctx.createLinearGradient(85,158,335,366);for(let i=0;i<=6;i++)rainbow.addColorStop(i/6,`hsl(${(hue+i*55)%360} 100% 58%)`);ctx.save();ctx.beginPath();ctx.rect(85,158,250,208);ctx.clip();ctx.globalAlpha=.72;ctx.fillStyle=rainbow;ctx.shadowColor="#fff";ctx.shadowBlur=28;ctx.fillRect(85,158,250,208);ctx.globalAlpha=1;ctx.fillStyle="#fff";ctx.font="bold 28px sans-serif";ctx.shadowBlur=14;ctx.fillText("大当たり！",210,275);ctx.restore();}
+  ctx.fillText("AKITA CHANCE", 210, 145);
+  if(rainbowActive){const hue=(performance.now()/9)%360;const rainbow=ctx.createLinearGradient(85,158,335,366);for(let i=0;i<=6;i++)rainbow.addColorStop(i/6,`hsl(${(hue+i*55)%360} 100% 58%)`);ctx.save();ctx.beginPath();ctx.rect(85,158,250,208);ctx.clip();ctx.globalAlpha=.72;ctx.fillStyle=rainbow;ctx.shadowColor="#fff";ctx.shadowBlur=28;ctx.fillRect(85,158,250,208);ctx.globalAlpha=1;ctx.fillStyle="#fff";ctx.font="bold 28px sans-serif";ctx.shadowBlur=14;ctx.fillText("大当たり！",210,275);ctx.restore();}
 
   // 釘は600px座標のまま、静的な筐体アートとは別スケールで描画する。
   // 左右の風車風パーツ
@@ -287,6 +295,7 @@ function drawMachine() {
   ctx.fillText("OUT", 210, 598);
 
   ctx.restore();
+  ctx.save();ctx.fillStyle=attackerOpen?"rgba(255,75,75,.75)":"rgba(110,125,145,.55)";ctx.fillRect(attackerBox.x,attackerBox.y,attackerBox.width,attackerBox.height);ctx.strokeStyle=attackerOpen?"#fff1a8":"#aab6c8";ctx.lineWidth=2;ctx.strokeRect(attackerBox.x,attackerBox.y,attackerBox.width,attackerBox.height);ctx.fillStyle="#fff";ctx.font="bold 12px sans-serif";ctx.textAlign="center";ctx.fillText(attackerOpen?`アタッカー OPEN ${attackerHits}/10`:"アタッカー",attackerBox.x+attackerBox.width/2,attackerBox.y+attackerBox.height/2+4);ctx.restore();
   // 釘と玉は盤面の600×640座標で描画する。
   for (const peg of pegs) {
     ctx.fillStyle = "#536b87";
@@ -321,7 +330,9 @@ function animate(time) {
   // まず全玉を個別に進め、その後に玉同士の衝突をまとめて解決する。
   balls = balls.filter(ball => stepBall(ball, { width: BOARD_WIDTH, height: 610 }, pegs, delta));
   resolveBallCollisions(balls);
+  if(attackerReopenAt && time>=attackerReopenAt){attackerReopenAt=0;attackerOpen=true;statusElement.textContent=`${completedRounds+1}R開始`;updatePayoutStats();}
   balls = balls.filter(ball => {
+    if(attackerOpen&&ball.x>=attackerBox.x&&ball.x<=attackerBox.x+attackerBox.width&&ball.y>=attackerBox.y&&ball.y<=attackerBox.y+attackerBox.height){registerAttackerHit();return false;}
     // ヘソの入賞エリアに到達した玉は入賞扱い。
     if (ball.x >= hesoHitbox.x && ball.x <= hesoHitbox.x + hesoHitbox.width && ball.y >= hesoHitbox.y && ball.y <= hesoHitbox.y + hesoHitbox.height) {
       addHold();
