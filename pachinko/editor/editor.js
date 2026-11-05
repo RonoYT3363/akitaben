@@ -119,9 +119,9 @@ const defaultAttacker={x:230,y:478,width:140,height:30};
 let attacker=initialConfig?.attacker?{...defaultAttacker,...initialConfig.attacker}:{...defaultAttacker};
 $("#blocker-enabled").checked=blocker.enabled!==false;
 $("#blocker-enabled").addEventListener("change",event=>{blocker.enabled=event.target.checked;markDirty();drawBoard();});
-const rotationTargets={hitbox,attacker,blocker,rushSwitch};
-$("#rotation-target").addEventListener("change",()=>{const box=rotationTargets[$("#rotation-target").value];$("#object-rotation").value=box.rotation||0;$("#object-rotation-value").textContent=`${box.rotation||0}°`;});
-$("#object-rotation").addEventListener("input",()=>{const box=rotationTargets[$("#rotation-target").value];box.rotation=Number($("#object-rotation").value);$("#object-rotation-value").textContent=`${box.rotation}°`;markDirty();drawBoard();});
+function getRotationTarget(){return $("#rotation-target").value==="hitbox"?hitbox:$("#rotation-target").value==="attacker"?attacker:$("#rotation-target").value==="blocker"?blocker:rushSwitch;}
+$("#rotation-target").addEventListener("change",()=>{const box=getRotationTarget();$("#object-rotation").value=box.rotation||0;$("#object-rotation-value").textContent=`${box.rotation||0}°`;});
+$("#object-rotation").addEventListener("input",()=>{const box=getRotationTarget();box.rotation=Number($("#object-rotation").value);$("#object-rotation-value").textContent=`${box.rotation}°`;markDirty();drawBoard();});
 function getCorner(box,p){const corners=[["nw",box.x,box.y],["ne",box.x+box.width,box.y],["sw",box.x,box.y+box.height],["se",box.x+box.width,box.y+box.height]];for(const [name,x,y] of corners)if(Math.hypot(p.x-x,p.y-y)<13)return name;return null;}
 function resizeBox(box,corner,p){const right=box.x+box.width,bottom=box.y+box.height,minW=24,minH=12;if(corner==="nw"){box.x=Math.max(0,Math.min(right-minW,p.x));box.y=Math.max(0,Math.min(bottom-minH,p.y));box.width=right-box.x;box.height=bottom-box.y;}if(corner==="ne"){box.y=Math.max(0,Math.min(bottom-minH,p.y));box.width=Math.max(minW,Math.min(BOARD_WIDTH-box.x,p.x-box.x));box.height=bottom-box.y;}if(corner==="sw"){box.x=Math.max(0,Math.min(right-minW,p.x));box.width=right-box.x;box.height=Math.max(minH,Math.min(BOARD_HEIGHT-box.y,p.y-box.y));}if(corner==="se"){box.width=Math.max(minW,Math.min(BOARD_WIDTH-box.x,p.x-box.x));box.height=Math.max(minH,Math.min(BOARD_HEIGHT-box.y,p.y-box.y));}}
 
