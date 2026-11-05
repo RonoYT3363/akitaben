@@ -171,9 +171,11 @@ function processRushRound(){
   rushRoundsRemaining+=bonus;
   statusElement.textContent=`Rush：${label} ／ 残り ${rushRoundsRemaining}R`;
   updatePayoutStats();
-  rushProcessing=false;
-  if(rushRoundsRemaining<=0){endRush();return;}
-  if(rushHolds>0)processRushRound();
+  setTimeout(()=>{
+    rushProcessing=false;
+    if(rushRoundsRemaining<=0){endRush();return;}
+    if(rushHolds>0)processRushRound();
+  },350);
 }
 
 function sleep(ms) {
