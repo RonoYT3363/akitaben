@@ -90,7 +90,7 @@ let rushHolds=0;
 let rushRoundsRemaining=0;
 let rushProcessing=false;
 
-function updatePayoutStats(){const net=totalPaid-totalSpent;spentElement.textContent=totalSpent.toLocaleString();paidElement.textContent=totalPaid.toLocaleString();netElement.textContent=(net>0?"+":"")+net.toLocaleString();payoutRateElement.textContent=totalSpent?`${(totalPaid/totalSpent*100).toFixed(2)}%`:"—";roundElement.textContent=jackpotActive?`${completedRounds}/${jackpotRoundTarget}R（${attackerHits}/10）`:"—";}
+function updatePayoutStats(){const net=totalPaid-totalSpent;spentElement.textContent=totalSpent.toLocaleString();paidElement.textContent=totalPaid.toLocaleString();netElement.textContent=(net>0?"+":"")+net.toLocaleString();payoutRateElement.textContent=totalSpent?`${(totalPaid/totalSpent*100).toFixed(2)}%`:"—";roundElement.textContent=jackpotActive?`${completedRounds}/${jackpotRoundTarget}R（${attackerHits}/10）`:rushActive?`Rush 残り ${rushRoundsRemaining}R`:"—";}
 
 function updateStats() {
   spinCountElement.textContent = spinCount.toLocaleString();
