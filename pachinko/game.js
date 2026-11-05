@@ -389,7 +389,7 @@ function animate(time) {
     if(attackerOpen&&pointInRotatedBox(ball,attackerBox)){registerAttackerHit();return false;}
     if(rushActive&&pointInRotatedBox(ball,rushSwitch)){addRushHold();return false;}
     // ヘソの入賞エリアに到達した玉は入賞扱い。
-    if (ball.x >= hesoHitbox.x && ball.x <= hesoHitbox.x + hesoHitbox.width && ball.y >= hesoHitbox.y && ball.y <= hesoHitbox.y + hesoHitbox.height) {
+    if (pointInRotatedBox(ball,hesoHitbox)) {
       addHold();
       return false;
     }
