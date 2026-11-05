@@ -12,7 +12,7 @@ export function createBall(x, y, vx = 0, vy = 1) {
   return { x, y, vx, vy, radius: 5 };
 }
 
-export function stepBall(ball, bounds, pegs, deltaSeconds) {
+export function stepBall(ball, bounds, pegs, deltaSeconds, blockers = []) {
   const dt = Math.min(deltaSeconds, 1 / 30);
   ball.vy += gravity * dt;
   if (ball.y > 245 && ball.x < 132) ball.vx += 145 * dt;
@@ -44,6 +44,43 @@ export function stepBall(ball, bounds, pegs, deltaSeconds) {
     if (velocityAlongNormal < 0) {
       ball.vx -= (1 + restitution) * velocityAlongNormal * nx;
       ball.vy -= (1 + restitution) * velocityAlongNormal * ny;
+    }
+  }
+  // ラッシュ専用の長方形ブロッカー。最も浅い方向へ押し戻して反射させる。
+  for (const blocker of blockers) {
+    if (!blocker || blocker.enabled === false) continue;
+    const nearestX = Math.max(blocker.x, Math.min(ball.x, blocker.x + blocker.width));
+    const nearestY = Math.max(blocker.y, Math.min(ball.y, blocker.y + blocker.height));
+    const dx = ball.x - nearestX;
+    const dy = ball.y - nearestY;
+    const distanceSquared = dx * dx + dy * dy;
+    if (distanceSquared >= ball.radius * ball.radius) continue;
+    if (distanceSquared > 1e-8) {
+      const distance = Math.sqrt(distanceSquared);
+      const nx = dx / distance;
+      const ny = dy / distance;
+      ball.x += nx * (ball.radius - distance);
+      ball.y += ny * (ball.radius - distance);
+      const velocityAlongNormal = ball.vx * nx + ball.vy * ny;
+      if (velocityAlongNormal < 0) {
+        ball.vx -= (1 + restitution) * velocityAlongNormal * nx;
+        ball.vy -= (1 + restitution) * velocityAlongNormal * ny;
+      }
+    } else {
+      const distances = [
+        { d: Math.abs(ball.x - blocker.x), nx: -1, ny: 0 },
+        { d: Math.abs(blocker.x + blocker.width - ball.x), nx: 1, ny: 0 },
+        { d: Math.abs(ball.y - blocker.y), nx: 0, ny: -1 },
+        { d: Math.abs(blocker.y + blocker.height - ball.y), nx: 0, ny: 1 }
+      ].sort((a, b) => a.d - b.d);
+      const side = distances[0];
+      ball.x += side.nx * (ball.radius + side.d);
+      ball.y += side.ny * (ball.radius + side.d);
+      const velocityAlongNormal = ball.vx * side.nx + ball.vy * side.ny;
+      if (velocityAlongNormal < 0) {
+        ball.vx -= (1 + restitution) * velocityAlongNormal * side.nx;
+        ball.vy -= (1 + restitution) * velocityAlongNormal * side.ny;
+      }
     }
   }
   return ball.y <= bounds.height + ball.radius;
