@@ -126,10 +126,10 @@ $("#add-peg-center").addEventListener("click",()=>{pegs.push({x:BOARD_WIDTH/2,y:
 $("#clear-pegs").addEventListener("click",()=>{if(!confirm("盤面上の釘をすべて削除しますか？"))return;pegs=[];selected=-1;markDirty();updateSelection();drawBoard();});
 $("#reset-board").addEventListener("click",()=>{if(!confirm("初期配置に戻しますか？"))return;pegs=defaultPegs.map(peg=>({...peg}));selected=-1;markDirty();updateSelection();drawBoard();});
 function bindRange(id,key,format){const input=$("#"+id),output=$("#"+id+"-value");input.addEventListener("input",()=>{settings[key]=Number(input.value);output.textContent=format(settings[key]);markDirty();if(key==="gravity"||key==="restitution")setPhysicsConfig({gravity:settings.gravity,restitution:settings.restitution});});}
-bindRange("gravity","gravity",v=>String(v));bindRange("bounce","restitution",v=>v.toFixed(2));bindRange("launch-x","launchX",v=>String(v));bindRange("launch-y","launchY",v=>String(v));bindRange("launch-vx","launchVx",v=>String(v));bindRange("launch-vy","launchVy",v=>String(v));
+bindRange("gravity","gravity",v=>String(v));bindRange("bounce","restitution",v=>v.toFixed(2));bindRange("launch-x","launchX",v=>String(v));bindRange("launch-y","launchY",v=>String(v));bindRange("launch-vx","launchVx",v=>String(v));bindRange("launch-vy","launchVy",v=>String(v));bindRange("normal-strength","normalStrength",v=>`${v}%`);bindRange("round-strength","roundStrength",v=>`${v}%`);bindRange("rush-strength","rushStrength",v=>`${v}%`);
 $("#launch-interval").addEventListener("input",event=>{launchIntervalMs=Number(event.target.value);$("#launch-interval-value").textContent=String(launchIntervalMs);markDirty();});
 $("#launch-interval").value=launchIntervalMs;$("#launch-interval-value").textContent=String(launchIntervalMs);
-for (const [id,key] of [["gravity","gravity"],["bounce","restitution"],["launch-x","launchX"],["launch-y","launchY"],["launch-vx","launchVx"],["launch-vy","launchVy"]]) {
+for (const [id,key] of [["gravity","gravity"],["bounce","restitution"],["launch-x","launchX"],["launch-y","launchY"],["launch-vx","launchVx"],["launch-vy","launchVy"],["normal-strength","normalStrength"],["round-strength","roundStrength"],["rush-strength","rushStrength"]]) {
   $("#"+id).value = settings[key];
   $("#"+id+"-value").textContent = id === "bounce" ? settings[key].toFixed(2) : String(settings[key]);
 }
