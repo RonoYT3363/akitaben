@@ -19,7 +19,7 @@ let previewFrame = 0;
 let lastPreviewTime = 0;
 let previewLaunchAccumulator = 0;
 let previewing = false;
-let settings = { gravity: initialConfig?.physics?.gravity ?? 520, restitution: initialConfig?.physics?.restitution ?? 0.72, launchX: initialConfig?.launcher?.x ?? 48*SCALE_X, launchY: initialConfig?.launcher?.y ?? 72, launchVx: initialConfig?.launcher?.vx ?? 265, launchVy: initialConfig?.launcher?.vy ?? -125 };
+let settings = { gravity: initialConfig?.physics?.gravity ?? 520, restitution: initialConfig?.physics?.restitution ?? 0.72, launchX: initialConfig?.launcher?.x ?? 48*SCALE_X, launchY: initialConfig?.launcher?.y ?? 72, launchVx: initialConfig?.launcher?.vx ?? 265, launchVy: initialConfig?.launcher?.vy ?? -125, normalStrength: initialConfig?.launchStrengths?.normal ?? 50, roundStrength: initialConfig?.launchStrengths?.round ?? 90, rushStrength: initialConfig?.launchStrengths?.rush ?? 85 };
 let launchIntervalMs = initialConfig?.launcher?.intervalMs ?? 340;
 const symbolDefaults=Object.fromEntries(SYMBOLS.map(s=>[s.value,s.weight]));
 const reachSymbolDefaults=Object.fromEntries(SYMBOLS.map(s=>[s.value,s.weight*s.weight]));
