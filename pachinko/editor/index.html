@@ -106,7 +106,11 @@
       <label>大当たり確率（1 / N）
         <input id="jackpot-denominator" type="number" min="1" max="1000000" step="1" value="52">
       </label>
-      <p class="hint">この確率は1回転ごとの全体確率です。虹演出は大当たりの一部として発生します。</p>
+      <p class="hint">この確率は通常時の1回転ごとの全体確率です。虹演出は大当たりの一部として発生します。</p>
+      <label>Rush Challenge当選確率（1 / N）
+        <input id="rush-challenge-denominator" type="number" min="1" max="1000000" step="1" value="9">
+      </label>
+      <p class="hint">ラウンド終了後の4回転チャレンジで使う、1回転ごとの当選確率です。初期値は1/9。後から自由に変更できます。</p>
       <details open>
         <summary>各図柄の出現比率</summary>
         <div id="symbol-weight-controls" class="weight-controls"></div>
