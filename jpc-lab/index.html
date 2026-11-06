@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AKITA JPC · Halfpipe Lab</title>
+<style>
+:root{color-scheme:dark;--bg:#07111f;--panel:#101e30;--line:#29415c;--cyan:#55d8e8;--gold:#ffc65c;--muted:#9bb0c8}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0%,#19304a 0,#07111f 60%);font-family:Inter,system-ui,sans-serif;color:#eef6ff;min-height:100vh}
+header{padding:20px clamp(16px,4vw,42px) 12px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+h1{font-size:clamp(20px,3vw,30px);letter-spacing:.12em;margin:0}.sub{color:var(--muted);font-size:12px;letter-spacing:.16em;margin-top:5px}
+.pill{border:1px solid #31516d;border-radius:99px;padding:7px 12px;color:#9feefa;font-size:11px;letter-spacing:.1em}
+main{width:min(1180px,calc(100% - 28px));margin:0 auto 30px}
+.stage{position:relative;border:1px solid #29435f;border-radius:18px;overflow:hidden;background:linear-gradient(#0a1a2b,#07111d);box-shadow:0 22px 70px #0008}
+#scene{height:min(62vw,570px);min-height:340px;width:100%;display:block}
+.overlay{position:absolute;inset:16px 16px auto;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;gap:12px}
+.stat{background:#071321c9;border:1px solid #34506b;border-radius:12px;padding:10px 13px;backdrop-filter:blur(8px);font-size:12px;color:var(--muted)}
+.stat strong{display:block;color:#fff;font-size:20px;margin-top:3px}
+.hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:#071321d9;border:1px solid #29445f;border-radius:99px;padding:8px 14px;color:#c4d7eb;font-size:11px;white-space:nowrap;pointer-events:none}
+.controls{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:10px;margin-top:12px}
+.panel{background:linear-gradient(145deg,#13243a,#0c1929);border:1px solid var(--line);border-radius:14px;padding:14px}
+button,select{font:inherit}button{border:1px solid #3d7188;background:linear-gradient(180deg,#1b5366,#123344);color:#eaffff;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer}button:hover{filter:brightness(1.18)}button.secondary{background:#14253a;border-color:#3a526d;color:#d4e4f5}
+label{display:block;color:var(--muted);font-size:11px;margin-bottom:8px;letter-spacing:.08em}.value{font-size:15px;font-weight:700}
+input{width:100%;accent-color:var(--cyan)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1}
+footer{color:#7188a2;font-size:11px;text-align:center;padding:18px}
+@media(max-width:760px){.controls{grid-template-columns:1fr 1fr}#scene{height:440px}.overlay{inset:10px}.stat{padding:8px 10px}}
+@media(max-width:440px){.controls{grid-template-columns:1fr 1fr}.hint{font-size:9px}.pill{display:none}}
+</style>
+</head>
+<body>
+<header><div><h1>AKITA JPC <span style="color:var(--cyan)">/ HALFPIPE LAB</span></h1><div class="sub">3D INSPIRATION PROTOTYPE · FRONT VIEW</div></div><div class="pill">INDEPENDENT TEST BRANCH</div></header>
+<main>
+<section class="stage"><div id="scene"></div>
+<div class="overlay"><div class="stat">BALLS IN MOTION<strong id="ballCount">1</strong></div><div class="stat">CAMERA<strong>FRONT</strong></div></div>
+<div class="hint">正面固定視点 · ドラッグで視点を少し回転できます</div>
+</section>
+<section class="controls">
+<div class="panel"><label>操作</label><div class="actions"><button id="start">▶ START</button><button class="secondary" id="reset">RESET</button></div></div>
+<div class="panel"><label for="balls">投入する玉</label><div class="value"><span id="ballValue">1</span> BALL</div><input id="balls" type="range" min="1" max="6" value="1"></div>
+<div class="panel"><label for="speed">初速</label><div class="value"><span id="speedValue">1.0</span> ×</div><input id="speed" type="range" min=".5" max="2" step=".1" value="1"></div>
+<div class="panel"><label>現在の状態</label><div class="value" id="state">READY</div><div style="color:var(--muted);font-size:11px;margin-top:5px">物理挙動の方向性を確認する試作</div></div>
+</section>
+</main>
+<footer>AKITA JPC LAB · Visual prototype only · No token or reward integration</footer>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+const host=document.querySelector('#scene');
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x091827);scene.fog=new THREE.Fog(0x091827,24,55);
+const camera=new THREE.PerspectiveCamera(36,1,.1,100);camera.position.set(0,5.3,23);camera.lookAt(0,2.1,0);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;host.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xb9e8ff,0x182235,2.1));
+const key=new THREE.DirectionalLight(0xffffff,3.2);key.position.set(-5,12,10);key.castShadow=true;scene.add(key);
+const rim=new THREE.PointLight(0x3bd7ee,24,30);rim.position.set(0,5,-5);scene.add(rim);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.MeshStandardMaterial({color:0x0b1725,roughness:.9}));floor.rotation.x=-Math.PI/2;floor.position.y=-.18;floor.receiveShadow=true;scene.add(floor);
+const group=new THREE.Group();scene.add(group);
+const metal=new THREE.MeshStandardMaterial({color:0x718ba4,metalness:.82,roughness:.28});
+const darkMetal=new THREE.MeshStandardMaterial({color:0x1a344b,metalness:.72,roughness:.34});
+const glow=new THREE.MeshStandardMaterial({color:0x29bdd2,emissive:0x08798c,emissiveIntensity:1.4,metalness:.55,roughness:.25});
+const gold=new THREE.MeshStandardMaterial({color:0xffc65c,metalness:.82,roughness:.18});
+const railMat=new THREE.MeshStandardMaterial({color:0x9cb5c9,metalness:.88,roughness:.22});
+const W=13,L=5.2;
+function makeTrack(){
+ const shape=new THREE.Shape();shape.moveTo(-W/2,0);shape.lineTo(-W/2,1.55);shape.quadraticCurveTo(-W/2,1.8,-W/2+.35,1.8);shape.lineTo(W/2-.35,1.8);shape.quadraticCurveTo(W/2,1.8,W/2,1.55);shape.lineTo(W/2,0);shape.lineTo(W/2-.35,0);shape.lineTo(W/2-.35,1.35);shape.quadraticCurveTo(W/2-.35,1.45,W/2-.5,1.45);shape.lineTo(-W/2+.5,1.45);shape.quadraticCurveTo(-W/2+.35,1.45,-W/2+.35,1.35);shape.lineTo(-W/2+.35,0);shape.closePath();
+ const geom=new THREE.ExtrudeGeometry(shape,{depth:L,bevelEnabled:true,bevelSegments:3,steps:1,bevelSize:.08,bevelThickness:.08,curveSegments:12});
+ const mesh=new THREE.Mesh(geom,new THREE.MeshStandardMaterial({color:0x29465e,metalness:.72,roughness:.3,side:THREE.DoubleSide}));mesh.rotation.x=Math.PI/2;mesh.position.set(0,1.0,L/2);mesh.castShadow=true;mesh.receiveShadow=true;group.add(mesh);
+ // The visible running surface is a broad shallow U trough; longitudinal end ramps create the half-pipe silhouette.
+ const verts=[],indices=[];const nx=100,nz=32;
+ for(let i=0;i<=nx;i++){const x=-W/2+i/nx*W;const ramp=Math.pow(Math.abs(x)/(W/2),2)*1.12;for(let j=0;j<=nz;j++){const z=-L/2+j/nz*L;const y=1.12+ramp+0.42*Math.pow(z/(L/2),2);verts.push(x,y,z);}}
+ for(let i=0;i<nx;i++)for(let j=0;j<nz;j++){const a=i*(nz+1)+j,b=a+nz+1;indices.push(a,b,a+1,b,b+1,a+1);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));g.setIndex(indices);g.computeVertexNormals();
+ const surface=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:0x3b657f,metalness:.7,roughness:.24,side:THREE.DoubleSide}));surface.receiveShadow=true;surface.castShadow=true;group.add(surface);
+ for(const z of [-L/2,L/2]){const rail=new THREE.Mesh(new THREE.BoxGeometry(W,.13,.13),railMat);rail.position.set(0,1.62+0.25,z);rail.castShadow=true;group.add(rail);}
+ for(const x of [-W/2,W/2]){const end=new THREE.Mesh(new THREE.BoxGeometry(.18,1.55,L),darkMetal);end.position.set(x,1.7,0);end.castShadow=true;group.add(end);}
+ // frame and luminous front trim
+ for(const z of [-L/2-.12,L/2+.12]){const bar=new THREE.Mesh(new THREE.BoxGeometry(W+.45,.09,.09),glow);bar.position.set(0,.96,z);group.add(bar);}
+ const base=new THREE.Mesh(new THREE.BoxGeometry(W+.8,.32,L+.6),darkMetal);base.position.set(0,.55,0);base.castShadow=true;group.add(base);
+ for(let x=-5.5;x<=5.5;x+=1.1){const support=new THREE.Mesh(new THREE.BoxGeometry(.12,1.1,.12),metal);support.position.set(x,.05,0);group.add(support);}
+}
+makeTrack();
+const balls=[];const ballGeo=new THREE.SphereGeometry(.24,28,20);
+function addBall(x,z,phase){const mat=new THREE.MeshStandardMaterial({color:phase%2?0xffd36e:0xe7f3ff,metalness:.9,roughness:.13});const m=new THREE.Mesh(ballGeo,mat);m.castShadow=true;m.receiveShadow=true;scene.add(m);balls.push({mesh:m,x,z,vx:(Math.random()>.5?1:-1)*(2.3+Math.random()*1.2),vz:(Math.random()-.5)*.35,spin:0,phase});}
+function clearBalls(){for(const b of balls)scene.remove(b.mesh);balls.length=0;}
+function heightAt(x,z){return 1.25+Math.pow(Math.abs(x)/(W/2),2)*1.12+.42*Math.pow(z/(L/2),2)+.25;}
+let running=false,last=0,elapsed=0;
+function reset(){clearBalls();addBall(-4.5,0,0);running=false;elapsed=0;document.querySelector('#state').textContent='READY';document.querySelector('#start').textContent='▶ START';document.querySelector('#ballCount').textContent='1';}
+function start(){if(!balls.length)reset();const n=Number(document.querySelector('#balls').value);if(balls.length===1&&elapsed===0){for(let i=1;i<n;i++)addBall(-4.8+(i%3)*.28,(Math.floor(i/3)-.5)*.65,i);}running=true;document.querySelector('#state').textContent='RUNNING';document.querySelector('#start').textContent='Ⅱ PAUSE';document.querySelector('#ballCount').textContent=String(balls.length);}
+document.querySelector('#start').addEventListener('click',()=>{if(running){running=false;document.querySelector('#state').textContent='PAUSED';document.querySelector('#start').textContent='▶ RESUME';}else start();});
+document.querySelector('#reset').addEventListener('click',reset);
+document.querySelector('#balls').addEventListener('input',e=>document.querySelector('#ballValue').textContent=e.target.value);
+document.querySelector('#speed').addEventListener('input',e=>document.querySelector('#speedValue').textContent=Number(e.target.value).toFixed(1));
+function resize(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}new ResizeObserver(resize).observe(host);resize();
+let dragging=false,px=0;renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;px=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});renderer.domElement.addEventListener('pointerup',()=>dragging=false);renderer.domElement.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-px;px=e.clientX;camera.position.x=Math.max(-3,Math.min(3,camera.position.x-dx*.018));camera.lookAt(0,2.1,0)});
+function animate(t){requestAnimationFrame(animate);const dt=Math.min((t-last)/1000||0,.033);last=t;if(running){elapsed+=dt;const speed=Number(document.querySelector('#speed').value);for(let i=0;i<balls.length;i++){const b=balls[i];b.vx+=(-b.x*.72)*dt;b.vx*=Math.pow(.994,dt*60);b.x+=b.vx*dt*speed;b.z+=b.vz*dt;b.vz+=(-b.z*.9)*dt;b.vz*=.99;if(Math.abs(b.x)>5.85){b.x=Math.sign(b.x)*5.85;b.vx*=-.76;}if(Math.abs(b.z)>2.0){b.z=Math.sign(b.z)*2.0;b.vz*=-.65;}b.mesh.position.set(b.x,heightAt(b.x,b.z),b.z);b.mesh.rotation.z+=b.vx*dt*2.3;b.mesh.rotation.x+=b.vz*dt*2.3;}
+ // simple ball-ball contact to make multi-ball play feel alive
+ for(let i=0;i<balls.length;i++)for(let j=i+1;j<balls.length;j++){const a=balls[i],b=balls[j],dx=b.x-a.x,dz=b.z-a.z,d=Math.hypot(dx,dz);if(d>0&&d<.48){const nx=dx/d,nz=dz/d,rel=(a.vx-b.vx)*nx+(a.vz-b.vz)*nz;if(rel>0){a.vx-=rel*nx*.82;b.vx+=rel*nx*.82;a.vz-=rel*nz*.82;b.vz+=rel*nz*.82;}}}
+ if(elapsed>18){running=false;document.querySelector('#state').textContent='FINISHED';document.querySelector('#start').textContent='▶ REPLAY';}
+ }else{for(const b of balls)b.mesh.position.set(b.x,heightAt(b.x,b.z),b.z);}
+ renderer.render(scene,camera);}
+reset();requestAnimationFrame(animate);
+</script>
+</body></html>
