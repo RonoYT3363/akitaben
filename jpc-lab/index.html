@@ -33,7 +33,7 @@ footer{color:#7188a2;font-size:11px;text-align:center;padding:18px}
 <main>
 <section class="stage"><div id="scene"></div>
 <div class="overlay"><div class="stat">BALLS IN MOTION<strong id="ballCount">1</strong></div><div class="stat">CAMERA<strong>FRONT</strong></div></div>
-<div class="hint">正面固定視点 · ドラッグで視点を少し回転できます</div>
+<div class="hint">正面固定視点 · 床が左右に揺れ、手前側へ傾斜します</div>
 </section>
 <section class="controls">
 <div class="panel"><label>操作</label><div class="actions"><button id="start">▶ START</button><button class="secondary" id="reset">RESET</button></div></div>
@@ -53,7 +53,7 @@ scene.add(new THREE.HemisphereLight(0xb9e8ff,0x182235,2.1));
 const key=new THREE.DirectionalLight(0xffffff,3.2);key.position.set(-5,12,10);key.castShadow=true;scene.add(key);
 const rim=new THREE.PointLight(0x3bd7ee,24,30);rim.position.set(0,5,-5);scene.add(rim);
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.MeshStandardMaterial({color:0x0b1725,roughness:.9}));floor.rotation.x=-Math.PI/2;floor.position.y=-.18;floor.receiveShadow=true;scene.add(floor);
-const group=new THREE.Group();scene.add(group);
+const group=new THREE.Group();group.rotation.x=0.18;scene.add(group);
 const metal=new THREE.MeshStandardMaterial({color:0x718ba4,metalness:.82,roughness:.28});
 const darkMetal=new THREE.MeshStandardMaterial({color:0x1a344b,metalness:.72,roughness:.34});
 const glow=new THREE.MeshStandardMaterial({color:0x29bdd2,emissive:0x08798c,emissiveIntensity:1.4,metalness:.55,roughness:.25});
@@ -79,7 +79,7 @@ function makeTrack(){
 }
 makeTrack();
 const balls=[];const ballGeo=new THREE.SphereGeometry(.24,28,20);
-function addBall(x,z,phase){const mat=new THREE.MeshStandardMaterial({color:phase%2?0xffd36e:0xe7f3ff,metalness:.9,roughness:.13});const m=new THREE.Mesh(ballGeo,mat);m.castShadow=true;m.receiveShadow=true;scene.add(m);balls.push({mesh:m,x,z,vx:(Math.random()>.5?1:-1)*(2.3+Math.random()*1.2),vz:(Math.random()-.5)*.35,spin:0,phase});}
+function addBall(x,z,phase){const mat=new THREE.MeshStandardMaterial({color:phase%2?0xffd36e:0xe7f3ff,metalness:.9,roughness:.13});const m=new THREE.Mesh(ballGeo,mat);m.castShadow=true;m.receiveShadow=true;group.add(m);balls.push({mesh:m,x,z,vx:0,vz:0,spin:0,phase});}
 function clearBalls(){for(const b of balls)scene.remove(b.mesh);balls.length=0;}
 function heightAt(x,z){return 1.25+Math.pow(Math.abs(x)/(W/2),2)*1.12+.42*Math.pow(z/(L/2),2)+.25;}
 let running=false,last=0,elapsed=0;
@@ -91,11 +91,11 @@ document.querySelector('#balls').addEventListener('input',e=>document.querySelec
 document.querySelector('#speed').addEventListener('input',e=>document.querySelector('#speedValue').textContent=Number(e.target.value).toFixed(1));
 function resize(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}new ResizeObserver(resize).observe(host);resize();
 let dragging=false,px=0;renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;px=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});renderer.domElement.addEventListener('pointerup',()=>dragging=false);renderer.domElement.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-px;px=e.clientX;camera.position.x=Math.max(-3,Math.min(3,camera.position.x-dx*.018));camera.lookAt(0,2.1,0)});
-function animate(t){requestAnimationFrame(animate);const dt=Math.min((t-last)/1000||0,.033);last=t;if(running){elapsed+=dt;const speed=Number(document.querySelector('#speed').value);for(let i=0;i<balls.length;i++){const b=balls[i];b.vx+=(-b.x*.72)*dt;b.vx*=Math.pow(.994,dt*60);b.x+=b.vx*dt*speed;b.z+=b.vz*dt;b.vz+=(-b.z*.9)*dt;b.vz*=.99;if(Math.abs(b.x)>5.85){b.x=Math.sign(b.x)*5.85;b.vx*=-.76;}if(Math.abs(b.z)>2.0){b.z=Math.sign(b.z)*2.0;b.vz*=-.65;}b.mesh.position.set(b.x,heightAt(b.x,b.z),b.z);b.mesh.rotation.z+=b.vx*dt*2.3;b.mesh.rotation.x+=b.vz*dt*2.3;}
+function animate(t){requestAnimationFrame(animate);const dt=Math.min((t-last)/1000||0,.033);last=t;if(running){elapsed+=dt;const speed=Number(document.querySelector('#speed').value);group.rotation.z=Math.sin(elapsed*1.65)*.105;for(let i=0;i<balls.length;i++){const b=balls[i];const tiltX=group.rotation.z;const tiltZ=group.rotation.x;b.vx+=(-9.8*Math.sin(tiltX)-b.x*.72)*dt;b.vx*=Math.pow(.994,dt*60);b.x+=b.vx*dt*speed;b.vz+=(9.8*Math.sin(tiltZ)-b.z*.9)*dt;b.z+=b.vz*dt*speed;b.vz*=.99;if(Math.abs(b.x)>5.85){b.x=Math.sign(b.x)*5.85;b.vx*=-.76;}if(Math.abs(b.z)>2.0){b.z=Math.sign(b.z)*2.0;b.vz*=-.65;}b.mesh.position.set(b.x,heightAt(b.x,b.z),b.z);b.mesh.rotation.z+=b.vx*dt*2.3;b.mesh.rotation.x+=b.vz*dt*2.3;}
  // simple ball-ball contact to make multi-ball play feel alive
  for(let i=0;i<balls.length;i++)for(let j=i+1;j<balls.length;j++){const a=balls[i],b=balls[j],dx=b.x-a.x,dz=b.z-a.z,d=Math.hypot(dx,dz);if(d>0&&d<.48){const nx=dx/d,nz=dz/d,rel=(a.vx-b.vx)*nx+(a.vz-b.vz)*nz;if(rel>0){a.vx-=rel*nx*.82;b.vx+=rel*nx*.82;a.vz-=rel*nz*.82;b.vz+=rel*nz*.82;}}}
  if(elapsed>18){running=false;document.querySelector('#state').textContent='FINISHED';document.querySelector('#start').textContent='▶ REPLAY';}
- }else{for(const b of balls)b.mesh.position.set(b.x,heightAt(b.x,b.z),b.z);}
+ }else{group.rotation.z=0;for(const b of balls)b.mesh.position.set(b.x,heightAt(b.x,b.z),b.z);}
  renderer.render(scene,camera);}
 reset();requestAnimationFrame(animate);
 </script>
