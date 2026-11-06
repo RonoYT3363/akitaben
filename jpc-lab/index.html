@@ -80,7 +80,7 @@ function makeTrack(){
 makeTrack();
 const balls=[];const ballGeo=new THREE.SphereGeometry(.24,28,20);
 function addBall(x,z,phase){const mat=new THREE.MeshStandardMaterial({color:phase%2?0xffd36e:0xe7f3ff,metalness:.9,roughness:.13});const m=new THREE.Mesh(ballGeo,mat);m.castShadow=true;m.receiveShadow=true;group.add(m);balls.push({mesh:m,x,z,vx:0,vz:0,spin:0,phase});}
-function clearBalls(){for(const b of balls)scene.remove(b.mesh);balls.length=0;}
+function clearBalls(){for(const b of balls)group.remove(b.mesh);balls.length=0;}
 function heightAt(x,z){return 1.25+Math.pow(Math.abs(x)/(W/2),2)*1.12+.42*Math.pow(z/(L/2),2)+.25;}
 let running=false,last=0,elapsed=0;
 function reset(){clearBalls();addBall(-4.5,0,0);running=false;elapsed=0;document.querySelector('#state').textContent='READY';document.querySelector('#start').textContent='▶ START';document.querySelector('#ballCount').textContent='1';}
