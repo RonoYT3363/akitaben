@@ -211,18 +211,24 @@
         <div id="accountPage" class="page" style="display:none;">
             <h2>アカウント</h2>
             <p class="accountIntro">ユーザーIDとパスワードを入力して「続ける」を押してください。</p>
-            <div class="accountForm">
+            <div id="accountCredentialsStep" class="accountForm">
                 <label for="accountIdInput">ユーザーID</label>
                 <input id="accountIdInput" autocomplete="username" placeholder="ユーザーID">
                 <label for="accountPasswordInput">パスワード</label>
                 <input id="accountPasswordInput" type="password" autocomplete="current-password" placeholder="パスワード">
-                <div id="accountNicknameWrap" hidden>
-                    <label for="accountNicknameInput">ニックネーム</label>
-                    <input id="accountNicknameInput" maxlength="30" autocomplete="nickname" placeholder="表示する名前">
-                    <p class="accountHint">このIDはまだ登録されていません。ニックネームを入力してください。</p>
-                </div>
                 <p id="accountStatus" class="accountStatus" aria-live="polite"></p>
                 <button type="button" id="accountContinueBtn" class="accountContinueButton" onclick="continueAccount()">続ける</button>
+            </div>
+            <div id="accountRegistrationStep" class="accountForm accountStep" hidden>
+                <p class="accountStepEyebrow">NEW ACCOUNT</p>
+                <p class="accountStepId">ユーザーID：<strong id="accountStepIdValue"></strong></p>
+                <label for="accountNicknameInput">ニックネーム</label>
+                <input id="accountNicknameInput" maxlength="30" autocomplete="nickname" placeholder="表示する名前">
+                <p class="accountHint">このIDはまだ登録されていません。ニックネームを入力してください。</p>
+                <div class="accountConfirmActions">
+                    <button type="button" class="accountSecondaryButton" onclick="resetAccountFlow()">戻る</button>
+                    <button type="button" id="accountRegistrationContinueBtn" class="accountContinueButton" onclick="continueAccount()">続ける</button>
+                </div>
             </div>
             <section id="accountConfirmWrap" class="accountConfirm" hidden>
                 <h3>登録内容の確認</h3>
@@ -232,7 +238,7 @@
                     <div><dt>ニックネーム</dt><dd id="accountConfirmName"></dd></div>
                 </dl>
                 <div class="accountConfirmActions">
-                    <button type="button" class="accountSecondaryButton" onclick="resetAccountFlow()">戻る</button>
+                    <button type="button" class="accountSecondaryButton" onclick="backToAccountDetails()">戻る</button>
                     <button type="button" class="accountContinueButton" id="accountCreateBtn" onclick="createAccount()">この内容で登録</button>
                 </div>
             </section>
