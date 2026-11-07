@@ -1702,6 +1702,12 @@ html[lang="ja"] body *:not(svg):not(path) {
     height: 100dvh !important;
     padding: 24px clamp(18px, 4vw, 64px) 18px !important;
 }
+/* Prevent the document behind DM from moving; only the message list scrolls. */
+html:has(#dmPage[style*="display: block"]),
+body:has(#dmPage[style*="display: block"]) {
+    overflow: hidden !important;
+    overscroll-behavior: none;
+}
 body:has(#dmPage[style*="display: block"]) #topRight {
     display: none !important;
 }
