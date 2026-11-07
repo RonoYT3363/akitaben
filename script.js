@@ -454,26 +454,40 @@ async function addTokensToUser(amount) {
 // =====================
 // 右上ボタンおよびメニュー表示の更新
 // =====================
+function openAccountEntry() {
+    if (currentUser) {
+        showPage("profilePage");
+    } else {
+        resetAccountFlow();
+        showPage("accountPage");
+    }
+}
+
+// =====================
+// 右上ボタンおよびメニュー表示の更新
+// =====================
 function updateTopRight() {
     try {
         const btn = document.getElementById("accountBtn");
+        const menuBtn = document.getElementById("accountMenuBtn");
         const headerToken = document.getElementById("headerToken");
         const tokenCountSpan = document.getElementById("tokenCount");
-        const profileBtn = document.querySelector("#leftMenu button[onclick*='profilePage']");
-        if (!btn) return;
-        if (!currentUser) {
+        if (btn) {
             btn.textContent = "アカウント";
-            btn.onclick = () => { resetAccountFlow(); showPage("accountPage"); };
+            btn.onclick = openAccountEntry;
+        }
+        if (menuBtn) {
+            menuBtn.textContent = "アカウント";
+            menuBtn.onclick = openAccountEntry;
+            menuBtn.style.display = "block";
+        }
+        if (!currentUser) {
             if (headerToken) headerToken.style.display = "none";
-            if (profileBtn) profileBtn.style.display = "none";
         } else {
-            btn.textContent = currentUser.nickname || "アカウント";
-            btn.onclick = () => showPage("profilePage");
             if (headerToken && tokenCountSpan) {
                 tokenCountSpan.textContent = currentUser.tokens !== undefined ? currentUser.tokens : 0;
                 headerToken.style.display = "block";
             }
-            if (profileBtn) profileBtn.style.display = "block";
             renderProfile();
         }
     } catch (e) { console.error("UI更新エラー:", e); }
