@@ -63,6 +63,7 @@
         <button onclick="showPage('loginPage')">ログイン</button>
         <button onclick="showPage('registerPage')">登録</button>
         <button onclick="showPage('profilePage')">プロフィール</button>
+        <button onclick="openDmPage()">DM</button>
     </div>
 
     <div id="main">
@@ -191,6 +192,22 @@
             <h2>プロフィール</h2>
 
             <div id="profileInfo"></div>
+        </div>
+
+        <div id="dmPage" class="page" style="display:none;">
+            <h2>ダイレクトメッセージ</h2>
+            <div class="dmNotice">試験版：メッセージは宛先を指定して送れますが、現在の認証方式では他の利用者にもデータを読まれる可能性があります。個人情報や秘密の内容は送らないでください。</div>
+            <div class="dmControls">
+                <label for="dmRecipient">送信先</label>
+                <select id="dmRecipient"><option value="">ユーザーを読み込み中...</option></select>
+                <button type="button" id="dmRefreshBtn" onclick="loadDmUsers()">ユーザー再読み込み</button>
+            </div>
+            <div id="dmConversation" class="dmConversation" aria-live="polite"><p class="dmEmpty">送信先を選ぶと会話が表示されます。</p></div>
+            <div class="dmComposer">
+                <textarea id="dmMessageInput" maxlength="2000" placeholder="メッセージを入力..."></textarea>
+                <button type="button" id="dmSendBtn" onclick="sendDirectMessage()">送信</button>
+            </div>
+            <p class="dmFootnote">最大2,000文字。送信したメッセージはこの試験版では削除できません。</p>
         </div>
 
     </div>
