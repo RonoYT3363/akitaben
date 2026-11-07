@@ -54,7 +54,7 @@
     <div id="headerToken" style="background-color: #ffffff; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 14px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: none; color: #d97706;">
         🪙 <span id="tokenCount">0</span> Token
     </div>
-    <button id="accountBtn">アカウント作成</button>
+    <button id="accountBtn">アカウント</button>
 </div>
 
 
@@ -124,8 +124,7 @@
         <button onclick="showPage('searchPage')">検索</button> 
         <button onclick="showPage('akitamonPage')">Akitamon</button>
         <button onclick="showPage('minigamePage')">ミニゲーム</button>
-        <button onclick="showPage('loginPage')">ログイン</button>
-        <button onclick="showPage('registerPage')">登録</button>
+        <button id="accountMenuBtn" onclick="showPage('accountPage')">アカウント</button>
         <button onclick="showPage('profilePage')">プロフィール</button>
         <button onclick="openDmPage()">DM</button>
     </div>
@@ -209,47 +208,34 @@
             </div>
         </div>
 
-        <div id="loginPage" class="page" style="display:none;">
-            <h2>ログイン</h2>
-
-            <input
-                id="loginId"
-                placeholder="ID"
-            >
-
-            <input
-                id="loginPw"
-                type="password"
-                placeholder="パスワード"
-            >
-
-            <button onclick="login()">
-                ログイン
-            </button>
-        </div>
-
-        <div id="registerPage" class="page" style="display:none;">
-            <h2>登録</h2>
-
-            <input
-                id="regId"
-                placeholder="ID"
-            >
-
-            <input
-                id="regName"
-                placeholder="ニックネーム"
-            >
-
-            <input
-                id="regPw"
-                type="password"
-                placeholder="パスワード"
-            >
-
-            <button onclick="register()">
-                登録
-            </button>
+        <div id="accountPage" class="page" style="display:none;">
+            <h2>アカウント</h2>
+            <p class="accountIntro">ユーザーIDとパスワードを入力して「続ける」を押してください。</p>
+            <div class="accountForm">
+                <label for="accountIdInput">ユーザーID</label>
+                <input id="accountIdInput" autocomplete="username" placeholder="ユーザーID">
+                <label for="accountPasswordInput">パスワード</label>
+                <input id="accountPasswordInput" type="password" autocomplete="current-password" placeholder="パスワード">
+                <div id="accountNicknameWrap" hidden>
+                    <label for="accountNicknameInput">ニックネーム</label>
+                    <input id="accountNicknameInput" maxlength="30" autocomplete="nickname" placeholder="表示する名前">
+                    <p class="accountHint">このIDはまだ登録されていません。ニックネームを入力してください。</p>
+                </div>
+                <p id="accountStatus" class="accountStatus" aria-live="polite"></p>
+                <button type="button" id="accountContinueBtn" class="accountContinueButton" onclick="continueAccount()">続ける</button>
+            </div>
+            <section id="accountConfirmWrap" class="accountConfirm" hidden>
+                <h3>登録内容の確認</h3>
+                <p>次の内容でアカウントを作成します。</p>
+                <dl>
+                    <div><dt>ユーザーID</dt><dd id="accountConfirmId"></dd></div>
+                    <div><dt>ニックネーム</dt><dd id="accountConfirmName"></dd></div>
+                </dl>
+                <div class="accountConfirmActions">
+                    <button type="button" class="accountSecondaryButton" onclick="resetAccountFlow()">戻る</button>
+                    <button type="button" class="accountContinueButton" id="accountCreateBtn" onclick="createAccount()">この内容で登録</button>
+                </div>
+            </section>
         </div>
 
         <div id="profilePage" class="page" style="display:none;">
