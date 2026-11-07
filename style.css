@@ -1710,3 +1710,24 @@ html[lang="ja"] body *:not(svg):not(path) {
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
 }
+
+/* Unified account screen */
+.accountIntro { color: var(--muted-color, #64748b); margin: 0 0 24px; }
+.accountForm { max-width: 520px; display: flex; flex-direction: column; gap: 11px; }
+.accountForm label { font-size: 14px; font-weight: 600; margin-top: 8px; }
+.accountForm input { width: 100%; box-sizing: border-box; }
+.accountHint { margin: 2px 0 8px; color: var(--muted-color, #64748b); font-size: 13px; }
+.accountStatus { min-height: 20px; margin: 4px 0; color: var(--muted-color, #64748b); font-size: 13px; }
+.accountContinueButton, .accountSecondaryButton { min-height: 46px; padding: 11px 18px; border: 1px solid var(--primary-color); border-radius: 3px; font: inherit; font-weight: 600; cursor: pointer; }
+.accountContinueButton { background: var(--primary-color); color: #fff; }
+.accountSecondaryButton { background: var(--surface-color); color: var(--text-color); border-color: var(--border-color); }
+.accountContinueButton:disabled { opacity: .6; cursor: wait; }
+.accountConfirm { max-width: 520px; margin-top: 22px; padding: 20px; border: 1px solid var(--border-color); background: var(--surface-color); }
+.accountConfirm h3 { margin: 0 0 8px; font-size: 18px; }
+.accountConfirm dl { margin: 18px 0; }
+.accountConfirm dl div { display: flex; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+.accountConfirm dt { min-width: 110px; color: var(--muted-color, #64748b); }
+.accountConfirm dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.accountConfirmActions { display: flex; gap: 10px; flex-wrap: wrap; }
+.accountConfirmActions button { flex: 1; }
+#accountPage [hidden] { display: none !important; }
