@@ -780,56 +780,183 @@ window.pullGacha = pullGacha;
 window.closeGachaModal = closeGachaModal;
 
 // ==========================================
-// 地図（Leaflet）初期化
+// Akitamon map (MapLibre GL JS + OpenFreeMap)
 // ==========================================
-document.addEventListener("DOMContentLoaded", () => {
-    if (!document.getElementById('map')) return;
+let akitamonMap = null;
+let akitamonUserMarker = null;
+let akitamonLocationWatchId = null;
+let akitamonHasCenteredOnUser = false;
 
-    const map = L.map('map').setView([39.7169, 140.1267], 15);
+function createAkitamonUserMarker() {
+    const element = document.createElement("div");
+    element.className = "akitamon-user-marker";
+    element.setAttribute("aria-label", "現在地");
+    return element;
+}
 
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+function simplifyAkitamonStyle(style) {
+    style.layers = (style.layers || []).map((layer) => {
+        const id = String(layer.id || "").toLowerCase();
+        const sourceLayer = String(layer["source-layer"] || "").toLowerCase();
+        const key = id + " " + sourceLayer;
+        const next = { ...layer, layout: { ...(layer.layout || {}) }, paint: { ...(layer.paint || {}) } };
 
-    const userMarker = L.marker([39.7169, 140.1267]).addTo(map)
-        .bindPopup('あなたの現在地（読み込み中...）');
+        // Remove visual clutter that is not useful for a location-based game.
+        if (/poi|housenumber|building|airport|transit|railway|shop|amenity|tourism|medical|food/.test(key)) {
+            next.layout.visibility = "none";
+            return next;
+        }
 
-    if ("geolocation" in navigator) {
-        navigator.geolocation.watchPosition(
-            (position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-
-                userMarker.setLatLng([lat, lng]);
-                userMarker.getPopup().setContent('現在地にピンを配置しました');
-                map.panTo([lat, lng]);
-            },
-            (error) => {
-                console.error("位置情報の取得失敗:", error.message);
-                userMarker.getPopup().setContent('GPSをONにしてください。');
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
+        if (next.type === "background") {
+            next.paint["background-color"] = "#edf4e9";
+        } else if (next.type === "fill") {
+            if (/water/.test(key)) {
+                next.paint["fill-color"] = "#dcecf0";
+            } else if (/wood|forest|park|grass|scrub|meadow|orchard|vineyard/.test(key)) {
+                next.paint["fill-color"] = "#cfe2c5";
+            } else if (/residential|commercial|industrial|landuse/.test(key)) {
+                next.paint["fill-color"] = "#e7eee2";
+            } else if (/landcover|land/.test(key)) {
+                next.paint["fill-color"] = "#edf4e9";
             }
-        );
-    } else {
-        alert("お使いのブラウザは位置情報（GPS）に対応していません。");
+        } else if (next.type === "line") {
+            if (/waterway|river|stream|canal/.test(key)) {
+                next.paint["line-color"] = "#c3dfe5";
+            } else if (/transportation|road|street|bridge|tunnel/.test(key)) {
+                next.paint["line-color"] = "#ffffff";
+            } else if (/boundary/.test(key)) {
+                next.paint["line-color"] = "#d4dfd0";
+            }
+        } else if (next.type === "symbol" && next.layout["text-field"]) {
+            next.paint["text-color"] = "#536454";
+            next.paint["text-halo-color"] = "#f5f8f1";
+            next.paint["text-halo-width"] = 1.2;
+        } else if (next.type === "fill-extrusion") {
+            next.layout.visibility = "none";
+        }
+
+        return next;
+    });
+    return style;
+}
+
+async function initializeAkitamonMap() {
+    const container = document.getElementById("map");
+    if (!container || typeof maplibregl === "undefined") {
+        console.error("Akitamon: MapLibre GL JSを読み込めませんでした。");
+        return;
     }
 
-    const originalShowPage = window.showPage;
-    window.showPage = function(id) {
-        originalShowPage(id);
-        if (id === 'akitamonPage') {
-            setTimeout(() => {
-                map.invalidateSize();
-            }, 100);
-        }
-    };
-});
+    try {
+        const response = await fetch("https://tiles.openfreemap.org/styles/liberty");
+        if (!response.ok) throw new Error("地図スタイルを取得できませんでした: " + response.status);
+        const baseStyle = await response.json();
+        const cleanStyle = simplifyAkitamonStyle(baseStyle);
 
+        akitamonMap = new maplibregl.Map({
+            container,
+            style: cleanStyle,
+            center: [140.1267, 39.7169],
+            zoom: 14,
+            minZoom: 3,
+            maxZoom: 19,
+            maxPitch: 0,
+            pitchWithRotate: false,
+            dragRotate: false,
+            touchPitch: false,
+            attributionControl: true
+        });
+
+        akitamonMap.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+        akitamonMap.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: "metric" }), "bottom-left");
+
+        akitamonUserMarker = new maplibregl.Marker({
+            element: createAkitamonUserMarker(),
+            anchor: "center"
+        });
+
+        akitamonMap.on("click", (event) => {
+            const panel = document.getElementById("ownerPanel");
+            if (!panel || getComputedStyle(panel).display === "none") return;
+            const latInput = document.getElementById("spoofLat");
+            const lngInput = document.getElementById("spoofLng");
+            if (latInput && lngInput) {
+                latInput.value = event.lngLat.lat.toFixed(6);
+                lngInput.value = event.lngLat.lng.toFixed(6);
+            }
+        });
+
+        akitamonMap.on("error", (event) => {
+            if (event && event.error) console.warn("Akitamon map:", event.error.message);
+        });
+
+        const originalShowPage = window.showPage;
+        if (typeof originalShowPage === "function") {
+            window.showPage = function(id) {
+                originalShowPage(id);
+                if (id === "akitamonPage") {
+                    window.setTimeout(() => {
+                        if (akitamonMap) akitamonMap.resize();
+                    }, 120);
+                    startAkitamonLocationWatch();
+                } else {
+                    stopAkitamonLocationWatch();
+                }
+            };
+        }
+    } catch (error) {
+        console.error("Akitamon地図の初期化に失敗しました:", error);
+        container.innerHTML = '<div class="akitamon-map-error">地図を読み込めませんでした。通信状態を確認して、ページを再度開いてください。</div>';
+    }
+}
+
+function startAkitamonLocationWatch() {
+    if (akitamonLocationWatchId !== null || !navigator.geolocation) return;
+
+    akitamonLocationWatchId = navigator.geolocation.watchPosition(
+        (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            if (!akitamonMap || !akitamonUserMarker) return;
+
+            akitamonUserMarker.setLngLat([lng, lat]).addTo(akitamonMap);
+            if (!akitamonHasCenteredOnUser) {
+                akitamonMap.flyTo({ center: [lng, lat], zoom: Math.max(akitamonMap.getZoom(), 15), essential: true });
+                akitamonHasCenteredOnUser = true;
+            }
+        },
+        (error) => {
+            console.warn("Akitamon: 現在地を取得できませんでした。", error.message);
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 12000,
+            maximumAge: 10000
+        }
+    );
+}
+
+function stopAkitamonLocationWatch() {
+    if (akitamonLocationWatchId !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(akitamonLocationWatchId);
+        akitamonLocationWatchId = null;
+    }
+}
+
+window.applySpoofedLocation = function() {
+    const lat = Number(document.getElementById("spoofLat")?.value);
+    const lng = Number(document.getElementById("spoofLng")?.value);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        alert("緯度・経度を正しく入力してください。");
+        return;
+    }
+    if (akitamonMap && akitamonUserMarker) {
+        akitamonUserMarker.setLngLat([lng, lat]).addTo(akitamonMap);
+        akitamonMap.flyTo({ center: [lng, lat], zoom: 15, essential: true });
+    }
+};
+
+document.addEventListener("DOMContentLoaded", initializeAkitamonMap);
 
 // =====================
 // DM 試験版（dm-test ブランチ専用）
