@@ -1673,3 +1673,40 @@ html[lang="ja"] body *:not(svg):not(path) {
     #dmPage[style*="display: block"] .dmNotice { padding: 5px 9px !important; margin-bottom: 6px !important; }
     #dmPage[style*="display: block"] .dmControls { margin-bottom: 6px !important; }
 }
+
+
+/* DM actions: add clear, restrained accent colors */
+#dmPage[style*="display: block"] .dmBackButton {
+    border-color: color-mix(in srgb, var(--primary-color) 42%, var(--border-color)) !important;
+    background: color-mix(in srgb, var(--primary-color) 9%, var(--surface-color)) !important;
+    color: var(--primary-color) !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+}
+#dmPage[style*="display: block"] #dmRefreshBtn {
+    border: 1px solid color-mix(in srgb, var(--primary-color) 32%, var(--border-color)) !important;
+    background: color-mix(in srgb, var(--primary-color) 10%, var(--surface-color)) !important;
+    color: var(--primary-color) !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+}
+#dmPage[style*="display: block"] #dmSendBtn {
+    border: 1px solid var(--primary-color) !important;
+    background: var(--primary-color) !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    cursor: pointer;
+}
+#dmPage[style*="display: block"] .dmBackButton:hover,
+#dmPage[style*="display: block"] #dmRefreshBtn:hover {
+    background: color-mix(in srgb, var(--primary-color) 17%, var(--surface-color)) !important;
+}
+#dmPage[style*="display: block"] #dmSendBtn:hover {
+    filter: brightness(0.94);
+}
+#dmPage[style*="display: block"] .dmBackButton:focus-visible,
+#dmPage[style*="display: block"] #dmRefreshBtn:focus-visible,
+#dmPage[style*="display: block"] #dmSendBtn:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
