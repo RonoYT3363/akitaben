@@ -993,6 +993,9 @@ document.addEventListener("DOMContentLoaded",()=>{
         panel.hidden = true;
         panel.setAttribute("aria-hidden", "true");
         document.body.style.overflow = "";
+        let saved = "";
+        try { saved = localStorage.getItem(STORAGE_KEY) || ""; } catch (error) {}
+        applyFont(saved, false);
         const opener = document.getElementById("fontPickerOpen");
         if (opener) opener.focus();
     }
@@ -1007,7 +1010,10 @@ document.addEventListener("DOMContentLoaded",()=>{
         const done = document.getElementById("fontPickerDone");
         const reset = document.getElementById("fontPickerReset");
         if (opener) opener.addEventListener("click", openPicker);
-        if (picker) picker.addEventListener("change", () => previewFont(picker.value));
+        if (picker) picker.addEventListener("change", () => {
+            previewFont(picker.value);
+            applyFont(picker.value, false);
+        });
         if (done) done.addEventListener("click", () => {
             applyFont(picker ? picker.value : "", true);
             closePicker();
