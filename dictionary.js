@@ -70,10 +70,10 @@ function convertToAkita(input) {
         result = result.split(standard).join(akita);
     }
 
-    result = result.replace(/ですね([。！!？?]?)(\\s*)$/u, "だな$1$2");
-    result = result.replace(/だよね([。！!？?]?)(\\s*)$/u, "だよな$1$2");
-    result = result.replace(/でしょう([。！!？?]?)(\\s*)$/u, "だべ$1$2");
-    result = result.replace(/だろう([。！!？?]?)(\\s*)$/u, "だべ$1$2");
+    result = result.replace(/ですね([。！!？?]?)(\s*)$/u, "だな$1$2");
+    result = result.replace(/だよね([。！!？?]?)(\s*)$/u, "だよな$1$2");
+    result = result.replace(/でしょう([。！!？?]?)(\s*)$/u, "だべ$1$2");
+    result = result.replace(/だろう([。！!？?]?)(\s*)$/u, "だべ$1$2");
 
     return result;
 }
