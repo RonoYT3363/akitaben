@@ -569,14 +569,7 @@ body {
     font-weight: 850;
     letter-spacing: -.075em;
 }
-#leftMenu::after {
-    content: "秋田から、つながる。";
-    display: block;
-    padding: 0 16px 20px;
-    color: var(--text-sub);
-    font-size: 11px;
-    letter-spacing: .08em;
-}
+
 #leftMenu button {
     width: 100%;
     padding: 12px 15px;
@@ -893,15 +886,7 @@ body {
     font-weight: 900;
     letter-spacing: -.095em;
 }
-#leftMenu::after {
-    content: "AKITA SOCIAL  /  さい";
-    display: block;
-    margin: 9px 13px 27px;
-    color: #aebbd2;
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: .19em;
-}
+
 #leftMenu button {
     width: 100%;
     min-height: 45px;
@@ -935,26 +920,8 @@ body {
     margin: 0;
     padding: 0 0 55px;
 }
-#main::before {
-    content: "YOUR PLACE, YOUR VOICE.";
-    display: block;
-    margin: 0 0 12px 3px;
-    color: var(--text-sub);
-    font-size: 10px;
-    font-weight: 850;
-    letter-spacing: .23em;
-}
-#main::after {
-    content: "秋田から、つながろう。";
-    display: block;
-    margin: -31px 0 30px 3px;
-    color: var(--text-main);
-    font-size: clamp(25px, 3vw, 37px);
-    line-height: 1.2;
-    font-weight: 850;
-    letter-spacing: -.065em;
-    pointer-events: none;
-}
+
+
 /* Give pages a refined app-surface, not generic floating cards */
 .page {
     min-height: 430px;
@@ -1212,13 +1179,7 @@ body, :root[data-theme="dark"] body {
     font-weight: 800 !important;
     letter-spacing: -.09em !important;
 }
-#leftMenu::after {
-    margin: 8px 12px 24px !important;
-    padding: 0 !important;
-    color: var(--say-muted) !important;
-    font-size: 9px !important;
-    letter-spacing: .13em !important;
-}
+
 #leftMenu button,
 #leftMenu button:first-of-type {
     min-height: 42px !important;
@@ -1245,20 +1206,8 @@ body, :root[data-theme="dark"] body {
     color: var(--say-ink) !important;
     font-weight: 750 !important;
 }
-#main::before {
-    margin-bottom: 10px !important;
-    color: var(--say-muted) !important;
-    font-family: Arial, sans-serif !important;
-    font-size: 9px !important;
-    letter-spacing: .16em !important;
-}
-#main::after {
-    margin: -29px 0 26px 3px !important;
-    color: var(--say-ink) !important;
-    font-size: clamp(24px, 2.5vw, 32px) !important;
-    font-weight: 700 !important;
-    letter-spacing: -.045em !important;
-}
+
+
 .page {
     min-height: 0 !important;
     margin: 0 0 24px !important;
