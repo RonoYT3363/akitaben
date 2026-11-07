@@ -1731,3 +1731,12 @@ html[lang="ja"] body *:not(svg):not(path) {
 .accountConfirmActions { display: flex; gap: 10px; flex-wrap: wrap; }
 .accountConfirmActions button { flex: 1; }
 #accountPage [hidden] { display: none !important; }
+
+/* Keep account onboarding in-place: replace steps instead of extending the page */
+#accountPage .accountStep { min-height: 245px; }
+#accountPage .accountStep[hidden],
+#accountPage #accountCredentialsStep[hidden],
+#accountPage #accountConfirmWrap[hidden] { display: none !important; }
+.accountStepEyebrow { margin: 0 0 4px; color: var(--muted-color, #64748b); font-size: 11px; letter-spacing: .12em; font-weight: 700; }
+.accountStepId { margin: 0 0 18px; color: var(--muted-color, #64748b); font-size: 14px; }
+.accountStepId strong { color: var(--text-color); }
