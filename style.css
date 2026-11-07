@@ -1384,3 +1384,14 @@ input { min-height: 43px; padding: 10px 13px !important; }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+
+/* Japanese-first typography: avoid CJK fallback choosing Chinese glyph forms */
+body, body * {
+    font-family: "Meiryo", "Yu Gothic UI", "Yu Gothic",
+        "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif !important;
+}
+body {
+    font-feature-settings: "palt" 0;
+    font-kerning: normal;
+}
