@@ -1720,12 +1720,21 @@ body:has(#dmPage[style*="display: block"]) #topRight {
 }
 
 
-/* Keep the navigation anchored to the viewport on every page and scroll position. */
+/* Keep the navigation anchored without narrowing the main content. */
 @media (min-width: 821px) {
+    #container {
+        display: grid !important;
+        grid-template-columns: 252px minmax(0, 1fr) !important;
+        align-items: start !important;
+        gap: 52px !important;
+        max-width: 1550px !important;
+        padding: 58px 30px 70px !important;
+        box-sizing: border-box !important;
+    }
     #leftMenu {
         position: fixed !important;
         top: 58px !important;
-        left: 0 !important;
+        left: max(30px, calc((100vw - 1550px) / 2 + 30px)) !important;
         width: 252px !important;
         height: calc(100vh - 76px) !important;
         height: calc(100dvh - 76px) !important;
@@ -1733,13 +1742,16 @@ body:has(#dmPage[style*="display: block"]) #topRight {
         overflow-y: auto !important;
         z-index: 2001 !important;
     }
-    /* Preserve the space that the fixed sidebar occupied in the page layout. */
     #main {
-        margin-left: 304px !important;
+        grid-column: 2 !important;
+        width: auto !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 0 48px !important;
     }
 }
 @media (max-width: 820px) {
-    /* The compact horizontal navigation stays pinned at the top on small screens. */
+    /* Keep the compact horizontal navigation pinned at the top on small screens. */
     #leftMenu {
         position: fixed !important;
         top: 8px !important;
@@ -1748,7 +1760,7 @@ body:has(#dmPage[style*="display: block"]) #topRight {
         width: auto !important;
         height: auto !important;
         max-height: none !important;
-        z-index: 1001 !important;
+        z-index: 2001 !important;
         overflow-x: auto !important;
         overflow-y: hidden !important;
     }
