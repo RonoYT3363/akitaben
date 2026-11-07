@@ -1500,3 +1500,82 @@ html[lang="ja"] body *:not(svg):not(path) {
     #topRight { gap:6px !important; }
     #fontPickerOpen { padding:0 8px !important; font-size:11px !important; }
 }
+
+
+/* Desktop scale refinement: match the comfortable 125% browser-zoom feel at 100%.
+   Keep the mobile layout unchanged. */
+@media (min-width: 821px) {
+    #container {
+        max-width: 1550px !important;
+        gap: 52px !important;
+        padding: 102px 30px 70px !important;
+    }
+    #leftMenu {
+        flex-basis: 252px !important;
+        width: 252px !important;
+        top: 102px !important;
+    }
+    #leftMenu::before { font-size: 42px !important; }
+    #leftMenu::after {
+        margin-bottom: 30px !important;
+        font-size: 11px !important;
+    }
+    #leftMenu button,
+    #leftMenu button:first-of-type {
+        min-height: 51px !important;
+        padding-left: 15px !important;
+        font-size: 16px !important;
+    }
+    #main::before { font-size: 11px !important; }
+    #main::after {
+        margin-bottom: 32px !important;
+        font-size: clamp(30px, 2.7vw, 40px) !important;
+    }
+    .page {
+        margin-bottom: 30px !important;
+        padding: 38px 43px 43px !important;
+    }
+    .page h2 {
+        margin-bottom: 30px !important;
+        padding-bottom: 19px !important;
+        font-size: 25px !important;
+    }
+    #postInput {
+        min-height: 158px !important;
+        padding: 19px 20px !important;
+        font-size: 16px !important;
+    }
+    .postComposerActions { gap: 13px !important; }
+    .postButton, .searchButton, .page button:not(.postButton),
+    .dmControls button, .dmComposer button,
+    #themeToggle, #accountBtn, #fontPickerOpen,
+    .akitaConvertButton, .akitaPreviewActions button {
+        min-height: 48px !important;
+        font-size: 15px !important;
+    }
+    #posts { margin-top: 40px !important; }
+    .post { padding: 25px 3px !important; }
+    .postHeader { font-size: 16px !important; }
+    .postText {
+        font-size: 17.5px !important;
+        line-height: 1.8 !important;
+    }
+    .postTime { font-size: 13px !important; }
+    input { min-height: 54px !important; font-size: 16px !important; }
+    .dmNotice { padding: 15px 18px !important; font-size: 14px !important; }
+    .dmControls { gap: 13px !important; margin: 27px 0 19px !important; }
+    .dmControls select { min-height: 54px !important; font-size: 16px !important; }
+    .dmConversation {
+        height: 550px !important;
+        padding: 27px !important;
+        gap: 17px !important;
+    }
+    .dmBubble { padding: 15px 19px !important; }
+    .dmBody { font-size: 16px !important; line-height: 1.65 !important; }
+    .dmSender { font-size: 13px !important; }
+    .dmTime { font-size: 12px !important; }
+    .dmComposer { margin-top: 19px !important; gap: 13px !important; }
+    .dmComposer textarea { min-height: 75px !important; padding: 17px 19px !important; font-size: 16px !important; }
+    .dmFootnote { font-size: 13px !important; }
+    #map { height: 625px !important; }
+}
