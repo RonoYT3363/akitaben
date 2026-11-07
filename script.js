@@ -942,3 +942,86 @@ document.addEventListener("DOMContentLoaded",()=>{
         if(event.key==="Enter"&&!event.shiftKey){event.preventDefault();sendDirectMessage();}
     });
 });
+
+
+// =====================
+// サイト全体のフォント選択・プレビュー
+// =====================
+(() => {
+    const STORAGE_KEY = "say-font-family";
+    const DEFAULT_FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Yu Gothic UI", Meiryo, sans-serif';
+    const modal = () => document.getElementById("fontPickerModal");
+    const select = () => document.getElementById("fontPickerSelect");
+    const sample = () => document.getElementById("fontPickerSample");
+    const currentLabel = () => document.getElementById("fontPickerCurrent");
+
+    function familyStack(name) {
+        return '"' + name.replace(/"/g, "") + '", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    }
+    function applyFont(name, save) {
+        const family = name ? familyStack(name) : DEFAULT_FONT;
+        document.documentElement.style.setProperty("--say-font-family", family);
+        if (save) {
+            try {
+                if (name) localStorage.setItem(STORAGE_KEY, name);
+                else localStorage.removeItem(STORAGE_KEY);
+            } catch (error) {
+                console.warn("フォント設定を保存できませんでした:", error);
+            }
+        }
+        if (currentLabel()) currentLabel().textContent = name || "標準フォント";
+    }
+    function previewFont(name) {
+        if (sample()) sample().style.fontFamily = name ? familyStack(name) : DEFAULT_FONT;
+        if (currentLabel()) currentLabel().textContent = name || "標準フォント";
+    }
+    function openPicker() {
+        const panel = modal();
+        if (!panel) return;
+        let saved = "";
+        try { saved = localStorage.getItem(STORAGE_KEY) || ""; } catch (error) {}
+        if (select()) select().value = saved;
+        previewFont(saved);
+        panel.hidden = false;
+        panel.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+        if (select()) select().focus();
+    }
+    function closePicker() {
+        const panel = modal();
+        if (!panel) return;
+        panel.hidden = true;
+        panel.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+        const opener = document.getElementById("fontPickerOpen");
+        if (opener) opener.focus();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        let saved = "";
+        try { saved = localStorage.getItem(STORAGE_KEY) || ""; } catch (error) {}
+        applyFont(saved, false);
+
+        const opener = document.getElementById("fontPickerOpen");
+        const picker = select();
+        const done = document.getElementById("fontPickerDone");
+        const reset = document.getElementById("fontPickerReset");
+        if (opener) opener.addEventListener("click", openPicker);
+        if (picker) picker.addEventListener("change", () => previewFont(picker.value));
+        if (done) done.addEventListener("click", () => {
+            applyFont(picker ? picker.value : "", true);
+            closePicker();
+        });
+        if (reset) reset.addEventListener("click", () => {
+            if (picker) picker.value = "";
+            previewFont("");
+            applyFont("", true);
+        });
+        document.querySelectorAll("[data-font-close]").forEach(button => {
+            button.addEventListener("click", closePicker);
+        });
+        document.addEventListener("keydown", event => {
+            if (event.key === "Escape" && modal() && !modal().hidden) closePicker();
+        });
+    });
+})();
