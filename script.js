@@ -65,32 +65,63 @@ window.addEventListener("load", () => {
 // =====================
 // 投稿作成
 // =====================
+let pendingAkitaText = "";
+
+function previewAkitaConversion() {
+    const input = document.getElementById("postInput");
+    const preview = document.getElementById("akitaPreview");
+    const previewText = document.getElementById("akitaPreviewText");
+    if (!input || !preview || !previewText) return;
+    const original = input.value.trim();
+    if (!original) {
+        alert("先に投稿文を入力してください。");
+        return;
+    }
+    if (typeof window.convertToAkita !== "function") {
+        alert("秋田弁変換エンジンを読み込めませんでした。");
+        return;
+    }
+    pendingAkitaText = window.convertToAkita(original);
+    previewText.textContent = pendingAkitaText;
+    preview.hidden = false;
+}
+
+function applyAkitaConversion() {
+    const input = document.getElementById("postInput");
+    if (!input || !pendingAkitaText) return;
+    input.value = pendingAkitaText;
+    closeAkitaPreview();
+    input.focus();
+}
+
+function closeAkitaPreview() {
+    const preview = document.getElementById("akitaPreview");
+    if (preview) preview.hidden = true;
+    pendingAkitaText = "";
+}
+
 async function addPost() {
     try {
         const input = document.getElementById("postInput");
-        let text = input.value.trim();
-
+        const text = input.value.trim();
         if (!text) return;
-
-        await fs.addDoc(
-            fs.collection(db, "posts"),
-            {
-                text,
-                nickname: currentUser?.nickname || "名無し",
-                accountId: currentUser?.accountId || "", // タグ判定用に作成者のIDも保存
-                role: currentUser?.role || "user",       // 投稿時のロールも保存
-                createdAt: fs.serverTimestamp()
-            }
-        );
-
+        await fs.addDoc(fs.collection(db, "posts"), {
+            text,
+            nickname: currentUser?.nickname || "名無し",
+            accountId: currentUser?.accountId || "",
+            role: currentUser?.role || "user",
+            createdAt: fs.serverTimestamp()
+        });
         input.value = "";
+        closeAkitaPreview();
     } catch (e) {
         console.error("投稿の作成に失敗しました:", e);
+        alert("投稿できませんでした。時間をおいて再度お試しください。");
     }
 }
 
 // =====================
-// ロールに応じたバッジ（タグ）のHTMLを生成する関数
+// // ロールに応じたバッジ（タグ）のHTMLを生成する関数
 // =====================
 function getRoleBadge(role) {
     if (!role) return "";
@@ -681,6 +712,9 @@ function closeGachaModal() {
 // グローバル公開
 // =====================
 window.addPost = addPost;
+window.previewAkitaConversion = previewAkitaConversion;
+window.applyAkitaConversion = applyAkitaConversion;
+window.closeAkitaPreview = closeAkitaPreview;
 window.register = register;
 window.login = login;
 window.showPage = showPage;
