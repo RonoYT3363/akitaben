@@ -774,3 +774,171 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 });
+
+
+// =====================
+// DM 試験版（dm-test ブランチ専用）
+// =====================
+let dmUnsubscribe = null;
+let dmSelectedUserId = "";
+let dmCachedUsers = [];
+let dmMessages = [];
+
+function openDmPage() {
+    showPage("dmPage");
+    if (!currentUser) {
+        const conversation = document.getElementById("dmConversation");
+        if (conversation) conversation.textContent = "DMを使うにはログインしてください。";
+        return;
+    }
+    loadDmUsers();
+    if (!dmUnsubscribe) subscribeDmMessages();
+}
+
+async function loadDmUsers() {
+    const select = document.getElementById("dmRecipient");
+    if (!select) return;
+    if (!currentUser) {
+        select.innerHTML = '<option value="">ログインしてください</option>';
+        return;
+    }
+    select.innerHTML = '<option value="">ユーザーを読み込み中...</option>';
+    try {
+        const snap = await fs.getDocs(fs.collection(db, "users"));
+        dmCachedUsers = [];
+        snap.forEach(userDoc => {
+            const user = userDoc.data();
+            if (userDoc.id !== currentUser.docId) {
+                dmCachedUsers.push({id:userDoc.id,accountId:String(user.accountId||""),nickname:String(user.nickname||"名無し")});
+            }
+        });
+        dmCachedUsers.sort((a,b)=>a.nickname.localeCompare(b.nickname,"ja"));
+        select.replaceChildren();
+        const placeholder=document.createElement("option");
+        placeholder.value="";
+        placeholder.textContent=dmCachedUsers.length?"送信先を選択":"ほかのユーザーはいません";
+        select.appendChild(placeholder);
+        dmCachedUsers.forEach(user=>{
+            const option=document.createElement("option");
+            option.value=user.id;
+            option.textContent=user.nickname+(user.accountId?" (@"+user.accountId+")":"");
+            select.appendChild(option);
+        });
+        if(dmSelectedUserId&&dmCachedUsers.some(user=>user.id===dmSelectedUserId)) select.value=dmSelectedUserId;
+        else dmSelectedUserId="";
+        renderDmConversation();
+    } catch(error) {
+        console.error("DMユーザー取得エラー:",error);
+        select.innerHTML='<option value="">ユーザーを読み込めませんでした</option>';
+    }
+}
+
+function subscribeDmMessages() {
+    if(dmUnsubscribe||!currentUser) return;
+    try {
+        const q=fs.query(fs.collection(db,"dmMessages"),fs.orderBy("createdAt","desc"),fs.limit(100));
+        dmUnsubscribe=fs.onSnapshot(q,snapshot=>{
+            dmMessages=[];
+            snapshot.forEach(messageDoc=>dmMessages.push({id:messageDoc.id,...messageDoc.data()}));
+            renderDmConversation();
+        },error=>{
+            console.error("DM受信エラー:",error);
+            const area=document.getElementById("dmConversation");
+            if(area) area.textContent="メッセージを読み込めませんでした。";
+        });
+    } catch(error) {
+        console.error("DM初期化エラー:",error);
+    }
+}
+
+function renderDmConversation() {
+    const area=document.getElementById("dmConversation");
+    const select=document.getElementById("dmRecipient");
+    if(!area||!currentUser) return;
+    if(select&&select.value!==dmSelectedUserId) dmSelectedUserId=select.value;
+    area.replaceChildren();
+    if(!dmSelectedUserId) {
+        const empty=document.createElement("p");
+        empty.className="dmEmpty";
+        empty.textContent="送信先を選ぶと会話が表示されます。";
+        area.appendChild(empty);
+        return;
+    }
+    const selected=dmCachedUsers.find(user=>user.id===dmSelectedUserId);
+    if(!selected) {
+        area.textContent="送信先が見つかりません。ユーザーを再読み込みしてください。";
+        return;
+    }
+    const conversation=dmMessages.filter(message=>
+        (message.fromId===currentUser.docId&&message.toId===dmSelectedUserId)||
+        (message.fromId===dmSelectedUserId&&message.toId===currentUser.docId)
+    ).reverse();
+    if(!conversation.length) {
+        const empty=document.createElement("p");
+        empty.className="dmEmpty";
+        empty.textContent=selected.nickname+" さんとのメッセージはまだありません。";
+        area.appendChild(empty);
+        return;
+    }
+    conversation.forEach(message=>{
+        const bubble=document.createElement("div");
+        bubble.className="dmBubble"+(message.fromId===currentUser.docId?" dmMine":" dmTheirs");
+        const sender=document.createElement("div");
+        sender.className="dmSender";
+        sender.textContent=message.fromNickname||"名無し";
+        const body=document.createElement("div");
+        body.className="dmBody";
+        body.textContent=message.text||"";
+        const time=document.createElement("div");
+        time.className="dmTime";
+        if(message.createdAt&&typeof message.createdAt.toDate==="function") {
+            time.textContent=message.createdAt.toDate().toLocaleString("ja-JP",{dateStyle:"short",timeStyle:"short"});
+        } else time.textContent="送信直後";
+        bubble.append(sender,body,time);
+        area.appendChild(bubble);
+    });
+    area.scrollTop=area.scrollHeight;
+}
+
+async function sendDirectMessage() {
+    if(!currentUser||!currentUser.docId) {alert("DMを送るにはログインしてください。");return;}
+    const select=document.getElementById("dmRecipient");
+    const input=document.getElementById("dmMessageInput");
+    if(!select||!input) return;
+    const recipientId=select.value;
+    const text=input.value.trim();
+    if(!recipientId) {alert("送信先を選択してください。");return;}
+    if(!text) {alert("メッセージを入力してください。");return;}
+    if(text.length>2000) {alert("メッセージは2,000文字以内にしてください。");return;}
+    const recipient=dmCachedUsers.find(user=>user.id===recipientId);
+    if(!recipient) {alert("送信先を再読み込みしてください。");return;}
+    const button=document.getElementById("dmSendBtn");
+    if(button) button.disabled=true;
+    try {
+        await fs.addDoc(fs.collection(db,"dmMessages"),{
+            fromId:currentUser.docId,
+            fromAccountId:currentUser.accountId||"",
+            fromNickname:currentUser.nickname||"名無し",
+            toId:recipientId,
+            toAccountId:recipient.accountId,
+            toNickname:recipient.nickname,
+            text,
+            createdAt:fs.serverTimestamp()
+        });
+        input.value="";
+    } catch(error) {
+        console.error("DM送信エラー:",error);
+        alert("送信できませんでした。Firestoreの設定を確認してください。");
+    } finally {
+        if(button) button.disabled=false;
+    }
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+    const select=document.getElementById("dmRecipient");
+    const input=document.getElementById("dmMessageInput");
+    if(select) select.addEventListener("change",()=>{dmSelectedUserId=select.value;renderDmConversation();});
+    if(input) input.addEventListener("keydown",event=>{
+        if(event.key==="Enter"&&!event.shiftKey){event.preventDefault();sendDirectMessage();}
+    });
+});
