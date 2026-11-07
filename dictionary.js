@@ -3,29 +3,44 @@
 // 県内で比較的知られる表現を控えめに使用。
 // 地域差や文脈が大きい表現は無理に変換しない。
 // ==========================================
+
+// 文全体・短い言い回しを先に変換する。
+// 丁寧形とカジュアル形は、できるだけ別の変換先にする。
 const akitaPhraseRules = [
-    ["ありがとうございます", "ありがどございます"],
     ["ありがとうございました", "ありがどございました"],
+    ["ありがとうございます", "ありがどございます"],
     ["よろしくお願いします", "よろしくたのむんし"],
     ["おはようございます", "おはようさん"],
     ["こんにちは", "おばんです"],
     ["こんばんは", "おばんです"],
+
+    // 相づち：カジュアル形と丁寧形を区別
+    ["そうですよ", "んだす"],
+    ["そうだよ", "んだよ"],
     ["そうですね", "んだな"],
     ["そうだね", "んだな"],
-    ["そうですよ", "んだよ"],
+    ["そうなんです", "んだす"],
     ["そうなんだ", "んだが"],
+    ["そうなの？", "んだが？"],
+    ["そうなの", "んだが"],
+
+    // 日常会話
     ["とてもおいしい", "しったげうめ"],
     ["すごくおいしい", "しったげうめ"],
     ["何しているの", "なにしてら？"],
     ["何してるの", "なにしてら？"],
+    ["何してる？", "なにしてら？"],
     ["どうしたの", "どした？"],
-    ["大丈夫ですか", "だいじょうぶだが？"]
-];
-const akitaPhraseRules = [
+    ["大丈夫ですか", "だいじょうぶだが？"],
+    ["大丈夫？", "だいじょうぶだが？"],
+
+    // 否定表現：単語だけを置き換えて不自然になるのを防ぐ
     ["ダメです", "なんねっす"],
     ["だめです", "なんねっす"],
     ["ダメだ", "なんね"],
-    ["だめだ", "なんね"],
+    ["だめだ", "なんね"]
+];
+
 const akitaWordRules = [
     ["ありがとう", "ありがど"],
     ["おいしい", "うめ"],
@@ -44,17 +59,23 @@ const akitaWordRules = [
 
 function convertToAkita(input) {
     if (typeof input !== "string" || !input.trim()) return input || "";
+
     let result = input;
+
     for (const [standard, akita] of [...akitaPhraseRules].sort((a, b) => b[0].length - a[0].length)) {
         result = result.split(standard).join(akita);
     }
+
     for (const [standard, akita] of [...akitaWordRules].sort((a, b) => b[0].length - a[0].length)) {
         result = result.split(standard).join(akita);
     }
-    result = result.replace(/ですね([。！!？?]?)(\s*)$/u, "だな$1$2");
-    result = result.replace(/だよね([。！!？?]?)(\s*)$/u, "だよな$1$2");
-    result = result.replace(/でしょう([。！!？?]?)(\s*)$/u, "だべ$1$2");
-    result = result.replace(/だろう([。！!？?]?)(\s*)$/u, "だべ$1$2");
+
+    result = result.replace(/ですね([。！!？?]?)(\\s*)$/u, "だな$1$2");
+    result = result.replace(/だよね([。！!？?]?)(\\s*)$/u, "だよな$1$2");
+    result = result.replace(/でしょう([。！!？?]?)(\\s*)$/u, "だべ$1$2");
+    result = result.replace(/だろう([。！!？?]?)(\\s*)$/u, "だべ$1$2");
+
     return result;
 }
+
 window.convertToAkita = convertToAkita;
