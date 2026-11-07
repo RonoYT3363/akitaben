@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f8fafc">
     <title>SAY-さい- 0.5.1-α</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=Kaisei+Tokumin:wght@400;500;700&family=Klee+One:wght@400;600&family=Kosugi+Maru&family=Kiwi+Maru:wght@400;500;700&family=M+PLUS+2:wght@400;500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Murecho:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Serif+JP:wght@400;500;700&family=Shippori+Mincho:wght@400;500;700&family=Stick&family=Yomogi&family=Yusei+Magic&family=Yuji+Mai&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Kurenaido&family=Zen+Maru+Gothic:wght@400;500;700&family=Zen+Old+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script>
         (() => {
@@ -45,12 +48,73 @@
 <body>
 
 <div id="topRight" style="display: flex; align-items: center; gap: 10px;">
+    <button id="fontPickerOpen" type="button" aria-label="フォントを選ぶ">Aa フォント</button>
     <button id="themeToggle" type="button" aria-label="テーマを切り替える" title="テーマを切り替える">🌙 ダーク</button>
     <!-- ヘッダー用のトークン表示エリア -->
     <div id="headerToken" style="background-color: #ffffff; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 14px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: none; color: #d97706;">
         🪙 <span id="tokenCount">0</span> Token
     </div>
     <button id="accountBtn">アカウント作成</button>
+</div>
+
+
+<div id="fontPickerModal" class="fontPickerModal" hidden aria-hidden="true">
+  <div class="fontPickerBackdrop" data-font-close></div>
+  <section class="fontPickerDialog" role="dialog" aria-modal="true" aria-labelledby="fontPickerTitle">
+    <div class="fontPickerTop">
+      <div>
+        <p class="fontPickerEyebrow">SAY DISPLAY SETTINGS</p>
+        <h2 id="fontPickerTitle">フォント試着室</h2>
+        <p class="fontPickerDescription">サイト全体の文字を切り替えて、実際の見え方を比べられます。</p>
+      </div>
+      <button type="button" class="fontPickerClose" data-font-close aria-label="閉じる">×</button>
+    </div>
+    <label class="fontPickerLabel" for="fontPickerSelect">フォントを選択</label>
+    <select id="fontPickerSelect">
+      <optgroup label="手書き・ペン">
+        <option value="Yomogi">Yomogi — ラフな手書き</option>
+        <option value="Zen Kurenaido">Zen Kurenaido — 細く自然</option>
+        <option value="Klee One">Klee One — やわらかなペン字</option>
+        <option value="Yusei Magic">Yusei Magic — サインペン風</option>
+        <option value="Yuji Mai">Yuji Mai — 筆文字</option>
+        <option value="Yuji Syuku">Yuji Syuku — 古風な手書き</option>
+        <option value="Stick">Stick — 個性的な手書き</option>
+      </optgroup>
+      <optgroup label="現代的・ゴシック">
+        <option value="IBM Plex Sans JP">IBM Plex Sans JP</option>
+        <option value="Zen Kaku Gothic New">Zen Kaku Gothic New</option>
+        <option value="Murecho">Murecho</option>
+        <option value="M PLUS 2">M PLUS 2</option>
+        <option value="Noto Sans JP">Noto Sans JP</option>
+        <option value="BIZ UDPGothic">BIZ UDPGothic</option>
+      </optgroup>
+      <optgroup label="丸み・やわらか">
+        <option value="Kiwi Maru">Kiwi Maru</option>
+        <option value="Zen Maru Gothic">Zen Maru Gothic</option>
+        <option value="Kosugi Maru">Kosugi Maru</option>
+        <option value="M PLUS Rounded 1c">M PLUS Rounded 1c</option>
+      </optgroup>
+      <optgroup label="明朝・個性派">
+        <option value="Noto Serif JP">Noto Serif JP</option>
+        <option value="Shippori Mincho">Shippori Mincho</option>
+        <option value="Zen Old Mincho">Zen Old Mincho</option>
+        <option value="Kaisei Tokumin">Kaisei Tokumin</option>
+      </optgroup>
+    </select>
+    <div class="fontPickerPreview">
+      <div class="fontPickerPreviewMeta"><span>LIVE PREVIEW</span><span id="fontPickerCurrent">標準フォント</span></div>
+      <div id="fontPickerSample" class="fontPickerSample">
+        今日も、いい一日になりますように。
+        <span>SAYでつながる、新しいコミュニケーション。</span>
+        <small>Hello, this is SAY. 0123456789</small>
+      </div>
+    </div>
+    <div class="fontPickerActions">
+      <button type="button" id="fontPickerReset" class="fontPickerSecondary">標準に戻す</button>
+      <button type="button" id="fontPickerDone" class="fontPickerPrimary">このフォントを使う</button>
+    </div>
+    <p class="fontPickerFootnote">選択したフォントはこのブラウザに保存され、次回も引き継がれます。</p>
+  </section>
 </div>
 
 <div id="container">
