@@ -275,75 +275,116 @@ async function searchPosts() {
 }
 
 // =====================
-// 登録
+// アカウント統合フロー
 // =====================
-async function register() {
-    try {
-        const id = document.getElementById("regId").value.trim();
-        const name = document.getElementById("regName").value.trim();
-        const pw = document.getElementById("regPw").value;
+let accountFlowStage = "initial";
+let accountPending = null;
 
-        if (!id || !name || !pw) {
-            alert("すべての項目を入力してください。");
+function resetAccountFlow() {
+    accountFlowStage = "initial";
+    accountPending = null;
+    const nicknameWrap = document.getElementById("accountNicknameWrap");
+    const confirmWrap = document.getElementById("accountConfirmWrap");
+    const continueBtn = document.getElementById("accountContinueBtn");
+    const status = document.getElementById("accountStatus");
+    const nickname = document.getElementById("accountNicknameInput");
+    const password = document.getElementById("accountPasswordInput");
+    if (nicknameWrap) nicknameWrap.hidden = true;
+    if (confirmWrap) confirmWrap.hidden = true;
+    if (continueBtn) { continueBtn.hidden = false; continueBtn.textContent = "続ける"; continueBtn.disabled = false; }
+    if (status) status.textContent = "";
+    if (nickname) nickname.value = "";
+    if (password) { password.value = ""; password.autocomplete = "current-password"; }
+}
+
+async function continueAccount() {
+    const idInput = document.getElementById("accountIdInput");
+    const passwordInput = document.getElementById("accountPasswordInput");
+    const nicknameWrap = document.getElementById("accountNicknameWrap");
+    const nicknameInput = document.getElementById("accountNicknameInput");
+    const continueBtn = document.getElementById("accountContinueBtn");
+    const status = document.getElementById("accountStatus");
+    if (!idInput || !passwordInput || !continueBtn) return;
+    const id = idInput.value.trim();
+    const pw = passwordInput.value;
+    if (!id || !pw) { alert("ユーザーIDとパスワードを入力してください。"); return; }
+
+    if (accountFlowStage === "nickname") {
+        const name = nicknameInput ? nicknameInput.value.trim() : "";
+        if (!name) { alert("ニックネームを入力してください。"); return; }
+        accountPending = { id, pw, name };
+        document.getElementById("accountConfirmId").textContent = id;
+        document.getElementById("accountConfirmName").textContent = name;
+        document.getElementById("accountConfirmWrap").hidden = false;
+        continueBtn.hidden = true;
+        if (status) status.textContent = "";
+        return;
+    }
+
+    continueBtn.disabled = true;
+    if (status) status.textContent = "アカウントを確認しています…";
+    try {
+        const snap = await fs.getDocs(fs.collection(db, "users"));
+        let found = null;
+        snap.forEach(userDoc => {
+            const user = userDoc.data();
+            if (String(user.accountId || "") === id) found = { docId: userDoc.id, ...user };
+        });
+        if (found) {
+            if (found.password !== pw) { if (status) status.textContent = ""; alert("パスワードが違います。"); return; }
+            currentUser = { ...found, tokens: found.tokens !== undefined && found.tokens !== null ? found.tokens : 0 };
+            localStorage.setItem("user", JSON.stringify(currentUser));
+            updateTopRight();
+            resetAccountFlow();
+            showPage("homePage");
+            alert("ログインしました。");
             return;
         }
-
-        await fs.addDoc(
-            fs.collection(db, "users"),
-            {
-                accountId: id,
-                nickname: name,
-                password: pw,
-                role: "user",
-                tokens: 0
-            }
-        );
-
-        alert("登録が完了しました。ログインしてください。");
-        showPage("loginPage");
-    } catch (e) {
-        console.error("登録エラー:", e);
+        accountFlowStage = "nickname";
+        if (nicknameWrap) nicknameWrap.hidden = false;
+        passwordInput.autocomplete = "new-password";
+        continueBtn.textContent = "登録内容を確認";
+        if (status) status.textContent = "未登録のIDです。ニックネームを入力して登録に進めます。";
+    } catch (error) {
+        console.error("アカウント確認エラー:", error);
+        alert("アカウントを確認できませんでした。時間をおいて再度お試しください。");
+    } finally {
+        if (continueBtn && !continueBtn.hidden) continueBtn.disabled = false;
     }
 }
 
-// =====================
-// ログイン
-// =====================
-async function login() {
+async function createAccount() {
+    if (!accountPending) return;
+    const createBtn = document.getElementById("accountCreateBtn");
+    if (createBtn) createBtn.disabled = true;
     try {
-        const id = document.getElementById("loginId").value.trim();
-        const pw = document.getElementById("loginPw").value;
-
-        const snap = await fs.getDocs(
-            fs.collection(db, "users")
-        );
-
-        let loggedInUser = null;
-
-        snap.forEach(docSnap => {
-            const u = docSnap.data();
-            if (u.accountId === id && u.password === pw) {
-                loggedInUser = {
-                    docId: docSnap.id, // FirestoreのドキュメントIDを保持
-                    ...u,
-                    // tokensが未設定の古いアカウントでも安全に0をセット
-                    tokens: (u.tokens !== undefined && u.tokens !== null) ? u.tokens : 0
-                };
-            }
-        });
-
-        if (loggedInUser) {
-            currentUser = loggedInUser;
-            localStorage.setItem("user", JSON.stringify(loggedInUser));
-            updateTopRight();
-            showPage("homePage");
-        } else {
-            alert("IDまたはパスワードが間違っています。");
+        const snap = await fs.getDocs(fs.collection(db, "users"));
+        let duplicate = false;
+        snap.forEach(userDoc => { if (String(userDoc.data().accountId || "") === accountPending.id) duplicate = true; });
+        if (duplicate) {
+            alert("このユーザーIDはすでに登録されています。最初からやり直してください。");
+            resetAccountFlow();
+            return;
         }
-    } catch (e) {
-        console.error("ログインエラー:", e);
+        const newUser = { accountId: accountPending.id, nickname: accountPending.name, password: accountPending.pw, role: "user", tokens: 0 };
+        const created = await fs.addDoc(fs.collection(db, "users"), newUser);
+        currentUser = { docId: created.id, ...newUser };
+        localStorage.setItem("user", JSON.stringify(currentUser));
+        updateTopRight();
+        resetAccountFlow();
+        showPage("homePage");
+        alert("アカウントを作成しました。");
+    } catch (error) {
+        console.error("アカウント作成エラー:", error);
+        alert("アカウントを作成できませんでした。時間をおいて再度お試しください。");
+    } finally {
+        if (createBtn) createBtn.disabled = false;
     }
 }
+
+// 旧画面との互換用
+async function register() { return continueAccount(); }
+async function login() { return continueAccount(); }
 
 // =====================
 // ユーザー読込
@@ -401,45 +442,24 @@ function updateTopRight() {
         const btn = document.getElementById("accountBtn");
         const headerToken = document.getElementById("headerToken");
         const tokenCountSpan = document.getElementById("tokenCount");
-        
-        const loginBtn = document.querySelector("#leftMenu button[onclick*='loginPage']");
-        const registerBtn = document.querySelector("#leftMenu button[onclick*='registerPage']");
         const profileBtn = document.querySelector("#leftMenu button[onclick*='profilePage']");
-
         if (!btn) return;
-
         if (!currentUser) {
-            btn.textContent = "アカウント作成";
-            btn.onclick = () => {
-                showPage("registerPage");
-            };
-
+            btn.textContent = "アカウント";
+            btn.onclick = () => { resetAccountFlow(); showPage("accountPage"); };
             if (headerToken) headerToken.style.display = "none";
-
-            if (loginBtn) loginBtn.style.display = "block";
-            if (registerBtn) registerBtn.style.display = "block";
             if (profileBtn) profileBtn.style.display = "none";
-
         } else {
-            btn.textContent = currentUser.nickname;
-            btn.onclick = () => {
-                showPage("profilePage");
-            };
-
+            btn.textContent = currentUser.nickname || "アカウント";
+            btn.onclick = () => showPage("profilePage");
             if (headerToken && tokenCountSpan) {
                 tokenCountSpan.textContent = currentUser.tokens !== undefined ? currentUser.tokens : 0;
                 headerToken.style.display = "block";
             }
-
-            if (loginBtn) loginBtn.style.display = "none";
-            if (registerBtn) registerBtn.style.display = "none";
             if (profileBtn) profileBtn.style.display = "block";
-
             renderProfile();
         }
-    } catch (e) {
-        console.error("UI更新エラー:", e);
-    }
+    } catch (e) { console.error("UI更新エラー:", e); }
 }
 
 // =====================
@@ -717,6 +737,9 @@ window.applyAkitaConversion = applyAkitaConversion;
 window.closeAkitaPreview = closeAkitaPreview;
 window.register = register;
 window.login = login;
+window.continueAccount = continueAccount;
+window.createAccount = createAccount;
+window.resetAccountFlow = resetAccountFlow;
 window.showPage = showPage;
 window.searchPosts = searchPosts;
 window.startKantoGame = startKantoGame;
