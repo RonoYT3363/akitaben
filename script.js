@@ -283,45 +283,57 @@ let accountPending = null;
 function resetAccountFlow() {
     accountFlowStage = "initial";
     accountPending = null;
-    const nicknameWrap = document.getElementById("accountNicknameWrap");
-    const confirmWrap = document.getElementById("accountConfirmWrap");
+    const credentials = document.getElementById("accountCredentialsStep");
+    const registration = document.getElementById("accountRegistrationStep");
+    const confirm = document.getElementById("accountConfirmWrap");
     const continueBtn = document.getElementById("accountContinueBtn");
     const status = document.getElementById("accountStatus");
     const nickname = document.getElementById("accountNicknameInput");
     const password = document.getElementById("accountPasswordInput");
-    if (nicknameWrap) nicknameWrap.hidden = true;
-    if (confirmWrap) confirmWrap.hidden = true;
-    if (continueBtn) { continueBtn.hidden = false; continueBtn.textContent = "続ける"; continueBtn.disabled = false; }
+    if (credentials) credentials.hidden = false;
+    if (registration) registration.hidden = true;
+    if (confirm) confirm.hidden = true;
+    if (continueBtn) continueBtn.disabled = false;
     if (status) status.textContent = "";
     if (nickname) nickname.value = "";
     if (password) { password.value = ""; password.autocomplete = "current-password"; }
 }
 
+function backToAccountDetails() {
+    accountFlowStage = "nickname";
+    const registration = document.getElementById("accountRegistrationStep");
+    const confirm = document.getElementById("accountConfirmWrap");
+    if (confirm) confirm.hidden = true;
+    if (registration) registration.hidden = false;
+}
+
 async function continueAccount() {
     const idInput = document.getElementById("accountIdInput");
     const passwordInput = document.getElementById("accountPasswordInput");
-    const nicknameWrap = document.getElementById("accountNicknameWrap");
+    const credentials = document.getElementById("accountCredentialsStep");
+    const registration = document.getElementById("accountRegistrationStep");
     const nicknameInput = document.getElementById("accountNicknameInput");
     const continueBtn = document.getElementById("accountContinueBtn");
+    const registrationContinueBtn = document.getElementById("accountRegistrationContinueBtn");
     const status = document.getElementById("accountStatus");
-    if (!idInput || !passwordInput || !continueBtn) return;
-    const id = idInput.value.trim();
-    const pw = passwordInput.value;
-    if (!id || !pw) { alert("ユーザーIDとパスワードを入力してください。"); return; }
+    if (!idInput || !passwordInput) return;
 
     if (accountFlowStage === "nickname") {
         const name = nicknameInput ? nicknameInput.value.trim() : "";
         if (!name) { alert("ニックネームを入力してください。"); return; }
-        accountPending = { id, pw, name };
-        document.getElementById("accountConfirmId").textContent = id;
+        accountPending = { id: idInput.value.trim(), pw: passwordInput.value, name };
+        document.getElementById("accountConfirmId").textContent = accountPending.id;
         document.getElementById("accountConfirmName").textContent = name;
+        if (registration) registration.hidden = true;
         document.getElementById("accountConfirmWrap").hidden = false;
-        continueBtn.hidden = true;
-        if (status) status.textContent = "";
         return;
     }
 
-    continueBtn.disabled = true;
+    const id = idInput.value.trim();
+    const pw = passwordInput.value;
+    if (!id || !pw) { alert("ユーザーIDとパスワードを入力してください。"); return; }
+
+    if (continueBtn) continueBtn.disabled = true;
     if (status) status.textContent = "アカウントを確認しています…";
     try {
         const snap = await fs.getDocs(fs.collection(db, "users"));
@@ -340,16 +352,21 @@ async function continueAccount() {
             alert("ログインしました。");
             return;
         }
+
         accountFlowStage = "nickname";
-        if (nicknameWrap) nicknameWrap.hidden = false;
+        const idSummary = document.getElementById("accountStepIdValue");
+        if (idSummary) idSummary.textContent = id;
+        if (credentials) credentials.hidden = true;
+        if (registration) registration.hidden = false;
         passwordInput.autocomplete = "new-password";
-        continueBtn.textContent = "登録内容を確認";
-        if (status) status.textContent = "未登録のIDです。ニックネームを入力して登録に進めます。";
+        if (status) status.textContent = "";
+        if (nicknameInput) nicknameInput.focus();
     } catch (error) {
         console.error("アカウント確認エラー:", error);
         alert("アカウントを確認できませんでした。時間をおいて再度お試しください。");
     } finally {
-        if (continueBtn && !continueBtn.hidden) continueBtn.disabled = false;
+        if (continueBtn) continueBtn.disabled = false;
+        if (registrationContinueBtn) registrationContinueBtn.disabled = false;
     }
 }
 
@@ -740,6 +757,7 @@ window.login = login;
 window.continueAccount = continueAccount;
 window.createAccount = createAccount;
 window.resetAccountFlow = resetAccountFlow;
+window.backToAccountDetails = backToAccountDetails;
 window.showPage = showPage;
 window.searchPosts = searchPosts;
 window.startKantoGame = startKantoGame;
