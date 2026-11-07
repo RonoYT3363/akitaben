@@ -1740,3 +1740,13 @@ html[lang="ja"] body *:not(svg):not(path) {
 .accountStepEyebrow { margin: 0 0 4px; color: var(--muted-color, #64748b); font-size: 11px; letter-spacing: .12em; font-weight: 700; }
 .accountStepId { margin: 0 0 18px; color: var(--muted-color, #64748b); font-size: 14px; }
 .accountStepId strong { color: var(--text-color); }
+
+
+/* Keep the normal desktop sidebar visible beside the full-screen DM workspace. */
+@media (min-width: 821px) {
+    #dmPage[style*="display: block"] {
+        left: max(334px, calc((100vw - 1550px) / 2 + 334px)) !important;
+        right: max(30px, calc((100vw - 1550px) / 2 + 30px)) !important;
+        width: auto !important;
+    }
+}
