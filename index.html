@@ -2,8 +2,22 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f8fafc">
     <title>SAY-さい- 0.5.1-α</title>
     <link rel="stylesheet" href="style.css">
+    <script>
+        (() => {
+            try {
+                const savedTheme = localStorage.getItem("akitaben-theme");
+                const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+                document.documentElement.dataset.theme = savedTheme || preferredTheme;
+            } catch (error) {
+                document.documentElement.dataset.theme = "light";
+            }
+        })();
+    </script>
+
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     
@@ -31,6 +45,7 @@
 <body>
 
 <div id="topRight" style="display: flex; align-items: center; gap: 10px;">
+    <button id="themeToggle" type="button" aria-label="テーマを切り替える" title="テーマを切り替える">🌙 ダーク</button>
     <!-- ヘッダー用のトークン表示エリア -->
     <div id="headerToken" style="background-color: #ffffff; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 14px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: none; color: #d97706;">
         🪙 <span id="tokenCount">0</span> Token
