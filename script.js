@@ -1,6 +1,55 @@
 let currentUser = null;
 
 // =====================
+// テーマ切り替え
+// =====================
+function applyTheme(theme) {
+    const selectedTheme = theme === "dark" ? "dark" : "light";
+    document.documentElement.dataset.theme = selectedTheme;
+
+    const button = document.getElementById("themeToggle");
+    if (button) {
+        button.textContent = selectedTheme === "dark" ? "☀️ ライト" : "🌙 ダーク";
+        button.setAttribute("aria-label", selectedTheme === "dark" ? "ライトテーマに切り替える" : "ダークテーマに切り替える");
+        button.title = selectedTheme === "dark" ? "ライトテーマに切り替える" : "ダークテーマに切り替える";
+    }
+
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    if (themeColor) {
+        themeColor.content = selectedTheme === "dark" ? "#0f172a" : "#f8fafc";
+    }
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.dataset.theme || "light";
+    const nextTheme = currentTheme === "dark" ? "light" : "dark";
+
+    applyTheme(nextTheme);
+    try {
+        localStorage.setItem("akitaben-theme", nextTheme);
+    } catch (error) {
+        console.warn("テーマ設定を保存できませんでした:", error);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const savedTheme = (() => {
+        try {
+            return localStorage.getItem("akitaben-theme");
+        } catch (error) {
+            return null;
+        }
+    })();
+    const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    applyTheme(savedTheme || document.documentElement.dataset.theme || preferredTheme);
+
+    const button = document.getElementById("themeToggle");
+    if (button) button.addEventListener("click", toggleTheme);
+});
+
+
+
+// =====================
 // 初期化
 // =====================
 window.addEventListener("load", () => {
