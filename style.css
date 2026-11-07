@@ -308,3 +308,126 @@ input:focus {
     color: #854d0e;
     box-shadow: var(--shadow-sm);
 }
+
+
+/* ==========================================
+   ライト / ダークテーマ
+   ========================================== */
+:root {
+    color-scheme: light;
+    --input-bg: #fafafa;
+    --game-panel-bg: #fdf6e2;
+    --game-track-bg: #ffffff;
+    --owner-panel-bg: #fef9c3;
+    --owner-panel-text: #854d0e;
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg-color: #0f172a;
+    --surface-color: #1e293b;
+    --text-main: #e2e8f0;
+    --text-sub: #94a3b8;
+    --border-color: #334155;
+    --primary-color: #818cf8;
+    --primary-hover: #6366f1;
+    --input-bg: #0f172a;
+    --game-panel-bg: #29251b;
+    --game-track-bg: #0f172a;
+    --owner-panel-bg: #3b3214;
+    --owner-panel-text: #fde68a;
+}
+
+body,
+.page,
+.post,
+#topRight button,
+input,
+textarea,
+#ownerPanel,
+#gameTrack {
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+input,
+textarea {
+    color: var(--text-main);
+    background-color: var(--input-bg);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--text-sub);
+    opacity: 1;
+}
+
+#themeToggle {
+    background: var(--surface-color);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+}
+
+#themeToggle:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+:root[data-theme="dark"] #headerToken {
+    background-color: var(--surface-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+:root[data-theme="dark"] #postInput,
+:root[data-theme="dark"] input {
+    background-color: var(--input-bg);
+    color: var(--text-main);
+}
+
+:root[data-theme="dark"] #postInput:focus,
+:root[data-theme="dark"] input:focus {
+    background-color: var(--surface-color);
+}
+
+:root[data-theme="dark"] #ownerPanel {
+    background-color: var(--owner-panel-bg) !important;
+    border-color: #854d0e !important;
+    color: var(--owner-panel-text) !important;
+}
+
+:root[data-theme="dark"] #minigamePage > div {
+    background-color: var(--game-panel-bg) !important;
+    border-color: #8b5e17 !important;
+}
+
+:root[data-theme="dark"] #gameTrack {
+    background-color: var(--game-track-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+:root[data-theme="dark"] #gameScore {
+    color: #fbbf24 !important;
+}
+
+:root[data-theme="dark"] #searchResults p {
+    color: var(--text-sub) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body,
+    .page,
+    .post,
+    #topRight button,
+    input,
+    textarea,
+    #ownerPanel,
+    #gameTrack {
+        transition: none;
+    }
+}
