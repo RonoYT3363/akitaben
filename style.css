@@ -1718,3 +1718,38 @@ body:has(#dmPage[style*="display: block"]) #topRight {
         padding: 14px 14px 12px !important;
     }
 }
+
+
+/* Keep the navigation anchored to the viewport on every page and scroll position. */
+@media (min-width: 821px) {
+    #leftMenu {
+        position: fixed !important;
+        top: 58px !important;
+        left: max(30px, calc((100vw - 1550px) / 2 + 30px)) !important;
+        width: 252px !important;
+        height: calc(100vh - 76px) !important;
+        height: calc(100dvh - 76px) !important;
+        max-height: none !important;
+        overflow-y: auto !important;
+        z-index: 1001 !important;
+    }
+    /* Preserve the space that the fixed sidebar occupied in the page layout. */
+    #main {
+        margin-left: 304px !important;
+    }
+}
+@media (max-width: 820px) {
+    /* The compact horizontal navigation stays pinned at the top on small screens. */
+    #leftMenu {
+        position: fixed !important;
+        top: 8px !important;
+        left: 14px !important;
+        right: 14px !important;
+        width: auto !important;
+        height: auto !important;
+        max-height: none !important;
+        z-index: 1001 !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+    }
+}
