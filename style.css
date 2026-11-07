@@ -1508,12 +1508,12 @@ html[lang="ja"] body *:not(svg):not(path) {
     #container {
         max-width: 1550px !important;
         gap: 52px !important;
-        padding: 102px 30px 70px !important;
+        padding: 58px 30px 70px !important;
     }
     #leftMenu {
         flex-basis: 252px !important;
         width: 252px !important;
-        top: 102px !important;
+        top: 58px !important;
     }
     #leftMenu::before { font-size: 42px !important; }
     #leftMenu::after {
