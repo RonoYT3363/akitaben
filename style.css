@@ -1862,3 +1862,38 @@ body:has(#dmPage[style*="display: block"]) #topRight {
     cursor: pointer;
 }
 .akitamon-ticket-marker:hover { transform: scale(1.12); }
+
+
+/* Akita Token equipment gacha */
+.gachaIntro { color: var(--text-sub); margin: -8px 0 22px; }
+.gachaMachine { padding: 28px; border: 1px solid var(--border-color); background: var(--surface-color); text-align: center; }
+.gachaMachineEyebrow, .gachaSectionLabel { color: var(--text-sub); font-size: 10px; font-weight: 700; letter-spacing: .14em; }
+.gachaMachineTitle { margin-top: 9px; font-size: 27px; font-weight: 750; }
+.gachaMachine > p { color: var(--text-sub); font-size: 13px; }
+.gachaMachine > p strong { color: var(--text-main); }
+.gachaRates { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px 22px; margin: 22px 0; font-size: 13px; }
+.gachaRates b, .gachaRarity { display: inline-grid; min-width: 34px; min-height: 26px; place-items: center; padding: 2px 7px; border-radius: 3px; font-size: 11px; font-weight: 800; }
+.rarityN { color: #64748b; background: #e2e8f0; }
+.rarityR { color: #1d4ed8; background: #dbeafe; }
+.raritySR { color: #7e22ce; background: #f3e8ff; }
+.raritySSR { color: #a16207; background: #fef3c7; }
+#gachaPullButton { min-width: 190px; min-height: 48px; padding: 10px 22px; border: 1px solid var(--primary-color); border-radius: 3px; background: var(--primary-color); color: white; font: inherit; font-weight: 700; cursor: pointer; }
+#gachaPullButton:disabled { opacity: .55; cursor: wait; }
+.gachaStatus { min-height: 20px; margin: 13px 0 0 !important; font-size: 12px !important; }
+.gachaResult, .gachaCollection { margin-top: 24px; padding: 20px; border: 1px solid var(--border-color); background: var(--surface-color); }
+.gachaLastResult { display: flex; align-items: center; gap: 9px; min-height: 44px; margin-top: 10px; font-size: 16px; }
+.gachaLastResult strong { font-weight: 700; }
+.gachaCollectionHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.gachaCollectionHeader h3 { margin: 0; font-size: 18px; }
+#gachaCollectionCount { color: var(--text-sub); font-size: 12px; }
+.gachaInventoryList { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-top: 15px; }
+.gachaItemCard { display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 10px 12px; border: 1px solid var(--border-color); background: var(--bg-color); }
+.gachaItemCard strong { flex: 1; font-size: 13px; }
+.gachaItemAmount { color: var(--text-sub); font-size: 12px; font-variant-numeric: tabular-nums; }
+.gachaEmpty { grid-column: 1 / -1; margin: 0; padding: 18px 0; color: var(--text-sub); font-size: 13px; }
+@media (max-width: 600px) {
+    .gachaMachine { padding: 22px 14px; }
+    .gachaMachineTitle { font-size: 23px; }
+    .gachaRates { gap: 9px 13px; }
+    .gachaLastResult { flex-wrap: wrap; }
+}
