@@ -1012,7 +1012,12 @@ async function initializeAkitamonMap() {
 }
 
 function startAkitamonLocationWatch() {
-    if (akitamonLocationWatchId !== null || !navigator.geolocation) return;
+    if (akitamonLocationWatchId !== null) return;
+    if (!navigator.geolocation) {
+        akitamonLocationResolved = true;
+        renderAkitamonTestTickets();
+        return;
+    }
 
     akitamonLocationWatchId = navigator.geolocation.watchPosition(
         (position) => {
@@ -1022,11 +1027,16 @@ function startAkitamonLocationWatch() {
 
             akitamonUserMarker.setLngLat([lng, lat]).addTo(akitamonMap);
             if (!akitamonHasCenteredOnUser) {
-                akitamonMap.flyTo({ center: [lng, lat], zoom: Math.max(akitamonMap.getZoom(), 15), essential: true });
                 akitamonHasCenteredOnUser = true;
+                akitamonMap.once("moveend", () => {
+                    akitamonLocationResolved = true;
+                    renderAkitamonTestTickets();
+                });
+                akitamonMap.flyTo({ center: [lng, lat], zoom: Math.max(akitamonMap.getZoom(), 15), essential: true });
+            } else {
+                akitamonLocationResolved = true;
+                renderAkitamonTestTickets();
             }
-            akitamonLocationResolved = true;
-            renderAkitamonTestTickets();
         },
         (error) => {
             console.warn("Akitamon: 現在地を取得できませんでした。", error.message);
