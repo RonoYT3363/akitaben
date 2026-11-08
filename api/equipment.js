@@ -61,14 +61,14 @@ module.exports = async (req, res) => {
     const headers = { "Authorization": "Bearer " + githubToken };
     const imageApiPath = "/repos/" + REPO + "/contents/" + imagePath.split("/").map(encodeURIComponent).join("/");
     let existingImage = null;
-    try { existingImage = await github(imageApiPath); } catch (e) { if (!String(e.message).includes("Not Found")) throw e; }
+    try { existingImage = await github(imageApiPath + "?ref=dm-test"); } catch (e) { if (!String(e.message).includes("Not Found")) throw e; }
     const imagePayload = { message: "Add equipment image: " + name.trim(), content: buffer.toString("base64"), branch: "dm-test" };
     if (existingImage && existingImage.sha) imagePayload.sha = existingImage.sha;
     await github(imageApiPath, { method: "PUT", body: JSON.stringify(imagePayload) });
 
     const dataPath = "/repos/" + REPO + "/contents/data/equipment.json";
     let dataFile = null;
-    try { dataFile = await github(dataPath); } catch (e) { if (!String(e.message).includes("Not Found")) throw e; }
+    try { dataFile = await github(dataPath + "?ref=dm-test"); } catch (e) { if (!String(e.message).includes("Not Found")) throw e; }
     let items = [];
     if (dataFile && dataFile.content) items = JSON.parse(Buffer.from(dataFile.content.replace(/\n/g, ""), "base64").toString("utf8"));
     if (!Array.isArray(items)) throw new Error("equipment.json must contain an array");
