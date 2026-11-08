@@ -104,6 +104,7 @@
         <button onclick="showPage('akitamonPage')">Akitamon</button>
         
         <button onclick="showPage('minigamePage')">ミニゲーム</button>
+        <button onclick="showPage('gachaPage')">装備品ガチャ</button>
         <button id="accountMenuBtn" onclick="openAccountEntry()">アカウント</button>
         <button onclick="openDmPage()">DM</button>
     </div>
@@ -192,6 +193,37 @@
             </div>
         </div>
 
+
+        <div id="gachaPage" class="page" style="display:none;">
+            <h2>装備品ガチャ</h2>
+            <p class="gachaIntro">Akita Tokenを使って、秋田モチーフの装備品を集めよう。</p>
+            <section class="gachaMachine">
+                <div class="gachaMachineEyebrow">AKITA TOKEN COLLECTION</div>
+                <div class="gachaMachineTitle">装備品ガチャ</div>
+                <p>1回につき <strong>1 Akita Token</strong></p>
+                <div class="gachaRates">
+                    <span><b class="rarityN">N</b> 60%</span>
+                    <span><b class="rarityR">R</b> 30%</span>
+                    <span><b class="raritySR">SR</b> 9%</span>
+                    <span><b class="raritySSR">SSR</b> 1%</span>
+                </div>
+                <button type="button" id="gachaPullButton" onclick="pullGacha()">1回まわす</button>
+                <p id="gachaStatus" class="gachaStatus" aria-live="polite">ログインしてガチャを利用できます。</p>
+            </section>
+            <section class="gachaResult" aria-live="polite">
+                <div class="gachaSectionLabel">LATEST RESULT</div>
+                <div id="gachaLastResult" class="gachaLastResult">まだアイテムを獲得していません。</div>
+            </section>
+            <section class="gachaCollection">
+                <div class="gachaCollectionHeader">
+                    <h3>コレクション</h3>
+                    <span id="gachaCollectionCount">0種類</span>
+                </div>
+                <div id="gachaInventoryList" class="gachaInventoryList">
+                    <p class="gachaEmpty">獲得した装備品がここに表示されます。</p>
+                </div>
+            </section>
+        </div>
 
         <div id="accountPage" class="page" style="display:none;">
             <h2>アカウント</h2>
