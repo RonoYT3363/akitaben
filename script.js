@@ -787,6 +787,98 @@ let akitamonUserMarker = null;
 let akitamonLocationWatchId = null;
 let akitamonHasCenteredOnUser = false;
 
+const AKITAMON_TICKET_STORAGE_KEY = "akitamon-test-roulette-tickets-v1";
+const AKITAMON_TICKET_COUNT_KEY = "akitamon-test-roulette-ticket-count-v1";
+const AKITAMON_TICKET_TEST_DENSITY = 0.005; // 1㎡あたり0.5%
+const AKITAMON_TICKET_TEST_AREA_M2 = 10000; // 100m × 100m のテスト範囲
+let akitamonTicketMarkers = [];
+
+function getAkitamonTicketCount() {
+    try {
+        return Math.max(0, Number(localStorage.getItem(AKITAMON_TICKET_COUNT_KEY)) || 0);
+    } catch (_) {
+        return 0;
+    }
+}
+
+function updateAkitamonTicketHud() {
+    const count = document.getElementById("akitamonTicketCount");
+    if (count) count.textContent = String(getAkitamonTicketCount());
+}
+
+function createAkitamonTestTickets() {
+    let tickets;
+    try {
+        const saved = localStorage.getItem(AKITAMON_TICKET_STORAGE_KEY);
+        tickets = saved ? JSON.parse(saved) : null;
+    } catch (_) {
+        tickets = null;
+    }
+
+    if (!Array.isArray(tickets)) {
+        tickets = [];
+        // 100m × 100m の各1㎡を独立して0.5%で抽選
+        for (let cell = 0; cell < AKITAMON_TICKET_TEST_AREA_M2; cell++) {
+            if (Math.random() >= AKITAMON_TICKET_TEST_DENSITY) continue;
+            tickets.push({
+                id: "test-ticket-" + cell,
+                x: Math.random() - 0.5,
+                y: Math.random() - 0.5
+            });
+        }
+        try {
+            localStorage.setItem(AKITAMON_TICKET_STORAGE_KEY, JSON.stringify(tickets));
+        } catch (error) {
+            console.warn("挑戦券のテスト配置を保存できませんでした:", error);
+        }
+    }
+
+    return tickets;
+}
+
+function renderAkitamonTestTickets() {
+    if (!akitamonMap || akitamonTicketMarkers.length) return;
+    const center = akitamonMap.getCenter();
+    const latScale = 1 / 111320;
+    const lngScale = 1 / (111320 * Math.max(0.1, Math.cos(center.lat * Math.PI / 180)));
+    const tickets = createAkitamonTestTickets();
+
+    tickets.forEach(ticket => {
+        const element = document.createElement("button");
+        element.type = "button";
+        element.className = "akitamon-ticket-marker";
+        element.textContent = "券";
+        element.setAttribute("aria-label", "Akita Tokenルーレット挑戦券を回収");
+        element.title = "タップして挑戦券を回収";
+
+        const marker = new maplibregl.Marker({ element, anchor: "center" })
+            .setLngLat([
+                center.lng + ticket.x * 100 * lngScale,
+                center.lat + ticket.y * 100 * latScale
+            ])
+            .addTo(akitamonMap);
+
+        element.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            marker.remove();
+            akitamonTicketMarkers = akitamonTicketMarkers.filter(item => item.id !== ticket.id);
+            const remaining = akitamonTicketMarkers.map(item => item.data);
+            try {
+                localStorage.setItem(AKITAMON_TICKET_STORAGE_KEY, JSON.stringify(remaining));
+                localStorage.setItem(AKITAMON_TICKET_COUNT_KEY, String(getAkitamonTicketCount() + 1));
+            } catch (error) {
+                console.warn("挑戦券の回収状態を保存できませんでした:", error);
+            }
+            updateAkitamonTicketHud();
+        });
+
+        akitamonTicketMarkers.push({ id: ticket.id, marker, data: ticket });
+    });
+
+    updateAkitamonTicketHud();
+}
+
 function createAkitamonUserMarker() {
     const element = document.createElement("div");
     element.className = "akitamon-user-marker";
@@ -869,6 +961,10 @@ async function initializeAkitamonMap() {
 
         akitamonMap.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
         akitamonMap.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: "metric" }), "bottom-left");
+
+        akitamonMap.once("load", () => {
+            renderAkitamonTestTickets();
+        });
 
         akitamonUserMarker = new maplibregl.Marker({
             element: createAkitamonUserMarker(),
