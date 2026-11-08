@@ -546,7 +546,6 @@ function showPage(id) {
     const target = document.getElementById(id);
     if (target) {
         target.style.display = "block";
-        if (id === "avatarPage") loadAvatarOutfit();
     }
 }
 
@@ -1214,73 +1213,3 @@ document.addEventListener("DOMContentLoaded",()=>{
         });
     });
 })();
-
-
-/* =====================
-   Free avatar outfit prototype
-   ===================== */
-const AVATAR_DEFAULT_OUTFIT = "say-tee";
-const AVATAR_OUTFITS = new Set(["say-tee", "navy-hoodie"]);
-
-function getAvatarOutfitStorageKey() {
-    const accountId = currentUser && currentUser.accountId ? String(currentUser.accountId) : "guest";
-    return "say-avatar-outfit:" + accountId;
-}
-
-function setAvatarOutfit(outfitId) {
-    const avatar = document.getElementById("avatarCharacter");
-    if (!avatar) return;
-    const safeOutfit = AVATAR_OUTFITS.has(outfitId) ? outfitId : AVATAR_DEFAULT_OUTFIT;
-    avatar.classList.remove("outfit-say-tee", "outfit-navy-hoodie");
-    avatar.classList.add("outfit-" + safeOutfit);
-    const radio = document.querySelector('input[name="avatarOutfit"][value="' + safeOutfit + '"]');
-    if (radio) radio.checked = true;
-    return safeOutfit;
-}
-
-function loadAvatarOutfit() {
-    let savedOutfit = AVATAR_DEFAULT_OUTFIT;
-    try {
-        const stored = localStorage.getItem(getAvatarOutfitStorageKey());
-        if (stored && AVATAR_OUTFITS.has(stored)) savedOutfit = stored;
-    } catch (error) {
-        console.warn("アバター衣装を読み込めませんでした。初期衣装を表示します。", error);
-    }
-    setAvatarOutfit(savedOutfit);
-}
-
-function applyAvatarOutfit() {
-    const selected = document.querySelector('input[name="avatarOutfit"]:checked');
-    const outfit = setAvatarOutfit(selected ? selected.value : AVATAR_DEFAULT_OUTFIT);
-    const status = document.getElementById("avatarOutfitStatus");
-    try {
-        localStorage.setItem(getAvatarOutfitStorageKey(), outfit);
-        if (status) status.textContent = "「" + (outfit === "say-tee" ? "SAY 白Tシャツ" : "ネイビーパーカー") + "」に着替えました。";
-    } catch (error) {
-        if (status) status.textContent = "着替えましたが、このブラウザには保存できませんでした。";
-    }
-}
-
-function resetAvatarOutfit() {
-    setAvatarOutfit(AVATAR_DEFAULT_OUTFIT);
-    const status = document.getElementById("avatarOutfitStatus");
-    try {
-        localStorage.setItem(getAvatarOutfitStorageKey(), AVATAR_DEFAULT_OUTFIT);
-        if (status) status.textContent = "初期衣装のSAY白Tシャツに戻しました。";
-    } catch (error) {
-        if (status) status.textContent = "初期衣装に戻しました。保存はできませんでした。";
-    }
-}
-
-function setAvatarExpression(expression) {
-    const avatar = document.getElementById("avatarCharacter");
-    if (!avatar) return;
-    avatar.classList.remove("expression-smile", "expression-surprise");
-    if (expression === "smile") avatar.classList.add("expression-smile");
-    if (expression === "surprise") avatar.classList.add("expression-surprise");
-}
-
-document.addEventListener("DOMContentLoaded", loadAvatarOutfit);
-window.addEventListener("storage", event => {
-    if (event.key === getAvatarOutfitStorageKey()) loadAvatarOutfit();
-});
