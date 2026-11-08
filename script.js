@@ -1213,3 +1213,22 @@ document.addEventListener("DOMContentLoaded",()=>{
         });
     });
 })();
+
+
+/* =====================
+   Free avatar prototype controls
+   ===================== */
+function setAvatarExpression(expression) {
+    const avatar = document.getElementById("avatarCharacter");
+    if (!avatar) return;
+    avatar.classList.remove("expression-smile", "expression-surprise");
+    if (expression === "smile") avatar.classList.add("expression-smile");
+    if (expression === "surprise") avatar.classList.add("expression-surprise");
+}
+
+function toggleAvatarItem(item) {
+    const avatar = document.getElementById("avatarCharacter");
+    if (!avatar) return;
+    const className = item === "clip" ? "item-clip" : item === "headwear" ? "item-headwear" : "";
+    if (className) avatar.classList.toggle(className);
+}
