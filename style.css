@@ -1858,3 +1858,20 @@ body:has(#dmPage[style*="display: block"]) #topRight {
 @keyframes avatarSway{0%,100%{transform:rotate(0)}35%{transform:rotate(1deg)}70%{transform:rotate(-.8deg)}}
 @keyframes avatarBlink{0%,43%,47%,100%{transform:scaleY(1)}45%{transform:scaleY(.08)}}
 @media(max-width:700px){.avatarLab{grid-template-columns:1fr}.avatarStage{min-height:390px}.avatarCharacter{width:min(88%,300px)}.avatarPage{padding:24px 20px}}
+
+
+/* Avatar outfit layers: one clothing layer is always active. */
+.avatarBody { position: relative; }
+.avatarOutfit { display: none; }
+.avatarCharacter.outfit-say-tee .avatarOutfit-say-tee,
+.avatarCharacter.outfit-navy-hoodie .avatarOutfit-navy-hoodie { display: inline; }
+.avatarOutfitPicker { display: grid; gap: 9px; }
+.avatarOutfitOption { display: flex; align-items: center; gap: 11px; padding: 12px 13px; border: 1px solid var(--border-color); background: var(--surface-color); cursor: pointer; }
+.avatarOutfitOption:has(input:checked) { border-color: var(--primary-color); background: color-mix(in srgb, var(--primary-color) 7%, var(--surface-color)); }
+.avatarOutfitOption input { width: 17px; min-height: 17px !important; margin: 0; accent-color: var(--primary-color); }
+.avatarOutfitOption span { display: flex; flex-direction: column; gap: 3px; }
+.avatarOutfitOption strong { font-size: 13px; }
+.avatarOutfitOption small { color: var(--text-sub); font-size: 11px; }
+.avatarOutfitActions { margin-top: 12px; }
+.avatarControls .avatarOutfitActions .avatarApplyButton { background: var(--primary-color) !important; color: #fff !important; border-color: var(--primary-color) !important; }
+.avatarOutfitStatus { min-height: 20px; margin: 10px 0 0; color: var(--text-sub); font-size: 12px; }
