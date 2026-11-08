@@ -1828,3 +1828,33 @@ body:has(#dmPage[style*="display: block"]) #topRight {
         min-height: 380px;
     }
 }
+
+
+/* Free avatar motion prototype */
+.avatarPage{overflow:hidden}.avatarPageHeading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.avatarPageHeading h2{border:0;padding:0;margin:0 0 8px}.avatarEyebrow{margin:0 0 8px;color:var(--text-sub);font-size:10px;font-weight:800;letter-spacing:.16em}
+.avatarLead{margin:0;color:var(--text-sub);font-size:13px;line-height:1.7}.avatarFreeTag{padding:6px 9px;border:1px solid var(--border-color);color:var(--text-sub);font-size:10px;font-weight:800;letter-spacing:.12em}
+.avatarLab{display:grid;grid-template-columns:minmax(260px,1fr) minmax(220px,.8fr);gap:26px;align-items:center}
+.avatarStage{min-height:480px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at 50% 42%,#edf1fb 0,#f6f7fb 48%,#f0f2f7 100%);border:1px solid #e1e6ef}
+:root[data-theme="dark"] .avatarStage{background:radial-gradient(ellipse at 50% 42%,#30394c 0,#202837 55%,#171e2a 100%);border-color:var(--border-color)}
+.avatarStageGlow{position:absolute;width:260px;height:260px;border-radius:50%;background:rgba(150,169,210,.17)}
+.avatarCharacter{position:relative;z-index:1;width:min(100%,340px);transform-origin:50% 88%;animation:avatarBreath 3.8s ease-in-out infinite}
+.avatarSvg{display:block;width:100%;overflow:visible}.avatarHead{transform-box:fill-box;transform-origin:50% 85%;animation:avatarSway 5.5s ease-in-out infinite}
+.avatarBody{transform-box:fill-box;transform-origin:50% 10%;animation:avatarBodyMove 3.8s ease-in-out infinite}
+.avatarEyes{transform-box:fill-box;transform-origin:center;animation:avatarBlink 5.2s infinite}
+.avatarHairClip{transform-box:fill-box;transform-origin:50% 50%;animation:avatarSway 5.5s ease-in-out infinite}
+.avatarStageCaption{position:absolute;bottom:15px;left:0;right:0;text-align:center;color:#8792a5;font-size:9px;font-weight:800;letter-spacing:.2em}
+.avatarControls{padding:8px 0}.avatarControlLabel{margin:20px 0 10px;color:var(--text-sub);font-size:11px;font-weight:800;letter-spacing:.08em}
+.avatarButtonRow{display:flex;flex-wrap:wrap;gap:8px}
+.avatarControls .avatarButtonRow button{width:auto!important;min-height:38px;padding:8px 12px!important;background:var(--surface-color)!important;color:var(--text-main)!important;border:1px solid var(--border-color)!important;border-radius:7px!important;font-size:12px!important}
+.avatarControls .avatarButtonRow button:hover{border-color:var(--primary-color)!important;color:var(--primary-color)!important;background:var(--surface-color)!important;transform:none}
+.avatarPrototypeNote{margin-top:26px;padding-top:16px;border-top:1px solid var(--border-color);color:var(--text-sub);font-size:11px;line-height:1.8}
+.avatarCharacter.expression-smile .avatarMouth{d:path("M165 255 Q180 278 195 255")}
+.avatarCharacter.expression-surprise .avatarMouth{d:path("M174 256 Q180 268 186 256 Q180 249 174 256")}
+.avatarCharacter.item-clip .avatarHairClip{opacity:1}.avatarCharacter:not(.item-clip) .avatarHairClip{opacity:0}
+.avatarCharacter.item-headwear .avatarHeadwear{display:block!important}
+@keyframes avatarBreath{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-4px) scaleY(1.012)}}
+@keyframes avatarBodyMove{0%,100%{transform:rotate(0)}50%{transform:rotate(.6deg)}}
+@keyframes avatarSway{0%,100%{transform:rotate(0)}35%{transform:rotate(1deg)}70%{transform:rotate(-.8deg)}}
+@keyframes avatarBlink{0%,43%,47%,100%{transform:scaleY(1)}45%{transform:scaleY(.08)}}
+@media(max-width:700px){.avatarLab{grid-template-columns:1fr}.avatarStage{min-height:390px}.avatarCharacter{width:min(88%,300px)}.avatarPage{padding:24px 20px}}
