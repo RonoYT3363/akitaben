@@ -1879,3 +1879,17 @@ body:has(#dmPage[style*="display: block"]) #topRight {
 /* Keep the safe default outfit visible even before JavaScript initializes. */
 .avatarOutfit-say-tee { display: inline; }
 .avatarCharacter.outfit-navy-hoodie .avatarOutfit-say-tee { display: none; }
+
+
+/* Anime-style first character: refined proportions and layered illustration */
+.avatarStage{min-height:570px;background:radial-gradient(ellipse at 50% 40%,#f3edf8 0,#faf8fc 48%,#f1f2f7 100%)}
+:root[data-theme="dark"] .avatarStage{background:radial-gradient(ellipse at 50% 40%,#343044 0,#242333 55%,#191c29 100%)}
+.avatarCharacter{width:min(100%,390px);animation:avatarBreath 4.2s ease-in-out infinite}
+.avatarSvg{filter:drop-shadow(0 8px 10px rgba(49,42,67,.08))}
+.avatarHead{transform-box:fill-box;transform-origin:50% 84%;animation:avatarSway 6.2s ease-in-out infinite}
+.avatarHairBack{transform-box:fill-box;transform-origin:50% 12%;animation:avatarSway 6.2s ease-in-out infinite}
+.avatarEyes{transform-box:fill-box;transform-origin:50% 50%;animation:avatarBlink 5.4s infinite}
+.avatarHairClip{transform-box:fill-box;transform-origin:50% 50%;animation:avatarSway 6.2s ease-in-out infinite}
+.avatarCharacter.expression-smile .avatarMouth{d:path("M166 249 Q180 270 194 249")}
+.avatarCharacter.expression-surprise .avatarMouth{d:path("M174 251 Q180 265 186 251 Q180 245 174 251")}
+@media(max-width:700px){.avatarStage{min-height:500px}.avatarCharacter{width:min(94%,350px)}}
