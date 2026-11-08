@@ -546,6 +546,7 @@ function showPage(id) {
     const target = document.getElementById(id);
     if (target) {
         target.style.display = "block";
+        if (id === "avatarPage") loadAvatarOutfit();
     }
 }
 
