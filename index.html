@@ -105,6 +105,7 @@
         
         <button onclick="showPage('minigamePage')">ミニゲーム</button>
         <button onclick="showPage('gachaPage')">装備品ガチャ</button>
+        <button id="equipmentAdminMenuBtn" onclick="showPage('equipmentAdminPage')" style="display:none;">装備品管理</button>
         <button id="accountMenuBtn" onclick="openAccountEntry()">アカウント</button>
         <button onclick="openDmPage()">DM</button>
     </div>
@@ -222,6 +223,30 @@
                 <div id="gachaInventoryList" class="gachaInventoryList">
                     <p class="gachaEmpty">獲得した装備品がここに表示されます。</p>
                 </div>
+            </section>
+        </div>
+
+        <div id="equipmentAdminPage" class="page" style="display:none;">
+            <h2>装備品管理</h2>
+            <p class="equipmentAdminIntro">画像と装備品データをGitHubへ登録します。GitHubへの書き込みはサーバー経由で行います。</p>
+            <section class="equipmentAdminCard">
+                <label for="equipmentAdminKey">管理キー（Vercel環境変数 EQUIPMENT_ADMIN_KEY に設定した値）</label>
+                <input id="equipmentAdminKey" type="password" autocomplete="off" placeholder="管理キー">
+                <label for="equipmentName">装備品名</label>
+                <input id="equipmentName" maxlength="60" placeholder="例：なまはげの刀">
+                <div class="equipmentAdminFields">
+                    <div><label for="equipmentRarity">レア度</label><select id="equipmentRarity"><option>N</option><option>R</option><option>SR</option><option>SSR</option></select></div>
+                    <div><label for="equipmentCategory">カテゴリ</label><select id="equipmentCategory"><option value="持ち物">持ち物</option><option value="頭装備">頭装備</option><option value="アクセサリー">アクセサリー</option><option value="背中装備">背中装備</option><option value="特殊装備">特殊装備</option><option value="服装">服装</option></select></div>
+                </div>
+                <label for="equipmentImage">装備品画像</label>
+                <input id="equipmentImage" type="file" accept="image/png,image/jpeg,image/webp">
+                <img id="equipmentImagePreview" class="equipmentImagePreview" alt="画像プレビュー" hidden>
+                <button type="button" id="equipmentSaveButton" onclick="saveEquipmentToGitHub()">GitHubに保存</button>
+                <p id="equipmentAdminStatus" class="equipmentAdminStatus" aria-live="polite">PNG・JPEG・WebP、2MB以下の画像を選択してください。</p>
+            </section>
+            <section class="equipmentAdminCard">
+                <h3>登録済み装備品</h3>
+                <div id="equipmentAdminList" class="equipmentAdminList">読み込み待ち</div>
             </section>
         </div>
 
