@@ -102,6 +102,7 @@
         <button onclick="showPage('homePage')">ホーム</button>
         <button onclick="showPage('searchPage')">検索</button> 
         <button onclick="showPage('akitamonPage')">Akitamon</button>
+        <button onclick="showPage('avatarPage')">アバター</button>
         <button onclick="showPage('minigamePage')">ミニゲーム</button>
         <button id="accountMenuBtn" onclick="openAccountEntry()">アカウント</button>
         <button onclick="openDmPage()">DM</button>
@@ -184,6 +185,68 @@
                     </button>
                 </div>
             </div>
+        </div>
+
+
+        <div id="avatarPage" class="page avatarPage" style="display:none;">
+          <div class="avatarPageHeading">
+            <div><p class="avatarEyebrow">SAY AVATAR LAB · FREE PROTOTYPE</p><h2>アバター試作室</h2><p class="avatarLead">無料のSVGとCSSだけで、アニメ風アバターの動きを試します。</p></div>
+            <span class="avatarFreeTag">FREE</span>
+          </div>
+          <div class="avatarLab">
+            <div class="avatarStage">
+              <div class="avatarStageGlow"></div>
+              <div class="avatarCharacter" id="avatarCharacter">
+                <svg class="avatarSvg" viewBox="0 0 360 470" role="img" aria-label="オリジナルのアニメ風アバター">
+                  <defs>
+                    <linearGradient id="avatarHair" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#766b9a"/><stop offset="1" stop-color="#292942"/></linearGradient>
+                    <linearGradient id="avatarCoat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8edf7"/><stop offset="1" stop-color="#b9c9e3"/></linearGradient>
+                  </defs>
+                  <ellipse cx="180" cy="445" rx="105" ry="13" fill="#25334a" opacity=".10"/>
+                  <g class="avatarBody">
+                    <path d="M100 440 Q105 345 137 323 L180 310 L223 323 Q255 345 260 440Z" fill="url(#avatarCoat)" stroke="#687b9b" stroke-width="3"/>
+                    <path d="M150 326 L180 365 L210 326 L198 440 L162 440Z" fill="#fff" opacity=".8"/>
+                    <path d="M137 324 L115 356 L142 380 L160 344 M223 324 L245 356 L218 380 L200 344" fill="#d5deed" stroke="#687b9b" stroke-width="2"/>
+                    <path d="M161 315 L180 343 L199 315 L193 300 L167 300Z" fill="#f1c8b8"/>
+                  </g>
+                  <g class="avatarHead">
+                    <path d="M103 173 Q85 66 180 52 Q275 66 257 173 L250 260 Q238 319 180 325 Q122 319 110 260Z" fill="url(#avatarHair)"/>
+                    <path d="M116 164 Q111 105 180 91 Q249 105 244 164 L237 254 Q226 299 180 304 Q134 299 123 254Z" fill="#f4cdbb" stroke="#b98278" stroke-width="2"/>
+                    <path d="M111 190 Q81 112 124 69 Q148 38 180 47 Q222 34 247 76 Q278 119 249 199 Q236 150 215 127 Q190 147 160 129 Q137 158 111 190Z" fill="url(#avatarHair)"/>
+                    <path d="M119 126 Q140 62 174 59 Q155 106 157 151 Q139 135 119 126Z" fill="#887baa"/>
+                    <path d="M179 54 Q218 59 240 113 Q213 100 196 117 Q183 94 179 54Z" fill="#655a89"/>
+                    <path d="M111 183 Q94 230 112 278 Q125 296 138 299 L130 228Z M249 181 Q266 228 248 278 Q235 296 222 299 L230 228Z" fill="#383451"/>
+                    <g class="avatarEyes">
+                      <ellipse cx="151" cy="211" rx="12" ry="17" fill="#fff"/><ellipse cx="209" cy="211" rx="12" ry="17" fill="#fff"/>
+                      <ellipse cx="153" cy="214" rx="6" ry="11" fill="#536d91"/><ellipse cx="207" cy="214" rx="6" ry="11" fill="#536d91"/>
+                      <circle cx="155" cy="210" r="2.8" fill="#fff"/><circle cx="209" cy="210" r="2.8" fill="#fff"/>
+                    </g>
+                    <path d="M135 187 Q150 178 164 186 M196 186 Q210 178 225 187" fill="none" stroke="#473b4d" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M177 239 Q181 242 184 239" fill="none" stroke="#bd8b80" stroke-width="2" stroke-linecap="round"/>
+                    <path class="avatarMouth" d="M166 260 Q180 270 194 260" fill="none" stroke="#a85f69" stroke-width="3" stroke-linecap="round"/>
+                    <ellipse cx="137" cy="244" rx="12" ry="6" fill="#e99599" opacity=".35"/><ellipse cx="223" cy="244" rx="12" ry="6" fill="#e99599" opacity=".35"/>
+                    <g class="avatarHairClip"><path d="M226 117 Q243 99 255 115 Q243 132 226 117Z" fill="#d9a84d" stroke="#8c6631" stroke-width="2"/><circle cx="239" cy="116" r="4" fill="#fff0bf"/></g>
+                    <g class="avatarHeadwear" style="display:none"><path d="M119 111 Q180 57 241 111 L235 127 Q180 93 125 127Z" fill="#c85b55" stroke="#8d3d3b" stroke-width="3"/><circle cx="180" cy="94" r="9" fill="#f1d28a"/></g>
+                  </g>
+                </svg>
+              </div>
+              <div class="avatarStageCaption">IDLE MOTION PREVIEW</div>
+            </div>
+            <div class="avatarControls">
+              <p class="avatarControlLabel">表情</p>
+              <div class="avatarButtonRow">
+                <button type="button" onclick="setAvatarExpression('smile')">笑顔</button>
+                <button type="button" onclick="setAvatarExpression('normal')">通常</button>
+                <button type="button" onclick="setAvatarExpression('surprise')">びっくり</button>
+              </div>
+              <p class="avatarControlLabel">試着アイテム</p>
+              <div class="avatarButtonRow">
+                <button type="button" onclick="toggleAvatarItem('clip')">秋田犬ヘアピン</button>
+                <button type="button" onclick="toggleAvatarItem('headwear')">お祭り鉢巻</button>
+              </div>
+              <p class="avatarPrototypeNote">これはLive2Dモデルそのものではなく、無料のSVG/CSSで作った動作確認用プロトタイプです。まばたき・呼吸・髪の揺れと、着せ替えの方向性を確認できます。ガチャやプロフィールへの保存はまだ接続していません。</p>
+            </div>
+          </div>
         </div>
 
         <div id="accountPage" class="page" style="display:none;">
