@@ -711,12 +711,15 @@ async function endKantoGame(success) {
 // ==========================================
  // Akita Token 装備品ガチャ（ゲーム内アイテムのみ）
  // ==========================================
-const gachaItems = [
-    { id: "akita-tenugui", name: "竿灯の手ぬぐい", rarity: "N", rate: 60 },
-    { id: "namahage-charm", name: "なまはげ面チャーム", rarity: "R", rate: 30 },
-    { id: "golden-chochin", name: "金色の提灯", rarity: "SR", rate: 9 },
-    { id: "kanto-crest", name: "竿灯大祭の紋章", rarity: "SSR", rate: 1 }
+const GACHA_RARITY_RATES = { N: 60, R: 30, SR: 9, SSR: 1 };
+const LEGACY_GACHA_ITEMS = [
+    { id: "akita-tenugui", name: "竿灯の手ぬぐい", rarity: "N", category: "持ち物" },
+    { id: "namahage-charm", name: "なまはげ面チャーム", rarity: "R", category: "アクセサリー" },
+    { id: "golden-chochin", name: "金色の提灯", rarity: "SR", category: "持ち物" },
+    { id: "kanto-crest", name: "竿灯大祭の紋章", rarity: "SSR", category: "特殊装備" }
 ];
+let gachaItems = [];
+let gachaCatalogLoaded = false;
 let gachaPulling = false;
 
 function getGachaInventory() {
@@ -724,14 +727,148 @@ function getGachaInventory() {
     return Array.isArray(currentUser.gachaInventory) ? currentUser.gachaInventory : [];
 }
 
+function getGachaItemById(id) {
+    return gachaItems.find(item => item.id === id) ||
+        LEGACY_GACHA_ITEMS.find(item => item.id === id) || null;
+}
+
+function getAvailableGachaRates() {
+    const available = Object.keys(GACHA_RARITY_RATES).filter(rarity =>
+        gachaItems.some(item => item.rarity === rarity)
+    );
+    const total = available.reduce((sum, rarity) => sum + GACHA_RARITY_RATES[rarity], 0);
+    if (!total) return {};
+    return Object.fromEntries(available.map(rarity => [
+        rarity, GACHA_RARITY_RATES[rarity] / total * 100
+    ]));
+}
+
+function renderGachaRates() {
+    const target = document.getElementById("gachaRatesDisplay");
+    if (!target) return;
+    target.replaceChildren();
+    const rates = getAvailableGachaRates();
+    ["N", "R", "SR", "SSR"].forEach(rarity => {
+        if (rates[rarity] === undefined) return;
+        const span = document.createElement("span");
+        const badge = document.createElement("b");
+        badge.className = "rarity" + rarity;
+        badge.textContent = rarity;
+        span.append(badge, " " + (Number.isInteger(rates[rarity]) ? rates[rarity] : rates[rarity].toFixed(1)) + "%");
+        target.appendChild(span);
+    });
+}
+
+function renderGachaCatalog() {
+    const list = document.getElementById("gachaCatalogList");
+    if (!list) return;
+    list.replaceChildren();
+    if (!gachaCatalogLoaded) {
+        list.textContent = "装備品を読み込んでいます…";
+        return;
+    }
+    if (!gachaItems.length) {
+        list.textContent = "現在、ガチャに登場する装備品はありません。";
+        return;
+    }
+    gachaItems.forEach(item => {
+        const card = document.createElement("article");
+        card.className = "gachaCatalogCard";
+        const image = document.createElement("img");
+        image.src = item.image;
+        image.alt = item.name;
+        image.loading = "lazy";
+        const details = document.createElement("div");
+        details.className = "gachaCatalogDetails";
+        const rarity = document.createElement("span");
+        rarity.className = "gachaRarity rarity" + item.rarity;
+        rarity.textContent = item.rarity;
+        const name = document.createElement("strong");
+        name.textContent = item.name;
+        const category = document.createElement("small");
+        category.textContent = item.category || "装備品";
+        details.append(rarity, name, category);
+        card.append(image, details);
+        list.appendChild(card);
+    });
+}
+
+async function loadGachaCatalog() {
+    const status = document.getElementById("gachaStatus");
+    const button = document.getElementById("gachaPullButton");
+    try {
+        const response = await fetch("/data/equipment.json", { cache: "no-store" });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const items = await response.json();
+        if (!Array.isArray(items)) throw new Error("装備品データの形式が正しくありません。");
+        gachaItems = items.filter(item =>
+            item && typeof item.id === "string" &&
+            typeof item.name === "string" &&
+            ["N", "R", "SR", "SSR"].includes(item.rarity) &&
+            typeof item.image === "string" && /^https:\/\//.test(item.image)
+        );
+        gachaCatalogLoaded = true;
+        renderGachaRates();
+        renderGachaCatalog();
+        renderGachaInventory();
+        if (button) button.disabled = gachaItems.length === 0;
+        if (status) status.textContent = gachaItems.length
+            ? "登録済みの装備品から抽選します。"
+            : "装備品がまだ登録されていません。";
+    } catch (error) {
+        console.error("装備品カタログの読み込みに失敗しました:", error);
+        gachaCatalogLoaded = false;
+        if (status) status.textContent = "装備品を読み込めませんでした。ページを再読み込みしてください。";
+        if (button) button.disabled = true;
+        renderGachaCatalog();
+    }
+}
+
 function drawGachaItem() {
+    const rates = getAvailableGachaRates();
     const roll = Math.random() * 100;
     let total = 0;
-    for (const item of gachaItems) {
-        total += item.rate;
-        if (roll < total) return item;
+    let selectedRarity = null;
+    for (const rarity of ["N", "R", "SR", "SSR"]) {
+        if (rates[rarity] === undefined) continue;
+        total += rates[rarity];
+        if (roll < total) {
+            selectedRarity = rarity;
+            break;
+        }
     }
-    return gachaItems[0];
+    const candidates = gachaItems.filter(item => item.rarity === (selectedRarity || "N"));
+    if (!candidates.length) return null;
+    return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+function appendGachaItemVisual(container, item, count) {
+    if (item.image) {
+        const image = document.createElement("img");
+        image.src = item.image;
+        image.alt = item.name;
+        image.loading = "lazy";
+        image.className = "gachaItemImage";
+        container.appendChild(image);
+    }
+    const rarity = document.createElement("span");
+    rarity.className = "gachaRarity rarity" + item.rarity;
+    rarity.textContent = item.rarity;
+    const name = document.createElement("strong");
+    name.textContent = item.name;
+    container.append(rarity, name);
+    if (item.category) {
+        const category = document.createElement("small");
+        category.className = "gachaItemCategory";
+        category.textContent = item.category;
+        container.appendChild(category);
+    }
+    if (count !== undefined) {
+        const amount = document.createElement("span");
+        amount.className = "gachaItemAmount";
+        amount.textContent = "×" + Number(count);
+        container.appendChild(amount);
+    }
 }
 
 function renderGachaInventory() {
@@ -749,19 +886,11 @@ function renderGachaInventory() {
         return;
     }
     owned.forEach(entry => {
-        const item = gachaItems.find(candidate => candidate.id === entry.id);
+        const item = getGachaItemById(entry.id);
         if (!item) return;
         const card = document.createElement("div");
         card.className = "gachaItemCard";
-        const rarity = document.createElement("span");
-        rarity.className = "gachaRarity rarity" + item.rarity;
-        rarity.textContent = item.rarity;
-        const name = document.createElement("strong");
-        name.textContent = item.name;
-        const amount = document.createElement("span");
-        amount.className = "gachaItemAmount";
-        amount.textContent = "×" + Number(entry.count);
-        card.append(rarity, name, amount);
+        appendGachaItemVisual(card, item, entry.count);
         list.appendChild(card);
     });
 }
@@ -770,6 +899,10 @@ async function pullGacha() {
     if (gachaPulling) return;
     const status = document.getElementById("gachaStatus");
     const button = document.getElementById("gachaPullButton");
+    if (!gachaCatalogLoaded || !gachaItems.length) {
+        if (status) status.textContent = "ガチャに登場する装備品がありません。";
+        return;
+    }
     if (!currentUser || !currentUser.docId) {
         if (status) status.textContent = "ガチャを利用するにはログインしてください。";
         return;
@@ -784,6 +917,7 @@ async function pullGacha() {
     if (status) status.textContent = "抽選中…";
     try {
         const wonItem = drawGachaItem();
+        if (!wonItem) throw new Error("抽選できる装備品がありません。");
         const inventory = getGachaInventory().map(entry => ({ id: entry.id, count: Number(entry.count) || 0 }));
         const existing = inventory.find(entry => entry.id === wonItem.id);
         if (existing) existing.count += 1;
@@ -797,12 +931,8 @@ async function pullGacha() {
         const result = document.getElementById("gachaLastResult");
         if (result) {
             result.replaceChildren();
-            const rarity = document.createElement("span");
-            rarity.className = "gachaRarity rarity" + wonItem.rarity;
-            rarity.textContent = wonItem.rarity;
-            const name = document.createElement("strong");
-            name.textContent = wonItem.name;
-            result.append("獲得！ ", rarity, " ", name);
+            result.append("獲得！ ");
+            appendGachaItemVisual(result, wonItem);
         }
         if (status) status.textContent = "1 Akita Tokenを使用しました。残り " + nextTokens + " Token";
         updateTopRight();
@@ -812,10 +942,9 @@ async function pullGacha() {
         if (status) status.textContent = "保存できませんでした。通信状態を確認して、もう一度お試しください。";
     } finally {
         gachaPulling = false;
-        if (button) button.disabled = false;
+        if (button) button.disabled = !gachaItems.length;
     }
 }
-
 // =====================
 // グローバル公開
 // =====================
@@ -1152,7 +1281,7 @@ window.applySpoofedLocation = function() {
 
 document.addEventListener("DOMContentLoaded", initializeAkitamonMap);
 
-document.addEventListener("DOMContentLoaded", renderGachaInventory);
+document.addEventListener("DOMContentLoaded", () => { loadGachaCatalog(); renderGachaInventory(); });
 
 // =====================
 // DM 試験版（dm-test ブランチ専用）
