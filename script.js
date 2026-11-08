@@ -490,6 +490,7 @@ function updateTopRight() {
             }
             renderProfile();
         }
+        renderGachaInventory();
     } catch (e) { console.error("UI更新エラー:", e); }
 }
 
