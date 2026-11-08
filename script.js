@@ -787,29 +787,15 @@ let akitamonUserMarker = null;
 let akitamonLocationWatchId = null;
 let akitamonHasCenteredOnUser = false;
 
+const AKITAMON_TICKET_STORAGE_KEY = "akitamon-test-roulette-tickets-v2";
 const AKITAMON_TICKET_COUNT_KEY = "akitamon-test-roulette-ticket-count-v1";
-const AKITAMON_TICKET_COLLECTED_KEY = "akitamon-akita-city-collected-v1";
-const AKITAMON_TICKET_DENSITY = 0.01; // 10m × 10m（100㎡）ごとに1%
-const AKITAMON_TICKET_CELL_M = 10;
-const AKITAMON_GRID_ORIGIN = { lng: 140.1, lat: 39.7 };
-const AKITAMON_METERS_PER_DEG_LAT = 111320;
-const AKITAMON_METERS_PER_DEG_LNG = 111320 * Math.cos(AKITAMON_GRID_ORIGIN.lat * Math.PI / 180);
-const AKITAMON_CITY_BOUNDARY_URL = "https://services.arcgis.com/wlVTGRSYTzAbjjiC/arcgis/rest/services/municipalityboundaries2020/FeatureServer/0/query?where=JCODE%3D%2705201%27&outFields=JCODE%2CKEN%2CSIKUCHOSON&returnGeometry=true&outSR=4326&f=geojson";
+const AKITAMON_TICKET_TEST_DENSITY = 0.01; // 100㎡ごとに1%
+const AKITAMON_TICKET_GRID_SIDE = 1000; // 10m × 10m の区画を1000 × 1000個
+const AKITAMON_TICKET_AREA_SIDE_M = 10000; // 10km × 10km
 let akitamonTicketMarkers = [];
-let akitamonCityGeometry = null;
-let akitamonBoundaryLoading = false;
+let akitamonTicketData = null;
 let akitamonMapLoaded = false;
 let akitamonLocationResolved = false;
-let akitamonCollectedTicketIds = new Set();
-
-function loadAkitamonCollectedTickets() {
-    try {
-        const saved = JSON.parse(localStorage.getItem(AKITAMON_TICKET_COLLECTED_KEY) || "[]");
-        akitamonCollectedTicketIds = new Set(Array.isArray(saved) ? saved : []);
-    } catch (_) {
-        akitamonCollectedTicketIds = new Set();
-    }
-}
 
 function getAkitamonTicketCount() {
     try {
@@ -824,154 +810,92 @@ function updateAkitamonTicketHud() {
     if (count) count.textContent = String(getAkitamonTicketCount());
 }
 
-async function loadAkitamonCityBoundary() {
-    if (akitamonCityGeometry || akitamonBoundaryLoading) return;
-    akitamonBoundaryLoading = true;
+function createAkitamonTestTickets() {
+    if (Array.isArray(akitamonTicketData)) return akitamonTicketData;
+
     try {
-        const response = await fetch(AKITAMON_CITY_BOUNDARY_URL);
-        if (!response.ok) throw new Error("市域データの取得に失敗しました: " + response.status);
-        const data = await response.json();
-        const feature = (data.features || []).find(item =>
-            item.properties && String(item.properties.JCODE) === "05201"
-        ) || (data.features || [])[0];
-        if (!feature || !feature.geometry) throw new Error("秋田市の境界データが見つかりません。");
-        akitamonCityGeometry = feature.geometry;
-        renderAkitamonTestTickets();
-    } catch (error) {
-        console.error("Akitamon: 秋田市境界データを読み込めませんでした。", error);
-        const hud = document.getElementById("akitamonTicketHud");
-        if (hud) {
-            const note = hud.querySelector("small");
-            if (note) note.textContent = "市域データを読み込めませんでした";
-        }
-    } finally {
-        akitamonBoundaryLoading = false;
+        const saved = localStorage.getItem(AKITAMON_TICKET_STORAGE_KEY);
+        akitamonTicketData = saved ? JSON.parse(saved) : null;
+    } catch (_) {
+        akitamonTicketData = null;
     }
-}
 
-function akitamonPointInRing(lng, lat, ring) {
-    let inside = false;
-    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-        const xi = ring[i][0], yi = ring[i][1];
-        const xj = ring[j][0], yj = ring[j][1];
-        const intersects = ((yi > lat) !== (yj > lat)) &&
-            (lng < (xj - xi) * (lat - yi) / ((yj - yi) || 1e-12) + xi);
-        if (intersects) inside = !inside;
-    }
-    return inside;
-}
+    if (!Array.isArray(akitamonTicketData)) {
+        akitamonTicketData = [];
+        const center = akitamonMap.getCenter();
+        const latScale = 1 / 111320;
+        const lngScale = 1 / (111320 * Math.max(0.1, Math.cos(center.lat * Math.PI / 180)));
+        const cellSize = AKITAMON_TICKET_AREA_SIDE_M / AKITAMON_TICKET_GRID_SIDE;
 
-function akitamonPointInCity(lng, lat) {
-    if (!akitamonCityGeometry) return false;
-    const polygons = akitamonCityGeometry.type === "Polygon"
-        ? [akitamonCityGeometry.coordinates]
-        : akitamonCityGeometry.coordinates;
-    return polygons.some(polygon => {
-        if (!polygon.length || !akitamonPointInRing(lng, lat, polygon[0])) return false;
-        for (let i = 1; i < polygon.length; i++) {
-            if (akitamonPointInRing(lng, lat, polygon[i])) return false;
+        // 10km四方を10m四方（100㎡）の区画に分け、各区画を独立して1%で抽選
+        for (let row = 0; row < AKITAMON_TICKET_GRID_SIDE; row++) {
+            for (let col = 0; col < AKITAMON_TICKET_GRID_SIDE; col++) {
+                if (Math.random() >= AKITAMON_TICKET_TEST_DENSITY) continue;
+                const east = -AKITAMON_TICKET_AREA_SIDE_M / 2 + (col + Math.random()) * cellSize;
+                const north = -AKITAMON_TICKET_AREA_SIDE_M / 2 + (row + Math.random()) * cellSize;
+                akitamonTicketData.push({
+                    id: "test-ticket-" + row + "-" + col,
+                    lng: center.lng + east * lngScale,
+                    lat: center.lat + north * latScale
+                });
+            }
         }
-        return true;
-    });
-}
+        try {
+            localStorage.setItem(AKITAMON_TICKET_STORAGE_KEY, JSON.stringify(akitamonTicketData));
+        } catch (error) {
+            console.warn("挑戦券のテスト配置を保存できませんでした:", error);
+        }
+    }
 
-function akitamonTicketHash(x, y) {
-    let hash = (Math.imul(x | 0, 73856093) ^ Math.imul(y | 0, 19349663)) >>> 0;
-    hash ^= hash >>> 13;
-    hash = Math.imul(hash, 1274126177) >>> 0;
-    return hash >>> 0;
-}
-
-function akitamonGridToLngLat(x, y) {
-    const east = (x + 0.5) * AKITAMON_TICKET_CELL_M;
-    const north = (y + 0.5) * AKITAMON_TICKET_CELL_M;
-    return {
-        lng: AKITAMON_GRID_ORIGIN.lng + east / AKITAMON_METERS_PER_DEG_LNG,
-        lat: AKITAMON_GRID_ORIGIN.lat + north / AKITAMON_METERS_PER_DEG_LAT
-    };
-}
-
-function akitamonLngLatToGrid(lng, lat) {
-    return {
-        x: Math.floor((lng - AKITAMON_GRID_ORIGIN.lng) * AKITAMON_METERS_PER_DEG_LNG / AKITAMON_TICKET_CELL_M),
-        y: Math.floor((lat - AKITAMON_GRID_ORIGIN.lat) * AKITAMON_METERS_PER_DEG_LAT / AKITAMON_TICKET_CELL_M)
-    };
+    return akitamonTicketData;
 }
 
 function renderAkitamonTestTickets() {
     if (!akitamonMap || !akitamonMapLoaded || !akitamonLocationResolved) return;
-    if (!akitamonCityGeometry) {
-        loadAkitamonCityBoundary();
-        return;
-    }
-
     const bounds = akitamonMap.getBounds();
-    const zoom = akitamonMap.getZoom();
-    const visibleIds = new Set();
+    const tickets = createAkitamonTestTickets();
+    const visibleTickets = tickets.filter(ticket => bounds.contains([ticket.lng, ticket.lat]));
+    const visibleIds = new Set(visibleTickets.map(ticket => ticket.id));
 
-    // ズームアウト時の大量描画を避け、街区が見える縮尺から表示する
-    if (zoom >= 13) {
-        const southwest = akitamonLngLatToGrid(bounds.getWest(), bounds.getSouth());
-        const northeast = akitamonLngLatToGrid(bounds.getEast(), bounds.getNorth());
-        const minX = Math.min(southwest.x, northeast.x);
-        const maxX = Math.max(southwest.x, northeast.x);
-        const minY = Math.min(southwest.y, northeast.y);
-        const maxY = Math.max(southwest.y, northeast.y);
-        const maxCells = 180000;
-        if ((maxX - minX + 1) * (maxY - minY + 1) <= maxCells) {
-            for (let y = minY; y <= maxY; y++) {
-                for (let x = minX; x <= maxX; x++) {
-                    const id = "akita-ticket-" + x + "-" + y;
-                    if (akitamonCollectedTicketIds.has(id)) continue;
-                    if (akitamonTicketHash(x, y) % 100 >= 1) continue;
-                    const point = akitamonGridToLngLat(x, y);
-                    if (!bounds.contains([point.lng, point.lat])) continue;
-                    if (!akitamonPointInCity(point.lng, point.lat)) continue;
-                    visibleIds.add(id);
-                    if (akitamonTicketMarkers.some(item => item.id === id)) continue;
-
-                    const element = document.createElement("button");
-                    element.type = "button";
-                    element.className = "akitamon-ticket-marker";
-                    element.textContent = "券";
-                    element.setAttribute("aria-label", "ルーレット挑戦券を回収");
-                    element.title = "タップして挑戦券を回収";
-                    const marker = new maplibregl.Marker({ element, anchor: "center" })
-                        .setLngLat([point.lng, point.lat])
-                        .addTo(akitamonMap);
-
-                    element.addEventListener("click", event => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        marker.remove();
-                        akitamonTicketMarkers = akitamonTicketMarkers.filter(item => item.id !== id);
-                        akitamonCollectedTicketIds.add(id);
-                        try {
-                            localStorage.setItem(AKITAMON_TICKET_COLLECTED_KEY, JSON.stringify([...akitamonCollectedTicketIds]));
-                            localStorage.setItem(AKITAMON_TICKET_COUNT_KEY, String(getAkitamonTicketCount() + 1));
-                        } catch (error) {
-                            console.warn("挑戦券の回収状態を保存できませんでした:", error);
-                        }
-                        updateAkitamonTicketHud();
-                    });
-                    akitamonTicketMarkers.push({ id, marker });
-                }
-            }
-        }
-    }
-
-    // 画面外または回収済みのマーカーを取り除く
+    // 画面外に出たマーカーは外し、再び表示範囲に入ったら描画する
     akitamonTicketMarkers = akitamonTicketMarkers.filter(item => {
         if (visibleIds.has(item.id)) return true;
         item.marker.remove();
         return false;
     });
 
-    const hud = document.getElementById("akitamonTicketHud");
-    if (hud) {
-        const note = hud.querySelector("small");
-        if (note) note.textContent = zoom < 13 ? "ズームインすると表示されます" : "秋田市内・100㎡ごとに1%";
-    }
+    const renderedIds = new Set(akitamonTicketMarkers.map(item => item.id));
+    visibleTickets.forEach(ticket => {
+        if (renderedIds.has(ticket.id)) return;
+        const element = document.createElement("button");
+        element.type = "button";
+        element.className = "akitamon-ticket-marker";
+        element.textContent = "券";
+        element.setAttribute("aria-label", "Akita Tokenルーレット挑戦券を回収");
+        element.title = "タップして挑戦券を回収";
+
+        const marker = new maplibregl.Marker({ element, anchor: "center" })
+            .setLngLat([ticket.lng, ticket.lat])
+            .addTo(akitamonMap);
+
+        element.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            marker.remove();
+            akitamonTicketMarkers = akitamonTicketMarkers.filter(item => item.id !== ticket.id);
+            akitamonTicketData = akitamonTicketData.filter(item => item.id !== ticket.id);
+            try {
+                localStorage.setItem(AKITAMON_TICKET_STORAGE_KEY, JSON.stringify(akitamonTicketData));
+                localStorage.setItem(AKITAMON_TICKET_COUNT_KEY, String(getAkitamonTicketCount() + 1));
+            } catch (error) {
+                console.warn("挑戦券の回収状態を保存できませんでした:", error);
+            }
+            updateAkitamonTicketHud();
+        });
+
+        akitamonTicketMarkers.push({ id: ticket.id, marker });
+    });
+
     updateAkitamonTicketHud();
 }
 
@@ -1124,14 +1048,21 @@ function startAkitamonLocationWatch() {
             if (!akitamonMap || !akitamonUserMarker) return;
 
             akitamonUserMarker.setLngLat([lng, lat]).addTo(akitamonMap);
-            // チケットは秋田市全域に固定配置するため、GPS取得で地図を現在地へ移動させない
-            akitamonHasCenteredOnUser = true;
-            akitamonLocationResolved = true;
-            renderAkitamonTestTickets();
+            if (!akitamonHasCenteredOnUser) {
+                akitamonHasCenteredOnUser = true;
+                akitamonMap.once("moveend", () => {
+                    akitamonLocationResolved = true;
+                    renderAkitamonTestTickets();
+                });
+                akitamonMap.flyTo({ center: [lng, lat], zoom: Math.max(akitamonMap.getZoom(), 15), essential: true });
+            } else {
+                akitamonLocationResolved = true;
+                renderAkitamonTestTickets();
+            }
         },
         (error) => {
             console.warn("Akitamon: 現在地を取得できませんでした。", error.message);
-            // GPSが使えなくても、秋田市を表示したままチケットを描画する
+            // 位置情報が使えない場合は、現在表示している地図の中心をテスト配置の基準にする
             akitamonLocationResolved = true;
             renderAkitamonTestTickets();
         },
@@ -1163,7 +1094,7 @@ window.applySpoofedLocation = function() {
     }
 };
 
-document.addEventListener("DOMContentLoaded", () => {\n    loadAkitamonCollectedTickets();\n    updateAkitamonTicketHud();\n    initializeAkitamonMap();\n});
+document.addEventListener("DOMContentLoaded", initializeAkitamonMap);
 
 // =====================
 // DM 試験版（dm-test ブランチ専用）
