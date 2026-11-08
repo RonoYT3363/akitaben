@@ -25,9 +25,20 @@ async function github(path, options = {}) {
 }
 
 module.exports = async (req, res) => {
-  if (req.method !== "POST") return send(res, 405, { error: "POST only" });
   const adminKey = process.env.EQUIPMENT_ADMIN_KEY;
   const githubToken = process.env.GITHUB_TOKEN;
+
+  // Safe GET diagnostic for this exact function; never expose secret values.
+  if (req.method === "GET") {
+    return send(res, 200, {
+      ok: true,
+      environment: process.env.VERCEL_ENV || "unknown",
+      branch: process.env.VERCEL_GIT_COMMIT_REF || "unknown",
+      hasGithubToken: Boolean(githubToken),
+      hasEquipmentAdminKey: Boolean(adminKey)
+    });
+  }
+  if (req.method !== "POST") return send(res, 405, { error: "POST only" });
   if (!adminKey || !githubToken) return send(res, 503, { error: "Vercel環境変数 GITHUB_TOKEN と EQUIPMENT_ADMIN_KEY の設定が必要です。" });
 
   const supplied = String(req.headers["x-equipment-admin-key"] || "");
