@@ -1828,3 +1828,37 @@ body:has(#dmPage[style*="display: block"]) #topRight {
         min-height: 380px;
     }
 }
+
+
+/* Akitamon: roulette ticket test markers */
+.akitamonTicketHud {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 10px;
+    padding: 10px 13px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: var(--surface-color);
+    color: var(--text-main);
+    font-size: 13px;
+}
+.akitamonTicketHud strong {
+    color: #b7791f;
+    font-size: 18px;
+    font-variant-numeric: tabular-nums;
+}
+.akitamonTicketHud small { margin-left: auto; color: var(--text-sub); }
+.akitamon-ticket-marker {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: #d69e36;
+    color: #fff;
+    font: 700 12px/1 inherit;
+    box-shadow: 0 1px 5px rgba(0,0,0,.3);
+    cursor: pointer;
+}
+.akitamon-ticket-marker:hover { transform: scale(1.12); }
