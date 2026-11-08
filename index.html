@@ -202,13 +202,14 @@
                 <div class="gachaMachineEyebrow">AKITA TOKEN COLLECTION</div>
                 <div class="gachaMachineTitle">装備品ガチャ</div>
                 <p>1回につき <strong>1 Akita Token</strong></p>
-                <div class="gachaRates">
-                    <span><b class="rarityN">N</b> 60%</span>
-                    <span><b class="rarityR">R</b> 30%</span>
-                    <span><b class="raritySR">SR</b> 9%</span>
-                    <span><b class="raritySSR">SSR</b> 1%</span>
+                <div id="gachaRatesDisplay" class="gachaRates" aria-label="現在の提供割合">
+                    <span>提供割合を読み込んでいます…</span>
                 </div>
-                <button type="button" id="gachaPullButton" onclick="pullGacha()">1回まわす</button>
+                <div class="gachaCatalogHeading">今回のラインナップ</div>
+                <div id="gachaCatalogList" class="gachaCatalogList">
+                    <p class="gachaEmpty">装備品を読み込んでいます…</p>
+                </div>
+                <button type="button" id="gachaPullButton" onclick="pullGacha()" disabled>1回まわす</button>
                 <p id="gachaStatus" class="gachaStatus" aria-live="polite">ログインしてガチャを利用できます。</p>
             </section>
             <section class="gachaResult" aria-live="polite">
