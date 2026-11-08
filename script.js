@@ -1502,3 +1502,5 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 const _equipmentOriginalUpdateTopRight = updateTopRight;
 updateTopRight = function(){ _equipmentOriginalUpdateTopRight(); updateEquipmentAdminAccess(); };
+const _equipmentOriginalShowPage = showPage;
+showPage = function(id){ _equipmentOriginalShowPage(id); if(id === "equipmentAdminPage" && isEquipmentOwner()) loadEquipmentAdminList(); };
