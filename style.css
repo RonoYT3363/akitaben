@@ -1875,3 +1875,7 @@ body:has(#dmPage[style*="display: block"]) #topRight {
 .avatarOutfitActions { margin-top: 12px; }
 .avatarControls .avatarOutfitActions .avatarApplyButton { background: var(--primary-color) !important; color: #fff !important; border-color: var(--primary-color) !important; }
 .avatarOutfitStatus { min-height: 20px; margin: 10px 0 0; color: var(--text-sub); font-size: 12px; }
+
+/* Keep the safe default outfit visible even before JavaScript initializes. */
+.avatarOutfit-say-tee { display: inline; }
+.avatarCharacter.outfit-navy-hoodie .avatarOutfit-say-tee { display: none; }
