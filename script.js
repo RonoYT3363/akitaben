@@ -792,6 +792,9 @@ const AKITAMON_TICKET_COUNT_KEY = "akitamon-test-roulette-ticket-count-v1";
 const AKITAMON_TICKET_TEST_DENSITY = 0.005; // 1㎡あたり0.5%
 const AKITAMON_TICKET_TEST_AREA_M2 = 10000; // 100m × 100m のテスト範囲
 let akitamonTicketMarkers = [];
+let akitamonMapLoaded = false;
+let akitamonLocationResolved = false;
+let akitamonTicketsRendered = false;
 
 function getAkitamonTicketCount() {
     try {
@@ -837,7 +840,8 @@ function createAkitamonTestTickets() {
 }
 
 function renderAkitamonTestTickets() {
-    if (!akitamonMap || akitamonTicketMarkers.length) return;
+    if (!akitamonMap || !akitamonMapLoaded || !akitamonLocationResolved || akitamonTicketsRendered) return;
+    akitamonTicketsRendered = true;
     const center = akitamonMap.getCenter();
     const latScale = 1 / 111320;
     const lngScale = 1 / (111320 * Math.max(0.1, Math.cos(center.lat * Math.PI / 180)));
@@ -963,6 +967,7 @@ async function initializeAkitamonMap() {
         akitamonMap.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: "metric" }), "bottom-left");
 
         akitamonMap.once("load", () => {
+            akitamonMapLoaded = true;
             renderAkitamonTestTickets();
         });
 
@@ -1020,9 +1025,14 @@ function startAkitamonLocationWatch() {
                 akitamonMap.flyTo({ center: [lng, lat], zoom: Math.max(akitamonMap.getZoom(), 15), essential: true });
                 akitamonHasCenteredOnUser = true;
             }
+            akitamonLocationResolved = true;
+            renderAkitamonTestTickets();
         },
         (error) => {
             console.warn("Akitamon: 現在地を取得できませんでした。", error.message);
+            // 位置情報が使えない場合は、現在表示している地図の中心をテスト配置の基準にする
+            akitamonLocationResolved = true;
+            renderAkitamonTestTickets();
         },
         {
             enableHighAccuracy: true,
