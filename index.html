@@ -102,7 +102,7 @@
         <button onclick="showPage('homePage')">ホーム</button>
         <button onclick="showPage('searchPage')">検索</button> 
         <button onclick="showPage('akitamonPage')">Akitamon</button>
-        <button onclick="showPage('avatarPage')">アバター</button>
+        
         <button onclick="showPage('minigamePage')">ミニゲーム</button>
         <button id="accountMenuBtn" onclick="openAccountEntry()">アカウント</button>
         <button onclick="openDmPage()">DM</button>
@@ -187,119 +187,6 @@
             </div>
         </div>
 
-
-        <div id="avatarPage" class="page avatarPage" style="display:none;">
-          <div class="avatarPageHeading">
-            <div><p class="avatarEyebrow">SAY AVATAR LAB · FREE PROTOTYPE</p><h2>アバター試作室</h2><p class="avatarLead">無料のSVGとCSSだけで、アニメ風アバターの動きを試します。</p></div>
-            <span class="avatarFreeTag">FREE</span>
-          </div>
-          <div class="avatarLab">
-            <div class="avatarStage">
-              <div class="avatarStageGlow"></div>
-              <div class="avatarCharacter" id="avatarCharacter">
-                <svg class="avatarSvg" viewBox="0 0 360 560" role="img" aria-label="SAYのアニメ風アバター">
-  <defs>
-    <linearGradient id="sayHair" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a995c8"/><stop offset=".48" stop-color="#76658f"/><stop offset="1" stop-color="#403951"/></linearGradient>
-    <linearGradient id="sayHairLight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8b8df" stop-opacity=".9"/><stop offset="1" stop-color="#8e7cae" stop-opacity="0"/></linearGradient>
-    <linearGradient id="saySkin" x1="0" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#ffe1d3"/><stop offset="1" stop-color="#eeb9aa"/></linearGradient>
-    <linearGradient id="sayShirt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#e8edf3"/></linearGradient>
-    <linearGradient id="sayIris" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#83b4ce"/><stop offset=".55" stop-color="#4c789d"/><stop offset="1" stop-color="#263e62"/></linearGradient>
-    <filter id="saySoftShadow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="7"/></filter>
-  </defs>
-  <ellipse cx="180" cy="535" rx="86" ry="10" fill="#28334a" opacity=".12" filter="url(#saySoftShadow)"/>
-  <g class="avatarBody">
-    <!-- legs and casual shorts -->
-    <path d="M145 414 L143 490 Q143 507 158 509 L174 509 L180 438 L187 509 L205 509 Q218 506 217 490 L215 414Z" fill="url(#saySkin)" stroke="#bd8c83" stroke-width="1.5"/>
-    <path d="M139 407 L221 407 L216 451 Q200 460 181 451 Q160 461 144 451Z" fill="#52627d" stroke="#39475f" stroke-width="2"/>
-    <path d="M180 411 L180 451 M145 433 Q162 440 179 433 M182 433 Q201 440 217 433" fill="none" stroke="#71809a" stroke-width="1.5" opacity=".8"/>
-    <path d="M149 500 L174 500 L174 516 Q161 522 145 515Z M187 500 L211 500 L216 515 Q201 522 187 516Z" fill="#f7f7f5" stroke="#c5cbd3" stroke-width="1.5"/>
-    <path d="M143 514 Q159 519 175 514 L180 535 Q160 544 137 533 Q133 526 143 514Z M185 514 Q201 519 217 514 L225 533 Q204 544 181 535Z" fill="#f1f2f4" stroke="#aeb8c7" stroke-width="2"/>
-    <path d="M141 529 Q160 535 178 529 M184 529 Q203 535 222 529" fill="none" stroke="#9da9ba" stroke-width="2"/>
-    <!-- arms behind shirt -->
-    <path d="M139 292 Q121 300 111 339 L99 395 Q97 408 108 411 Q119 413 123 399 L145 345Z" fill="url(#saySkin)" stroke="#bd8c83" stroke-width="1.5"/>
-    <path d="M221 292 Q239 300 249 339 L261 395 Q263 408 252 411 Q241 413 237 399 L215 345Z" fill="url(#saySkin)" stroke="#bd8c83" stroke-width="1.5"/>
-    <path d="M101 394 Q110 400 122 397 L119 410 Q108 418 99 407Z M238 397 Q250 400 259 394 L261 407 Q252 418 241 410Z" fill="#f4c9b9" opacity=".9"/>
-    <!-- neck -->
-    <path d="M160 265 L160 302 Q180 319 200 302 L200 265Z" fill="url(#saySkin)" stroke="#c28e83" stroke-width="1.3"/>
-    <!-- permanent safe base outfit -->
-    <g class="avatarOutfit avatarOutfit-say-tee">
-      <path d="M145 292 L122 307 Q111 317 108 340 L132 354 L145 339 L143 427 Q180 440 217 427 L215 339 L228 354 L252 340 Q249 317 238 307 L215 292 L199 286 Q180 311 161 286Z" fill="url(#sayShirt)" stroke="#b6bfcb" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M160 286 Q180 316 200 286 L194 275 L166 275Z" fill="#f3c9bb" stroke="#d8a99c" stroke-width="1.3"/>
-      <path d="M145 339 L144 423 M215 339 L216 423" stroke="#d7dde6" stroke-width="1.2" opacity=".8"/>
-      <path d="M160 365 Q180 371 200 365" fill="none" stroke="#e0e5ec" stroke-width="1.2"/>
-      <text x="180" y="383" text-anchor="middle" font-size="18" font-family="Arial,sans-serif" font-weight="700" letter-spacing="2" fill="#344054">SAY</text>
-      <path d="M131 352 L145 360 M229 352 L215 360" stroke="#c6ced9" stroke-width="1.4"/>
-    </g>
-    <g class="avatarOutfit avatarOutfit-navy-hoodie">
-      <path d="M145 292 L122 307 Q111 317 108 340 L132 354 L145 339 L143 427 Q180 440 217 427 L215 339 L228 354 L252 340 Q249 317 238 307 L215 292 L199 286 Q180 311 161 286Z" fill="#455a78" stroke="#293b57" stroke-width="2.5" stroke-linejoin="round"/>
-      <path d="M160 286 Q180 319 200 286 L207 300 Q180 335 153 300Z" fill="#30435f" stroke="#263750" stroke-width="1.5"/>
-      <path d="M180 326 L180 427 M145 380 Q180 394 215 380" fill="none" stroke="#7185a2" stroke-width="1.6"/>
-      <text x="180" y="383" text-anchor="middle" font-size="15" font-family="Arial,sans-serif" font-weight="700" letter-spacing="1.5" fill="#f5f7fb">SAY</text>
-    </g>
-  </g>
-  <!-- hair behind the face -->
-  <g class="avatarHairBack">
-    <path d="M101 180 Q78 85 133 48 Q180 14 229 43 Q289 80 260 192 L252 291 Q239 323 219 326 L218 236 L143 236 L140 326 Q111 317 104 283Z" fill="url(#sayHair)" stroke="#40384e" stroke-width="2.5"/>
-    <path d="M111 179 Q96 238 119 291 Q129 309 142 312 L137 220Z M249 174 Q265 237 241 291 Q231 309 218 312 L223 220Z" fill="#554968" stroke="#40384e" stroke-width="1.5"/>
-    <path d="M111 206 Q103 260 125 291 M249 203 Q257 260 235 291" fill="none" stroke="#9a88b4" stroke-width="3" opacity=".55"/>
-  </g>
-  <!-- face -->
-  <g class="avatarHead">
-    <path d="M119 124 Q180 69 241 124 L236 228 Q229 286 180 297 Q131 286 124 228Z" fill="url(#saySkin)" stroke="#bd8c83" stroke-width="1.7"/>
-    <path d="M119 174 Q114 144 126 120 Q142 86 180 84 Q219 84 235 120 Q247 147 241 177 Q226 147 207 140 Q186 159 162 143 Q140 161 119 174Z" fill="url(#sayHair)" stroke="#40384e" stroke-width="2.2"/>
-    <path d="M128 121 Q145 83 174 82 Q154 111 155 155 Q140 138 128 121Z" fill="#b4a1d0" opacity=".78"/>
-    <path d="M178 84 Q215 91 232 126 Q213 112 197 128 Q185 111 178 84Z" fill="#8d7ba9"/>
-    <path d="M119 161 Q113 208 126 245 Q136 265 145 268 L137 192Z M241 160 Q247 208 234 245 Q224 265 215 268 L223 192Z" fill="#574a69"/>
-    <path d="M131 145 Q142 127 155 120 M187 104 Q213 111 226 137" fill="none" stroke="url(#sayHairLight)" stroke-width="6" stroke-linecap="round" opacity=".8"/>
-    <!-- eyes with layered irises -->
-    <g class="avatarEyes">
-      <path d="M135 197 Q150 181 166 197 Q165 219 150 222 Q136 218 135 197Z" fill="#fff" stroke="#51465b" stroke-width="1.6"/>
-      <path d="M194 197 Q210 181 225 197 Q224 218 210 222 Q195 219 194 197Z" fill="#fff" stroke="#51465b" stroke-width="1.6"/>
-      <ellipse cx="151" cy="207" rx="8.5" ry="13" fill="url(#sayIris)"/><ellipse cx="209" cy="207" rx="8.5" ry="13" fill="url(#sayIris)"/>
-      <ellipse cx="151" cy="213" rx="4.5" ry="6.5" fill="#24354f"/><ellipse cx="209" cy="213" rx="4.5" ry="6.5" fill="#24354f"/>
-      <circle cx="154" cy="199" r="4.2" fill="#fff"/><circle cx="212" cy="199" r="4.2" fill="#fff"/>
-      <circle cx="147" cy="211" r="1.8" fill="#d7f1ff"/><circle cx="205" cy="211" r="1.8" fill="#d7f1ff"/>
-      <path d="M133 197 Q148 180 167 194 M192 194 Q211 180 227 197" fill="none" stroke="#44394f" stroke-width="4" stroke-linecap="round"/>
-      <path d="M139 188 L135 183 M146 184 L145 179 M218 184 L221 179" stroke="#44394f" stroke-width="2" stroke-linecap="round"/>
-    </g>
-    <path d="M137 177 Q151 171 163 176 M197 176 Q210 171 223 177" fill="none" stroke="#69505b" stroke-width="2.2" stroke-linecap="round"/>
-    <path d="M178 231 Q181 234 184 231" fill="none" stroke="#c58e83" stroke-width="1.8" stroke-linecap="round"/>
-    <path class="avatarMouth" d="M168 252 Q180 262 192 252" fill="none" stroke="#a95f70" stroke-width="2.5" stroke-linecap="round"/>
-    <ellipse cx="139" cy="239" rx="11" ry="4.5" fill="#e98f9a" opacity=".28"/><ellipse cx="221" cy="239" rx="11" ry="4.5" fill="#e98f9a" opacity=".28"/>
-    <!-- front hair and separate locks -->
-    <path d="M118 174 Q106 117 137 82 Q156 60 180 66 Q212 55 238 91 Q258 121 242 174 Q225 151 214 126 Q196 147 179 142 Q158 154 148 131 Q133 158 118 174Z" fill="url(#sayHair)" stroke="#40384e" stroke-width="2"/>
-    <path d="M127 145 Q127 103 158 79 Q149 113 155 145 Q143 137 127 145Z" fill="#b6a3d0" opacity=".85"/>
-    <path d="M159 75 Q175 66 188 76 Q177 108 180 143 Q165 132 159 75Z" fill="#9381b1"/>
-    <path d="M190 76 Q220 85 232 126 Q214 112 202 130 Q197 107 190 76Z" fill="#6f608b"/>
-    <path d="M148 93 Q139 113 142 139 M180 80 Q188 106 188 137 M218 105 Q229 126 229 145" fill="none" stroke="#c7b7dc" stroke-width="2.2" opacity=".65" stroke-linecap="round"/>
-    <path class="avatarHairClip" d="M225 137 Q240 120 253 136 Q241 151 225 137Z" fill="#d9a84d" stroke="#8c6631" stroke-width="1.5"/>
-    <g class="avatarHeadwear" style="display:none"><path d="M119 119 Q180 67 241 119 L235 132 Q180 100 125 132Z" fill="#c85b55" stroke="#8d3d3b" stroke-width="2.5"/><circle cx="180" cy="101" r="7" fill="#f1d28a"/></g>
-  </g>
-</svg>
-              </div>
-              <div class="avatarStageCaption">IDLE MOTION PREVIEW</div>
-            </div>
-            <div class="avatarControls">
-              <p class="avatarControlLabel">表情</p>
-              <div class="avatarButtonRow">
-                <button type="button" onclick="setAvatarExpression('smile')">笑顔</button>
-                <button type="button" onclick="setAvatarExpression('normal')">通常</button>
-                <button type="button" onclick="setAvatarExpression('surprise')">びっくり</button>
-              </div>
-              <p class="avatarControlLabel">衣装</p>
-              <div class="avatarOutfitPicker">
-                <label class="avatarOutfitOption"><input type="radio" name="avatarOutfit" value="say-tee" checked><span><strong>SAY 白Tシャツ</strong><small>初期衣装・いつでも戻せます</small></span></label>
-                <label class="avatarOutfitOption"><input type="radio" name="avatarOutfit" value="navy-hoodie"><span><strong>ネイビーパーカー</strong><small>着せ替え動作確認用</small></span></label>
-              </div>
-              <div class="avatarButtonRow avatarOutfitActions">
-                <button type="button" class="avatarApplyButton" onclick="applyAvatarOutfit()">この衣装に着替える</button>
-                <button type="button" onclick="resetAvatarOutfit()">初期衣装に戻す</button>
-              </div>
-              <p id="avatarOutfitStatus" class="avatarOutfitStatus" aria-live="polite"></p>
-              <p class="avatarPrototypeNote">衣装の切り替えと保存の基礎部分を試す試作品です。現在はこのブラウザ内に保存します。アクセサリー・ガチャ・プロフィール連携は後から追加します。</p>
-            </div>
-          </div>
-        </div>
 
         <div id="accountPage" class="page" style="display:none;">
             <h2>アカウント</h2>
