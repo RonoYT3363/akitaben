@@ -1913,3 +1913,19 @@ body:has(#dmPage[style*="display: block"]) #topRight {
 .equipmentAdminRow { display:flex; align-items:center; gap:12px; padding:9px; border:1px solid var(--border-color); }
 .equipmentAdminRow img { width:52px; height:52px; object-fit:contain; }
 @media(max-width:600px){.equipmentAdminFields{grid-template-columns:1fr;}}
+
+
+/* Dynamic equipment gacha catalog */
+.gachaCatalogHeading{margin:22px 0 10px;font-size:12px;font-weight:750;color:var(--text-sub);letter-spacing:.04em;text-align:left}
+.gachaCatalogList{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px;margin-bottom:20px;text-align:left}
+.gachaCatalogCard{min-width:0;overflow:hidden;border:1px solid var(--border-color);background:var(--bg-color)}
+.gachaCatalogCard>img{display:block;width:100%;height:130px;object-fit:contain;padding:10px;background:var(--surface-color)}
+.gachaCatalogDetails{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:6px;padding:10px}
+.gachaCatalogDetails strong{min-width:0;overflow-wrap:anywhere;font-size:12px}
+.gachaCatalogDetails small{grid-column:1/-1;color:var(--text-sub);font-size:10px}
+.gachaItemImage{width:58px;height:58px;object-fit:contain;border:1px solid var(--border-color);background:var(--surface-color);padding:4px}
+.gachaItemCategory{color:var(--text-sub);font-size:10px}
+.gachaItemCard{flex-wrap:wrap}
+.gachaItemCard strong{min-width:0;overflow-wrap:anywhere}
+.gachaLastResult .gachaItemImage{width:76px;height:76px}
+.gachaLastResult .gachaItemCategory{display:none}
