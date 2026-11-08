@@ -708,54 +708,110 @@ async function endKantoGame(success) {
 // ==========================================
 // 🎁 ガチャ機能ロジック
 // ==========================================
+ // Akita Token 装備品ガチャ（ゲーム内アイテムのみ）
+ // ==========================================
 const gachaItems = [
-    { name: "【ノーマル】 お祭りハッピ", rate: 50 },
-    { name: "【ノーマル】 ババヘラアイス引換券", rate: 30 },
-    { name: "【レア】 黄金の提灯ホルダー", rate: 15 },
-    { name: "【激レア】 伝説の竿灯達人称号", rate: 5 }
+    { id: "akita-tenugui", name: "竿灯の手ぬぐい", rarity: "N", rate: 60 },
+    { id: "namahage-charm", name: "なまはげ面チャーム", rarity: "R", rate: 30 },
+    { id: "golden-chochin", name: "金色の提灯", rarity: "SR", rate: 9 },
+    { id: "kanto-crest", name: "竿灯大祭の紋章", rarity: "SSR", rate: 1 }
 ];
+let gachaPulling = false;
 
-async function pullGacha() {
-    const cost = 1; // 1回あたりのコスト
+function getGachaInventory() {
+    if (!currentUser) return [];
+    return Array.isArray(currentUser.gachaInventory) ? currentUser.gachaInventory : [];
+}
 
-    if (!currentUser || (currentUser.tokens || 0) < cost) {
-        alert("Tokenが足りません！竿灯リズム太鼓ゲームで遊んでTokenを稼ごう！");
+function drawGachaItem() {
+    const roll = Math.random() * 100;
+    let total = 0;
+    for (const item of gachaItems) {
+        total += item.rate;
+        if (roll < total) return item;
+    }
+    return gachaItems[0];
+}
+
+function renderGachaInventory() {
+    const list = document.getElementById("gachaInventoryList");
+    const count = document.getElementById("gachaCollectionCount");
+    if (!list || !count) return;
+    const owned = getGachaInventory().filter(entry => Number(entry.count) > 0);
+    count.textContent = owned.length + "種類";
+    list.replaceChildren();
+    if (!owned.length) {
+        const empty = document.createElement("p");
+        empty.className = "gachaEmpty";
+        empty.textContent = currentUser ? "まだアイテムを獲得していません。" : "ログインするとコレクションを確認できます。";
+        list.appendChild(empty);
         return;
     }
-
-    // Tokenを1枚消費してクラウド＆ローカルを更新
-    await addTokensToUser(-cost);
-
-    // 抽選処理
-    const wonItem = lotteryGacha();
-
-    // 結果表示モーダル操作
-    const modal = document.getElementById("gachaModal");
-    const resultText = document.getElementById("gachaResultText");
-    
-    if (modal && resultText) {
-        resultText.textContent = `✨ ${wonItem} をゲット！`;
-        modal.style.display = "flex";
-    }
+    owned.forEach(entry => {
+        const item = gachaItems.find(candidate => candidate.id === entry.id);
+        if (!item) return;
+        const card = document.createElement("div");
+        card.className = "gachaItemCard";
+        const rarity = document.createElement("span");
+        rarity.className = "gachaRarity rarity" + item.rarity;
+        rarity.textContent = item.rarity;
+        const name = document.createElement("strong");
+        name.textContent = item.name;
+        const amount = document.createElement("span");
+        amount.className = "gachaItemAmount";
+        amount.textContent = "×" + Number(entry.count);
+        card.append(rarity, name, amount);
+        list.appendChild(card);
+    });
 }
 
-function lotteryGacha() {
-    const randomNum = Math.random() * 100;
-    let cumulative = 0;
-
-    for (const item of gachaItems) {
-        cumulative += item.rate;
-        if (randomNum < cumulative) {
-            return item.name;
+async function pullGacha() {
+    if (gachaPulling) return;
+    const status = document.getElementById("gachaStatus");
+    const button = document.getElementById("gachaPullButton");
+    if (!currentUser || !currentUser.docId) {
+        if (status) status.textContent = "ガチャを利用するにはログインしてください。";
+        return;
+    }
+    const currentTokens = Math.max(0, Number(currentUser.tokens) || 0);
+    if (currentTokens < 1) {
+        if (status) status.textContent = "Tokenが足りません。ミニゲームで獲得できます。";
+        return;
+    }
+    gachaPulling = true;
+    if (button) button.disabled = true;
+    if (status) status.textContent = "抽選中…";
+    try {
+        const wonItem = drawGachaItem();
+        const inventory = getGachaInventory().map(entry => ({ id: entry.id, count: Number(entry.count) || 0 }));
+        const existing = inventory.find(entry => entry.id === wonItem.id);
+        if (existing) existing.count += 1;
+        else inventory.push({ id: wonItem.id, count: 1 });
+        const nextTokens = currentTokens - 1;
+        const userRef = fs.doc(db, "users", currentUser.docId);
+        await fs.updateDoc(userRef, { tokens: nextTokens, gachaInventory: inventory });
+        currentUser.tokens = nextTokens;
+        currentUser.gachaInventory = inventory;
+        localStorage.setItem("user", JSON.stringify(currentUser));
+        const result = document.getElementById("gachaLastResult");
+        if (result) {
+            result.replaceChildren();
+            const rarity = document.createElement("span");
+            rarity.className = "gachaRarity rarity" + wonItem.rarity;
+            rarity.textContent = wonItem.rarity;
+            const name = document.createElement("strong");
+            name.textContent = wonItem.name;
+            result.append("獲得！ ", rarity, " ", name);
         }
-    }
-    return gachaItems[0].name;
-}
-
-function closeGachaModal() {
-    const modal = document.getElementById("gachaModal");
-    if (modal) {
-        modal.style.display = "none";
+        if (status) status.textContent = "1 Akita Tokenを使用しました。残り " + nextTokens + " Token";
+        updateTopRight();
+        renderGachaInventory();
+    } catch (error) {
+        console.error("ガチャ処理に失敗しました:", error);
+        if (status) status.textContent = "保存できませんでした。通信状態を確認して、もう一度お試しください。";
+    } finally {
+        gachaPulling = false;
+        if (button) button.disabled = false;
     }
 }
 
@@ -777,7 +833,6 @@ window.searchPosts = searchPosts;
 window.startKantoGame = startKantoGame;
 window.hitTaiko = hitTaiko;
 window.pullGacha = pullGacha;
-window.closeGachaModal = closeGachaModal;
 
 // ==========================================
 // Akitamon map (MapLibre GL JS + OpenFreeMap)
@@ -1095,6 +1150,8 @@ window.applySpoofedLocation = function() {
 };
 
 document.addEventListener("DOMContentLoaded", initializeAkitamonMap);
+
+document.addEventListener("DOMContentLoaded", renderGachaInventory);
 
 // =====================
 // DM 試験版（dm-test ブランチ専用）
