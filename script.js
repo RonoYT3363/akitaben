@@ -1409,3 +1409,96 @@ document.addEventListener("DOMContentLoaded",()=>{
         });
     });
 })();
+
+
+// ==========================================
+// GitHub連携：装備品管理（オーナー用）
+// ==========================================
+function isEquipmentOwner() {
+    return !!currentUser && String(currentUser.role || "").toLowerCase() === "owner";
+}
+
+function updateEquipmentAdminAccess() {
+    const button = document.getElementById("equipmentAdminMenuBtn");
+    if (button) button.style.display = isEquipmentOwner() ? "block" : "none";
+}
+
+async function saveEquipmentToGitHub() {
+    const status = document.getElementById("equipmentAdminStatus");
+    const button = document.getElementById("equipmentSaveButton");
+    const key = document.getElementById("equipmentAdminKey")?.value || "";
+    const name = document.getElementById("equipmentName")?.value.trim() || "";
+    const rarity = document.getElementById("equipmentRarity")?.value || "N";
+    const category = document.getElementById("equipmentCategory")?.value || "持ち物";
+    const file = document.getElementById("equipmentImage")?.files?.[0];
+    if (!isEquipmentOwner()) { if(status) status.textContent = "オーナーアカウントでログインしてください。"; return; }
+    if (!key) { if(status) status.textContent = "管理キーを入力してください。"; return; }
+    if (!name || !file) { if(status) status.textContent = "装備品名と画像を入力してください。"; return; }
+    if (!["image/png","image/jpeg","image/webp"].includes(file.type) || file.size > 2*1024*1024) {
+        if(status) status.textContent = "PNG・JPEG・WebP形式で、2MB以下の画像を選択してください。";
+        return;
+    }
+    if(button) button.disabled = true;
+    if(status) status.textContent = "GitHubへ保存しています…";
+    try {
+        const base64 = await new Promise((resolve,reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+        const response = await fetch("/api/equipment", {
+            method:"POST",
+            headers:{"Content-Type":"application/json","x-equipment-admin-key":key},
+            body:JSON.stringify({name,rarity,category,fileName:file.name,mimeType:file.type,imageBase64:base64})
+        });
+        const result = await response.json().catch(()=>({}));
+        if(!response.ok) throw new Error(result.error || "GitHubへの保存に失敗しました。");
+        if(status) status.textContent = "保存しました：" + result.imagePath;
+        const input=document.getElementById("equipmentImage");
+        if(input) input.value="";
+        await loadEquipmentAdminList();
+    } catch(error) {
+        console.error("装備品のGitHub保存エラー:",error);
+        if(status) status.textContent = error.message || "保存できませんでした。";
+    } finally {
+        if(button) button.disabled = false;
+    }
+}
+
+async function loadEquipmentAdminList() {
+    const list=document.getElementById("equipmentAdminList");
+    if(!list) return;
+    try {
+        const response=await fetch("/data/equipment.json",{cache:"no-store"});
+        if(!response.ok) throw new Error("装備品データを読み込めません。");
+        const items=await response.json();
+        list.replaceChildren();
+        if(!Array.isArray(items) || !items.length) { list.textContent="まだ装備品は登録されていません。"; return; }
+        items.forEach(item=>{
+            const row=document.createElement("div");
+            row.className="equipmentAdminRow";
+            const img=document.createElement("img");
+            img.src=item.image;
+            img.alt="";
+            const info=document.createElement("span");
+            info.textContent=item.name+" / "+item.rarity+" / "+item.category;
+            row.append(img,info);
+            list.appendChild(row);
+        });
+    } catch(error) { list.textContent=error.message; }
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+    const imageInput=document.getElementById("equipmentImage");
+    if(imageInput) imageInput.addEventListener("change",()=>{
+        const file=imageInput.files?.[0], preview=document.getElementById("equipmentImagePreview");
+        if(!preview) return;
+        if(!file){preview.hidden=true;preview.removeAttribute("src");return;}
+        preview.src=URL.createObjectURL(file);
+        preview.hidden=false;
+    });
+});
+
+const _equipmentOriginalUpdateTopRight = updateTopRight;
+updateTopRight = function(){ _equipmentOriginalUpdateTopRight(); updateEquipmentAdminAccess(); };
