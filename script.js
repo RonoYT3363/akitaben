@@ -988,6 +988,7 @@ async function initializeAkitamonMap() {
         });
 
         akitamonMap.on("moveend", renderAkitamonTestTickets);
+        akitamonMap.on("resize", renderAkitamonTestTickets);
 
         akitamonUserMarker = new maplibregl.Marker({
             element: createAkitamonUserMarker(),
@@ -1015,8 +1016,11 @@ async function initializeAkitamonMap() {
                 originalShowPage(id);
                 if (id === "akitamonPage") {
                     window.setTimeout(() => {
-                        if (akitamonMap) akitamonMap.resize();
-                    }, 120);
+                        if (akitamonMap) {
+                            akitamonMap.resize();
+                            renderAkitamonTestTickets();
+                        }
+                    }, 250);
                     startAkitamonLocationWatch();
                 } else {
                     stopAkitamonLocationWatch();
