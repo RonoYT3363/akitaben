@@ -1897,3 +1897,19 @@ body:has(#dmPage[style*="display: block"]) #topRight {
     .gachaRates { gap: 9px 13px; }
     .gachaLastResult { flex-wrap: wrap; }
 }
+
+
+/* Owner equipment manager */
+.equipmentAdminIntro { color:var(--text-sub); }
+.equipmentAdminCard { margin:18px 0; padding:20px; border:1px solid var(--border-color); background:var(--surface-color); }
+.equipmentAdminCard label { display:block; margin:13px 0 6px; font-size:13px; font-weight:650; }
+.equipmentAdminCard input,.equipmentAdminCard select { box-sizing:border-box; width:100%; min-height:42px; padding:9px 11px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-color); color:var(--text-main); font:inherit; }
+.equipmentAdminFields { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+#equipmentSaveButton { margin-top:18px; min-height:44px; padding:10px 20px; border:0; border-radius:6px; background:var(--primary-color); color:#fff; font:inherit; font-weight:700; cursor:pointer; }
+#equipmentSaveButton:disabled { opacity:.55; cursor:wait; }
+.equipmentAdminStatus { min-height:20px; color:var(--text-sub); font-size:12px; }
+.equipmentImagePreview { display:block; max-width:180px; max-height:180px; object-fit:contain; margin-top:12px; border:1px solid var(--border-color); border-radius:8px; background:#f4f4f4; }
+.equipmentAdminList { display:grid; gap:9px; }
+.equipmentAdminRow { display:flex; align-items:center; gap:12px; padding:9px; border:1px solid var(--border-color); }
+.equipmentAdminRow img { width:52px; height:52px; object-fit:contain; }
+@media(max-width:600px){.equipmentAdminFields{grid-template-columns:1fr;}}
