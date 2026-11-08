@@ -828,16 +828,16 @@ function drawGachaItem() {
     const rates = getAvailableGachaRates();
     const roll = Math.random() * 100;
     let total = 0;
-    let selectedRarity = null;
-    for (const rarity of ["N", "R", "SR", "SSR"]) {
-        if (rates[rarity] === undefined) continue;
+    const availableRarities = ["N", "R", "SR", "SSR"].filter(rarity => rates[rarity] !== undefined);
+    let selectedRarity = availableRarities[availableRarities.length - 1] || null;
+    for (const rarity of availableRarities) {
         total += rates[rarity];
         if (roll < total) {
             selectedRarity = rarity;
             break;
         }
     }
-    const candidates = gachaItems.filter(item => item.rarity === (selectedRarity || "N"));
+    const candidates = gachaItems.filter(item => item.rarity === selectedRarity);
     if (!candidates.length) return null;
     return candidates[Math.floor(Math.random() * candidates.length)];
 }
