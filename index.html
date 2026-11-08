@@ -204,10 +204,21 @@
                   </defs>
                   <ellipse cx="180" cy="445" rx="105" ry="13" fill="#25334a" opacity=".10"/>
                   <g class="avatarBody">
-                    <path d="M100 440 Q105 345 137 323 L180 310 L223 323 Q255 345 260 440Z" fill="url(#avatarCoat)" stroke="#687b9b" stroke-width="3"/>
-                    <path d="M150 326 L180 365 L210 326 L198 440 L162 440Z" fill="#fff" opacity=".8"/>
-                    <path d="M137 324 L115 356 L142 380 L160 344 M223 324 L245 356 L218 380 L200 344" fill="#d5deed" stroke="#687b9b" stroke-width="2"/>
+                    <path d="M100 440 Q105 345 137 323 L180 310 L223 323 Q255 345 260 440Z" fill="#f1c8b8" stroke="#b98278" stroke-width="2"/>
+                    <path d="M137 324 L115 356 L142 380 L160 344 M223 324 L245 356 L218 380 L200 344" fill="#f1c8b8" stroke="#b98278" stroke-width="2"/>
                     <path d="M161 315 L180 343 L199 315 L193 300 L167 300Z" fill="#f1c8b8"/>
+                    <g class="avatarOutfit avatarOutfit-say-tee">
+                      <path d="M137 324 L112 343 L91 379 L119 397 L137 374 L135 440 L225 440 L223 374 L241 397 L269 379 L248 343 L223 324 L205 317 L180 348 L155 317Z" fill="#fff" stroke="#8993a5" stroke-width="3" stroke-linejoin="round"/>
+                      <path d="M155 317 L180 348 L205 317" fill="none" stroke="#d4d9e2" stroke-width="4" stroke-linejoin="round"/>
+                      <text x="180" y="389" text-anchor="middle" font-size="19" font-family="Arial,sans-serif" font-weight="700" letter-spacing="1.5" fill="#252b35">SAY</text>
+                    </g>
+                    <g class="avatarOutfit avatarOutfit-navy-hoodie">
+                      <path d="M137 324 L112 343 L91 379 L119 397 L137 374 L135 440 L225 440 L223 374 L241 397 L269 379 L248 343 L223 324 L205 317 L180 348 L155 317Z" fill="#344765" stroke="#26364d" stroke-width="3" stroke-linejoin="round"/>
+                      <path d="M155 317 Q180 365 205 317 L193 303 L167 303Z" fill="#25344b" stroke="#1f2d42" stroke-width="2"/>
+                      <path d="M180 350 L180 438" stroke="#71829b" stroke-width="2"/>
+                      <path d="M153 401 Q180 414 207 401 L207 420 Q180 433 153 420Z" fill="#26364d" stroke="#1f2d42" stroke-width="1.5"/>
+                      <text x="180" y="389" text-anchor="middle" font-size="14" font-family="Arial,sans-serif" font-weight="700" letter-spacing="1" fill="#f5f7fb">SAY</text>
+                    </g>
                   </g>
                   <g class="avatarHead">
                     <path d="M103 173 Q85 66 180 52 Q275 66 257 173 L250 260 Q238 319 180 325 Q122 319 110 260Z" fill="url(#avatarHair)"/>
@@ -239,12 +250,17 @@
                 <button type="button" onclick="setAvatarExpression('normal')">通常</button>
                 <button type="button" onclick="setAvatarExpression('surprise')">びっくり</button>
               </div>
-              <p class="avatarControlLabel">試着アイテム</p>
-              <div class="avatarButtonRow">
-                <button type="button" onclick="toggleAvatarItem('clip')">秋田犬ヘアピン</button>
-                <button type="button" onclick="toggleAvatarItem('headwear')">お祭り鉢巻</button>
+              <p class="avatarControlLabel">衣装</p>
+              <div class="avatarOutfitPicker">
+                <label class="avatarOutfitOption"><input type="radio" name="avatarOutfit" value="say-tee" checked><span><strong>SAY 白Tシャツ</strong><small>初期衣装・いつでも戻せます</small></span></label>
+                <label class="avatarOutfitOption"><input type="radio" name="avatarOutfit" value="navy-hoodie"><span><strong>ネイビーパーカー</strong><small>着せ替え動作確認用</small></span></label>
               </div>
-              <p class="avatarPrototypeNote">これはLive2Dモデルそのものではなく、無料のSVG/CSSで作った動作確認用プロトタイプです。まばたき・呼吸・髪の揺れと、着せ替えの方向性を確認できます。ガチャやプロフィールへの保存はまだ接続していません。</p>
+              <div class="avatarButtonRow avatarOutfitActions">
+                <button type="button" class="avatarApplyButton" onclick="applyAvatarOutfit()">この衣装に着替える</button>
+                <button type="button" onclick="resetAvatarOutfit()">初期衣装に戻す</button>
+              </div>
+              <p id="avatarOutfitStatus" class="avatarOutfitStatus" aria-live="polite"></p>
+              <p class="avatarPrototypeNote">衣装の切り替えと保存の基礎部分を試す試作品です。現在はこのブラウザ内に保存します。アクセサリー・ガチャ・プロフィール連携は後から追加します。</p>
             </div>
           </div>
         </div>
