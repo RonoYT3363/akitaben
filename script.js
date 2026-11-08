@@ -787,14 +787,15 @@ let akitamonUserMarker = null;
 let akitamonLocationWatchId = null;
 let akitamonHasCenteredOnUser = false;
 
-const AKITAMON_TICKET_STORAGE_KEY = "akitamon-test-roulette-tickets-v1";
+const AKITAMON_TICKET_STORAGE_KEY = "akitamon-test-roulette-tickets-v2";
 const AKITAMON_TICKET_COUNT_KEY = "akitamon-test-roulette-ticket-count-v1";
-const AKITAMON_TICKET_TEST_DENSITY = 0.005; // 1㎡あたり0.5%
-const AKITAMON_TICKET_TEST_AREA_M2 = 10000; // 100m × 100m のテスト範囲
+const AKITAMON_TICKET_TEST_DENSITY = 0.01; // 100㎡ごとに1%
+const AKITAMON_TICKET_GRID_SIDE = 1000; // 10m × 10m の区画を1000 × 1000個
+const AKITAMON_TICKET_AREA_SIDE_M = 10000; // 10km × 10km
 let akitamonTicketMarkers = [];
+let akitamonTicketData = null;
 let akitamonMapLoaded = false;
 let akitamonLocationResolved = false;
-let akitamonTicketsRendered = false;
 
 function getAkitamonTicketCount() {
     try {
@@ -810,44 +811,62 @@ function updateAkitamonTicketHud() {
 }
 
 function createAkitamonTestTickets() {
-    let tickets;
+    if (Array.isArray(akitamonTicketData)) return akitamonTicketData;
+
     try {
         const saved = localStorage.getItem(AKITAMON_TICKET_STORAGE_KEY);
-        tickets = saved ? JSON.parse(saved) : null;
+        akitamonTicketData = saved ? JSON.parse(saved) : null;
     } catch (_) {
-        tickets = null;
+        akitamonTicketData = null;
     }
 
-    if (!Array.isArray(tickets)) {
-        tickets = [];
-        // 100m × 100m の各1㎡を独立して0.5%で抽選
-        for (let cell = 0; cell < AKITAMON_TICKET_TEST_AREA_M2; cell++) {
-            if (Math.random() >= AKITAMON_TICKET_TEST_DENSITY) continue;
-            tickets.push({
-                id: "test-ticket-" + cell,
-                x: Math.random() - 0.5,
-                y: Math.random() - 0.5
-            });
+    if (!Array.isArray(akitamonTicketData)) {
+        akitamonTicketData = [];
+        const center = akitamonMap.getCenter();
+        const latScale = 1 / 111320;
+        const lngScale = 1 / (111320 * Math.max(0.1, Math.cos(center.lat * Math.PI / 180)));
+        const cellSize = AKITAMON_TICKET_AREA_SIDE_M / AKITAMON_TICKET_GRID_SIDE;
+
+        // 10km四方を10m四方（100㎡）の区画に分け、各区画を独立して1%で抽選
+        for (let row = 0; row < AKITAMON_TICKET_GRID_SIDE; row++) {
+            for (let col = 0; col < AKITAMON_TICKET_GRID_SIDE; col++) {
+                if (Math.random() >= AKITAMON_TICKET_TEST_DENSITY) continue;
+                const east = -AKITAMON_TICKET_AREA_SIDE_M / 2 + (col + Math.random()) * cellSize;
+                const north = -AKITAMON_TICKET_AREA_SIDE_M / 2 + (row + Math.random()) * cellSize;
+                akitamonTicketData.push({
+                    id: "test-ticket-" + row + "-" + col,
+                    lng: center.lng + east * lngScale,
+                    lat: center.lat + north * latScale
+                });
+            }
         }
         try {
-            localStorage.setItem(AKITAMON_TICKET_STORAGE_KEY, JSON.stringify(tickets));
+            localStorage.setItem(AKITAMON_TICKET_STORAGE_KEY, JSON.stringify(akitamonTicketData));
         } catch (error) {
             console.warn("挑戦券のテスト配置を保存できませんでした:", error);
         }
     }
 
-    return tickets;
+    return akitamonTicketData;
 }
 
 function renderAkitamonTestTickets() {
-    if (!akitamonMap || !akitamonMapLoaded || !akitamonLocationResolved || akitamonTicketsRendered) return;
-    akitamonTicketsRendered = true;
-    const center = akitamonMap.getCenter();
-    const latScale = 1 / 111320;
-    const lngScale = 1 / (111320 * Math.max(0.1, Math.cos(center.lat * Math.PI / 180)));
+    if (!akitamonMap || !akitamonMapLoaded || !akitamonLocationResolved) return;
+    const bounds = akitamonMap.getBounds();
     const tickets = createAkitamonTestTickets();
+    const visibleTickets = tickets.filter(ticket => bounds.contains([ticket.lng, ticket.lat]));
+    const visibleIds = new Set(visibleTickets.map(ticket => ticket.id));
 
-    tickets.forEach(ticket => {
+    // 画面外に出たマーカーは外し、再び表示範囲に入ったら描画する
+    akitamonTicketMarkers = akitamonTicketMarkers.filter(item => {
+        if (visibleIds.has(item.id)) return true;
+        item.marker.remove();
+        return false;
+    });
+
+    const renderedIds = new Set(akitamonTicketMarkers.map(item => item.id));
+    visibleTickets.forEach(ticket => {
+        if (renderedIds.has(ticket.id)) return;
         const element = document.createElement("button");
         element.type = "button";
         element.className = "akitamon-ticket-marker";
@@ -856,20 +875,17 @@ function renderAkitamonTestTickets() {
         element.title = "タップして挑戦券を回収";
 
         const marker = new maplibregl.Marker({ element, anchor: "center" })
-            .setLngLat([
-                center.lng + ticket.x * 100 * lngScale,
-                center.lat + ticket.y * 100 * latScale
-            ])
+            .setLngLat([ticket.lng, ticket.lat])
             .addTo(akitamonMap);
 
-        element.addEventListener("click", (event) => {
+        element.addEventListener("click", event => {
             event.preventDefault();
             event.stopPropagation();
             marker.remove();
             akitamonTicketMarkers = akitamonTicketMarkers.filter(item => item.id !== ticket.id);
-            const remaining = akitamonTicketMarkers.map(item => item.data);
+            akitamonTicketData = akitamonTicketData.filter(item => item.id !== ticket.id);
             try {
-                localStorage.setItem(AKITAMON_TICKET_STORAGE_KEY, JSON.stringify(remaining));
+                localStorage.setItem(AKITAMON_TICKET_STORAGE_KEY, JSON.stringify(akitamonTicketData));
                 localStorage.setItem(AKITAMON_TICKET_COUNT_KEY, String(getAkitamonTicketCount() + 1));
             } catch (error) {
                 console.warn("挑戦券の回収状態を保存できませんでした:", error);
@@ -877,7 +893,7 @@ function renderAkitamonTestTickets() {
             updateAkitamonTicketHud();
         });
 
-        akitamonTicketMarkers.push({ id: ticket.id, marker, data: ticket });
+        akitamonTicketMarkers.push({ id: ticket.id, marker });
     });
 
     updateAkitamonTicketHud();
@@ -970,6 +986,8 @@ async function initializeAkitamonMap() {
             akitamonMapLoaded = true;
             renderAkitamonTestTickets();
         });
+
+        akitamonMap.on("moveend", renderAkitamonTestTickets);
 
         akitamonUserMarker = new maplibregl.Marker({
             element: createAkitamonUserMarker(),
