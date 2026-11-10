@@ -642,7 +642,7 @@ input { min-height: 45px; padding: 11px 14px; }
     letter-spacing: .015em;
     transition: background .16s ease, transform .16s ease, opacity .16s ease;
 }
-.postButton:hover, .searchButton:hover, .page button:not(.postButton):hover,
+.postButton:hover, .searchButton:hover, .page button:not(.postButton):not(.akitamon-spot-marker):hover,
 .dmControls button:hover, .dmComposer button:hover {
     background: var(--primary-hover) !important;
     transform: translateY(-1px);
@@ -985,7 +985,7 @@ input { min-height: 47px; padding: 12px 15px; }
     box-shadow: none;
 }
 .postComposerActions { margin-top: 13px; gap: 10px; }
-.postButton, .searchButton, .page button:not(.postButton),
+.postButton, .searchButton, .page button:not(.postButton):not(.akitamon-spot-marker),
 .dmControls button, .dmComposer button {
     min-height: 43px;
     padding: 0 19px !important;
@@ -1000,7 +1000,7 @@ input { min-height: 47px; padding: 12px 15px; }
 }
 :root[data-theme="dark"] .postButton,
 :root[data-theme="dark"] .searchButton,
-:root[data-theme="dark"] .page button:not(.postButton),
+:root[data-theme="dark"] .page button:not(.postButton):not(.akitamon-spot-marker),
 :root[data-theme="dark"] .dmControls button,
 :root[data-theme="dark"] .dmComposer button {
     background: #718ce9 !important;
@@ -1895,3 +1895,36 @@ body:has(#dmPage[style*="display: block"]) #topRight {
 .gachaItemCard strong{min-width:0;overflow-wrap:anywhere}
 .gachaLastResult .gachaItemImage{width:76px;height:76px}
 .gachaLastResult .gachaItemCategory{display:none}
+
+
+/* Akitamon stamp markers: keep map positioning and stamp colors independent of site-wide buttons */
+#akitamonPage .maplibregl-marker.akitamon-spot-marker {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    z-index: 5 !important;
+    box-sizing: border-box !important;
+    width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 3px dashed #ffffff !important;
+    border-radius: 11px !important;
+    background: #e45463 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 9px rgba(20,32,55,.3) !important;
+    font-family: serif !important;
+    font-size: 21px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    letter-spacing: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transform-origin: center bottom;
+}
+#akitamonPage .maplibregl-marker.akitamon-spot-marker:hover {
+    filter: none !important;
+}
