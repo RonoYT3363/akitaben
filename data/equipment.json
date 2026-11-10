@@ -5,5 +5,12 @@
     "rarity": "N",
     "category": "持ち物",
     "image": "https://raw.githubusercontent.com/RonoYT3363/akitaben/dm-test/assets/equipment/my-earnings-4fda328e.png"
+  },
+  {
+    "id": "lucky-779a05d0",
+    "name": "Lucky!",
+    "rarity": "R",
+    "category": "持ち物",
+    "image": "https://raw.githubusercontent.com/RonoYT3363/akitaben/dm-test/assets/equipment/lucky-779a05d0.webp"
   }
 ]
