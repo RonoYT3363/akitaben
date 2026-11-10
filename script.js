@@ -1015,23 +1015,26 @@ function createAkitamonSpotMarker(spot) {
     element.type = "button";
     element.className = "akitamon-spot-marker";
     element.setAttribute("aria-label", spot.name + "のスタンプスポット");
-    element.title = spot.name;
-    element.textContent = spot.icon;
+    element.title = spot.name + "｜スタンプスポット";
+    element.textContent = "印";
     element.style.cssText = [
-        "width:38px",
-        "height:38px",
-        "border:3px solid #ffffff",
-        "border-radius:50%",
-        "background:#315bce",
+        "width:42px",
+        "height:42px",
+        "border:3px dashed #ffffff",
+        "border-radius:11px",
+        "background:#e45463",
         "color:#ffffff",
-        "font-size:19px",
+        "font-family:serif",
+        "font-size:21px",
+        "font-weight:800",
         "line-height:1",
         "display:flex",
         "align-items:center",
         "justify-content:center",
-        "box-shadow:0 2px 9px rgba(20,32,55,.28)",
+        "box-shadow:0 2px 9px rgba(20,32,55,.3)",
         "cursor:pointer",
-        "padding:0"
+        "padding:0",
+        "transform:rotate(-4deg)"
     ].join(";");
     return element;
 }
