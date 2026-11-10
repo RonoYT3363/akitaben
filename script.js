@@ -548,6 +548,19 @@ function showPage(id) {
     if (target) {
         target.style.display = "block";
     }
+
+    // The map is initialized while its page is hidden. Recalculate its size
+    // and refit the stamp spots after the Akitamon page becomes visible.
+    if (id === "akitamonPage" && typeof akitamonMap !== "undefined" && akitamonMap) {
+        requestAnimationFrame(() => {
+            akitamonMap.resize();
+            if (akitamonStampSpots.length) {
+                const bounds = new maplibregl.LngLatBounds();
+                akitamonStampSpots.forEach((spot) => bounds.extend([spot.lng, spot.lat]));
+                akitamonMap.fitBounds(bounds, { padding: 70, maxZoom: 16, duration: 0 });
+            }
+        });
+    }
 }
 
 // =====================
