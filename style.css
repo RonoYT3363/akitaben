@@ -630,7 +630,7 @@ body {
     box-shadow: none;
 }
 input { min-height: 45px; padding: 11px 14px; }
-.postButton, .searchButton, .page button:not(.postButton), .dmControls button, .dmComposer button {
+.postButton, .searchButton, .page button:not(.postButton):not(.akitamon-spot-marker), .dmControls button, .dmComposer button {
     min-height: 42px;
     border: 1px solid var(--primary-color) !important;
     border-radius: 9px !important;
@@ -1007,7 +1007,7 @@ input { min-height: 47px; padding: 12px 15px; }
     border-color: #718ce9 !important;
     color: #10192d !important;
 }
-.postButton:hover, .searchButton:hover, .page button:not(.postButton):hover,
+.postButton:hover, .searchButton:hover, .page button:not(.postButton):not(.akitamon-spot-marker):hover,
 .dmControls button:hover, .dmComposer button:hover { filter: brightness(1.07); transform: translateY(-2px); }
 .akitaConvertButton, .akitaPreviewActions button {
     min-height: 43px;
@@ -1246,7 +1246,7 @@ input { min-height: 43px; padding: 10px 13px !important; }
     outline-offset: 0 !important;
     border-color: var(--say-blue) !important;
 }
-.postButton, .searchButton, .page button:not(.postButton),
+.postButton, .searchButton, .page button:not(.postButton):not(.akitamon-spot-marker),
 .dmControls button, .dmComposer button,
 #themeToggle, #accountBtn,
 .akitaConvertButton, .akitaPreviewActions button {
@@ -1258,13 +1258,13 @@ input { min-height: 43px; padding: 10px 13px !important; }
     letter-spacing: 0 !important;
     transform: none !important;
 }
-.postButton, .searchButton, .page button:not(.postButton),
+.postButton, .searchButton, .page button:not(.postButton):not(.akitamon-spot-marker),
 .dmControls button, .dmComposer button {
     background: var(--say-blue) !important;
     border: 1px solid var(--say-blue) !important;
     color: #fff !important;
 }
-.postButton:hover, .searchButton:hover, .page button:not(.postButton):hover,
+.postButton:hover, .searchButton:hover, .page button:not(.postButton):not(.akitamon-spot-marker):hover,
 .dmControls button:hover, .dmComposer button:hover {
     filter: brightness(.93) !important;
     transform: none !important;
@@ -1897,12 +1897,10 @@ body:has(#dmPage[style*="display: block"]) #topRight {
 .gachaLastResult .gachaItemCategory{display:none}
 
 
-/* Akitamon stamp markers: keep map positioning and stamp colors independent of site-wide buttons */
+
+
+/* Akitamon markers must follow MapLibre transforms; avoid overriding transform/position */
 #akitamonPage .maplibregl-marker.akitamon-spot-marker {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    z-index: 5 !important;
     box-sizing: border-box !important;
     width: 42px !important;
     height: 42px !important;
@@ -1923,8 +1921,12 @@ body:has(#dmPage[style*="display: block"]) #topRight {
     align-items: center !important;
     justify-content: center !important;
     cursor: pointer !important;
+    transition: none !important;
     transform-origin: center bottom;
 }
 #akitamonPage .maplibregl-marker.akitamon-spot-marker:hover {
+    background: #e45463 !important;
+    border-color: #ffffff !important;
+    color: #ffffff !important;
     filter: none !important;
 }
