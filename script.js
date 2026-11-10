@@ -1128,6 +1128,45 @@ function simplifyAkitamonStyle(style) {
 
         return next;
     });
+
+    // Add dedicated 2D building footprint layers so buildings remain visible
+    // even if the upstream style changes or omits its own building layers.
+    const vectorSource = Object.entries(style.sources || {}).find(([sourceId, source]) =>
+        source && source.type === "vector" &&
+        /openmaptiles|openfreemap/i.test(sourceId + " " + (source.url || "") + " " + ((source.tiles || []).join(" ")))
+    ) || Object.entries(style.sources || {}).find(([, source]) => source && source.type === "vector");
+
+    if (vectorSource && !style.layers.some(layer => layer.id === "akitamon-building-footprints")) {
+        const sourceId = vectorSource[0];
+        const firstSymbolIndex = style.layers.findIndex(layer => layer.type === "symbol");
+        const insertAt = firstSymbolIndex >= 0 ? firstSymbolIndex : style.layers.length;
+        style.layers.splice(insertAt, 0,
+            {
+                id: "akitamon-building-footprints",
+                type: "fill",
+                source: sourceId,
+                "source-layer": "building",
+                minzoom: 13,
+                paint: {
+                    "fill-color": "#d7e1d2",
+                    "fill-opacity": 0.95
+                }
+            },
+            {
+                id: "akitamon-building-outlines",
+                type: "line",
+                source: sourceId,
+                "source-layer": "building",
+                minzoom: 13,
+                paint: {
+                    "line-color": "#aebfa9",
+                    "line-width": 0.8,
+                    "line-opacity": 1
+                }
+            }
+        );
+    }
+
     return style;
 }
 
