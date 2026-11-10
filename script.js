@@ -978,6 +978,99 @@ let akitamonUserMarker = null;
 let akitamonLocationWatchId = null;
 let akitamonHasCenteredOnUser = false;
 
+const akitamonStampSpots = [
+    {
+        id: "kanto-odori",
+        name: "竿燈大通り",
+        subtitle: "竿燈まつりのメイン会場",
+        description: "竿燈まつりの会場となる大通り。今回はホテルパールシティ付近を仮の代表地点にしています。",
+        lat: 39.7179841,
+        lng: 140.1168728,
+        icon: "🏮"
+    },
+    {
+        id: "neburi-nagashi-kan",
+        name: "ねぶり流し館",
+        subtitle: "秋田市民俗芸能伝承館",
+        description: "竿燈をはじめ、秋田に伝わる民俗芸能を紹介する施設。施設位置を基準にした仮座標です。",
+        lat: 39.7203651,
+        lng: 140.1169586,
+        icon: "📜"
+    },
+    {
+        id: "akarenga-kyodokan",
+        name: "赤れんが郷土館",
+        subtitle: "旧秋田銀行本店本館",
+        description: "秋田の歴史や美術に触れられる郷土館。建物位置を基準にした仮座標です。",
+        lat: 39.7167119,
+        lng: 140.1157749,
+        icon: "🏛️"
+    }
+];
+
+const akitamonSpotMarkers = [];
+
+function createAkitamonSpotMarker(spot) {
+    const element = document.createElement("button");
+    element.type = "button";
+    element.className = "akitamon-spot-marker";
+    element.setAttribute("aria-label", spot.name + "のスタンプスポット");
+    element.title = spot.name;
+    element.textContent = spot.icon;
+    element.style.cssText = [
+        "width:38px",
+        "height:38px",
+        "border:3px solid #ffffff",
+        "border-radius:50%",
+        "background:#315bce",
+        "color:#ffffff",
+        "font-size:19px",
+        "line-height:1",
+        "display:flex",
+        "align-items:center",
+        "justify-content:center",
+        "box-shadow:0 2px 9px rgba(20,32,55,.28)",
+        "cursor:pointer",
+        "padding:0"
+    ].join(";");
+    return element;
+}
+
+function addAkitamonStampSpots() {
+    if (!akitamonMap || akitamonSpotMarkers.length) return;
+
+    akitamonStampSpots.forEach((spot) => {
+        const popupContent = document.createElement("div");
+        popupContent.style.cssText = "min-width:180px;color:#172033;font-family:inherit;";
+        const title = document.createElement("strong");
+        title.textContent = spot.name;
+        title.style.cssText = "display:block;font-size:14px;margin-bottom:4px;";
+        const subtitle = document.createElement("div");
+        subtitle.textContent = spot.subtitle;
+        subtitle.style.cssText = "font-size:12px;font-weight:600;margin-bottom:6px;";
+        const description = document.createElement("p");
+        description.textContent = spot.description;
+        description.style.cssText = "font-size:12px;line-height:1.5;margin:0;";
+        popupContent.append(title, subtitle, description);
+
+        const popup = new maplibregl.Popup({ offset: 22, closeButton: true })
+            .setDOMContent(popupContent);
+        const marker = new maplibregl.Marker({
+            element: createAkitamonSpotMarker(spot),
+            anchor: "bottom"
+        })
+            .setLngLat([spot.lng, spot.lat])
+            .setPopup(popup)
+            .addTo(akitamonMap);
+
+        akitamonSpotMarkers.push(marker);
+    });
+
+    const bounds = new maplibregl.LngLatBounds();
+    akitamonStampSpots.forEach((spot) => bounds.extend([spot.lng, spot.lat]));
+    akitamonMap.fitBounds(bounds, { padding: 70, maxZoom: 16, duration: 0 });
+}
+
 function createAkitamonUserMarker() {
     const element = document.createElement("div");
     element.className = "akitamon-user-marker";
@@ -1062,6 +1155,7 @@ async function initializeAkitamonMap() {
         akitamonMap.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: "metric" }), "bottom-left");
 
         akitamonMap.once("load", () => {
+            addAkitamonStampSpots();
         });
 
 
