@@ -966,6 +966,12 @@ window.pullGacha = pullGacha;
 
 // ==========================================
 // Akitamon map (MapLibre GL JS + OpenFreeMap)
+// Remove obsolete local test data from the retired map-ticket feature.
+try {
+    localStorage.removeItem("akitamon-test-roulette-tickets-v2");
+    localStorage.removeItem("akitamon-test-roulette-ticket-count-v1");
+} catch (_) {}
+
 // ==========================================
 let akitamonMap = null;
 let akitamonUserMarker = null;
