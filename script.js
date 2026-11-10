@@ -1085,8 +1085,9 @@ function simplifyAkitamonStyle(style) {
         const key = id + " " + sourceLayer;
         const next = { ...layer, layout: { ...(layer.layout || {}) }, paint: { ...(layer.paint || {}) } };
 
-        // Remove visual clutter that is not useful for a location-based game.
-        if (/poi|housenumber|building|airport|transit|railway|shop|amenity|tourism|medical|food/.test(key)) {
+        // Keep useful place labels and building footprints visible.
+        // Only hide house numbers; 3D building extrusions are disabled below.
+        if (/housenumber/.test(key)) {
             next.layout.visibility = "none";
             return next;
         }
@@ -1094,7 +1095,10 @@ function simplifyAkitamonStyle(style) {
         if (next.type === "background") {
             next.paint["background-color"] = "#edf4e9";
         } else if (next.type === "fill") {
-            if (/water/.test(key)) {
+            if (/building/.test(key)) {
+                next.paint["fill-color"] = "#dfe7dc";
+                next.paint["fill-opacity"] = 0.92;
+            } else if (/water/.test(key)) {
                 next.paint["fill-color"] = "#dcecf0";
             } else if (/wood|forest|park|grass|scrub|meadow|orchard|vineyard/.test(key)) {
                 next.paint["fill-color"] = "#cfe2c5";
@@ -1104,7 +1108,10 @@ function simplifyAkitamonStyle(style) {
                 next.paint["fill-color"] = "#edf4e9";
             }
         } else if (next.type === "line") {
-            if (/waterway|river|stream|canal/.test(key)) {
+            if (/building/.test(key)) {
+                next.paint["line-color"] = "#b7c6b4";
+                next.paint["line-opacity"] = 0.95;
+            } else if (/waterway|river|stream|canal/.test(key)) {
                 next.paint["line-color"] = "#c3dfe5";
             } else if (/transportation|road|street|bridge|tunnel/.test(key)) {
                 next.paint["line-color"] = "#ffffff";
