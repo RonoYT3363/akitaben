@@ -25,9 +25,24 @@ async function github(path, options = {}) {
   return data;
 }
 module.exports = async (req, res) => {
-  if (req.method !== "POST") return send(res, 405, { error: "POST only" });
-  const adminKey = process.env.EQUIPMENT_ADMIN_KEY;
   const githubToken = process.env.GITHUB_TOKEN;
+  if (req.method === "GET") {
+    if (!githubToken) return send(res, 503, { error: "クイズデータを読み込めません。サーバー設定を確認してください。" });
+    try {
+      const file = await github("/repos/" + REPO + "/contents/" + FILE_PATH + "?ref=" + BRANCH);
+      const raw = Buffer.from(file.content.replace(/\\n/g, ""), "base64").toString("utf8");
+      const items = JSON.parse(raw);
+      if (!Array.isArray(items)) throw new Error("quiz.json must contain an array");
+      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+      res.setHeader("CDN-Cache-Control", "no-store");
+      return res.status(200).setHeader("Content-Type", "application/json; charset=utf-8").end(JSON.stringify(items));
+    } catch (error) {
+      console.error("Quiz read failed:", error);
+      return send(res, 500, { error: "クイズデータの読み込みに失敗しました。" });
+    }
+  }
+  if (req.method !== "POST") return send(res, 405, { error: "GET or POST only" });
+  const adminKey = process.env.EQUIPMENT_ADMIN_KEY;
   if (!adminKey || !githubToken) return send(res, 503, { error: "Vercel環境変数 GITHUB_TOKEN と EQUIPMENT_ADMIN_KEY の設定が必要です。" });
   const supplied = String(req.headers["x-equipment-admin-key"] || "");
   const a = Buffer.from(supplied), b = Buffer.from(adminKey);
