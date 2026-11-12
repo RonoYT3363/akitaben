@@ -1,6 +1,6 @@
 let currentUser = null;
 
-/* 秋田クイズ：window の最上位でポインター操作を捕捉 */
+/* 秋田クイズ：選択肢検知の診断 */
 window.addEventListener("pointerdown", function(event) {
     const target = event.target instanceof Element ? event.target : event.target?.parentElement;
     const button = target?.closest(".quizAnswerButton");
@@ -11,12 +11,19 @@ window.addEventListener("pointerdown", function(event) {
     if (!difficulty || !choices) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    answerQuizQuestion(difficulty, Number(button.dataset.quizChoice), choices).catch(error => {
+    const feedback = document.getElementById("quizFeedback" + (difficulty === "easy" ? "Easy" : "Hard"));
+    if (feedback) feedback.textContent = "選択肢のクリックを検知しました。回答を処理しています…";
+    try {
+        Promise.resolve(answerQuizQuestion(difficulty, Number(button.dataset.quizChoice), choices)).catch(error => {
+            console.error("クイズ回答処理エラー:", error);
+            if (feedback) feedback.textContent = "回答処理でエラーが発生しました。";
+        });
+    } catch (error) {
         console.error("クイズ回答処理エラー:", error);
-        const feedback = document.getElementById("quizFeedback" + (difficulty === "easy" ? "Easy" : "Hard"));
-        if (feedback) feedback.textContent = "回答処理でエラーが発生しました。ページを再読み込みしてください。";
-    });
+        if (feedback) feedback.textContent = "回答処理でエラーが発生しました。";
+    }
 }, true);
+
 
 // =====================
 // テーマ切り替え
