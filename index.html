@@ -164,7 +164,13 @@
 
         <!-- ミニゲームページ -->
         <div id="minigamePage" class="page" style="display:none;">
-            <h2>竿灯お囃子太鼓</h2>
+            <h2>ミニゲーム</h2>
+            <div class="minigameTabs" role="tablist" aria-label="ミニゲーム一覧">
+                <button type="button" class="minigameTab is-active" id="minigameTabKanto" role="tab" aria-selected="true" aria-controls="minigamePanelKanto" onclick="switchMinigameTab('kanto')">竿灯お囃子太鼓</button>
+                <span class="minigameTabPlaceholder" aria-disabled="true">追加予定</span>
+            </div>
+            <section class="minigamePanel" id="minigamePanelKanto" role="tabpanel" aria-labelledby="minigameTabKanto">
+            <h3>竿灯お囃子太鼓</h3>
             <p style="color: #65676b; margin-bottom: 20px;">流れてくる提灯が赤い判定ラインに重なった瞬間に「ドンッ！」と叩いてTokenを稼ごう！（10点先取でクリア！）</p>
             
             <div style="background: #fdf6e2; border: 2px solid #d97706; padding: 20px; border-radius: 12px; text-align: center;">
@@ -191,6 +197,7 @@
                     </button>
                 </div>
             </div>
+            </section>
         </div>
 
 
