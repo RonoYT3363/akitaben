@@ -27,8 +27,6 @@
 <body>
 
 <div id="topRight" style="display: flex; align-items: center; gap: 10px;">
-    <button id="fontPickerOpen" type="button" aria-label="フォントを選ぶ">Aa フォント</button>
-    <button id="themeToggle" type="button" aria-label="テーマを切り替える" title="テーマを切り替える">🌙 ダーク</button>
     <!-- ヘッダー用のトークン表示エリア -->
     <div id="headerToken" style="background-color: #ffffff; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 14px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: none; color: #d97706;">
         🪙 <span id="tokenCount">0</span> Token
@@ -108,6 +106,12 @@
         <button id="equipmentAdminMenuBtn" onclick="showPage('equipmentAdminPage')" style="display:none;">装備品管理</button>
         <button id="accountMenuBtn" onclick="openAccountEntry()">アカウント</button>
         <button onclick="openDmPage()">DM</button>
+        <div class="sidebarSettings">
+            <button id="themeToggle" type="button" aria-label="ダークモードに切り替える" title="ダークモードに切り替える">
+                <img id="themeToggleIcon" alt="" aria-hidden="true" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777e79' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z'/%3E%3C/svg%3E">
+                <span id="themeToggleLabel">ダークモード</span>
+            </button>
+        </div>
     </div>
 
     <div id="main">
@@ -225,6 +229,12 @@
         <div id="equipmentAdminPage" class="page" style="display:none;">
             <h2>装備品管理</h2>
             <p class="equipmentAdminIntro">画像と装備品データをGitHubへ登録します。GitHubへの書き込みはサーバー経由で行います。</p>
+            <section class="equipmentAdminCard">
+                <h3>サイト表示設定</h3>
+                <p>フォントの変更は管理画面から行います。</p>
+                <button type="button" id="fontPickerOpen" aria-label="フォント設定を開く">フォント設定</button>
+                <p class="equipmentAdminHint">ダークモードのアイコン画像は現在仮置きです。画像のアップロード設定は後から追加できます。</p>
+            </section>
             <section class="equipmentAdminCard">
                 <label for="equipmentAdminKey">管理キー（Vercel環境変数 EQUIPMENT_ADMIN_KEY に設定した値）</label>
                 <input id="equipmentAdminKey" type="password" autocomplete="off" placeholder="管理キー">
