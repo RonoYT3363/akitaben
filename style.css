@@ -2054,3 +2054,19 @@ body:has(#dmPage[style*="display: block"]) #topRight {
     border-color: var(--primary-color, #2563eb);
     color: #fff;
 }
+
+/* Quiz manager */
+#quizAdminCard textarea{box-sizing:border-box;width:100%;padding:10px 11px;border:1px solid var(--border-color);background:var(--bg-color);color:var(--text-main);font:inherit;resize:vertical}
+.quizChoiceFields{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.quizActiveLabel{display:flex!important;align-items:center;gap:8px}
+.quizActiveLabel input{width:auto!important;min-height:0!important}
+.quizAdminActions,.quizAdminRowActions{display:flex;gap:8px;flex-wrap:wrap}
+.quizAdminActions button,.quizAdminRowActions button{min-height:38px;padding:8px 14px;border:1px solid var(--primary-color);background:var(--primary-color);color:#fff;font:inherit;font-size:13px;cursor:pointer}
+.quizAdminActions button:disabled{opacity:.55;cursor:wait}
+.quizAdminActions .quizSecondaryButton,.quizAdminRowActions .quizSecondaryButton{border-color:var(--border-color);background:transparent;color:var(--text-main)}
+.quizAdminRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-color)}
+.quizAdminInfo{display:grid;gap:5px;min-width:0}
+.quizAdminInfo strong{font-size:13px;overflow-wrap:anywhere}
+.quizAdminInfo small{color:var(--text-sub);font-size:11px}
+.quizAdminRowActions{flex:0 0 auto}
+@media(max-width:600px){.quizChoiceFields{grid-template-columns:1fr}.quizAdminRow{align-items:flex-start;flex-direction:column}.quizAdminRowActions{width:100%}}
