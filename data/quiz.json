@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "4b510389-b969-4b8d-b35b-e69b816dc7b1",
+    "difficulty": "easy",
+    "question": "秋田竿灯まつりは、何日間開催される？",
+    "choices": [
+      "3日間",
+      "4日間",
+      "5日間",
+      "6日間"
+    ],
+    "answerIndex": 1,
+    "explanation": "竿灯まつりは、毎年8月3日から6日まで行われます。",
+    "active": true
+  }
+]
