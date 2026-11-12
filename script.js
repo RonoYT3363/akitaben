@@ -653,7 +653,7 @@ function renderGame() {
     notes.forEach(note => {
         html += `
             <div style="position: absolute; left: ${note.x}%; top: 20px; width: 40px; height: 80px; background-color: #dc2626; border-radius: 20px; border: 2px solid #b91c1c; display: flex; align-items: center; justify-content: center; color: #fbbf24; font-weight: bold; font-size: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                🏮
+                <span style="font-size: 11px; letter-spacing: 1px; writing-mode: vertical-rl; color: #fbbf24;">提灯</span>
             </div>
         `;
     });
@@ -678,13 +678,13 @@ function hitTaiko() {
     if (hitIndex !== -1 && minDiff < 7) {
         let earned = 0;
         if (minDiff < 2.5) {
-            showFeedback("✨ PERFECT! ドンッ！！ (+3 Token)", "#10b981");
+            showFeedback("PERFECT! ドンッ！！ (+3 Token)", "#10b981");
             earned = 3;
         } else if (minDiff < 5) {
-            showFeedback("👍 GREAT! ポンッ！ (+1 Token)", "#3b82f6");
+            showFeedback("GREAT! ポンッ！ (+1 Token)", "#3b82f6");
             earned = 1;
         } else {
-            showFeedback("🙂 GOOD (+1 Token)", "#f59e0b");
+            showFeedback("GOOD (+1 Token)", "#f59e0b");
             earned = 1;
         }
 
@@ -698,7 +698,7 @@ function hitTaiko() {
             endKantoGame(true);
         }
     } else {
-        showFeedback("💥 スカッ…！", "#ef4444");
+        showFeedback("スカッ…！", "#ef4444");
     }
 }
 
@@ -720,9 +720,9 @@ async function endKantoGame(success) {
     if (startBtn) startBtn.style.display = "inline-block";
 
     if (success) {
-        if (feedback) feedback.textContent = `🎉 大成功！ Akita Token ${gameScore}枚ゲットしました！`;
+        if (feedback) feedback.textContent = `大成功！ Akita Token ${gameScore}枚ゲットしました！`;
         await addTokensToUser(gameScore);
-        alert(`お見事！竿灯お囃子ゲームクリア！\n🪙 ${gameScore} Akita Tokenを獲得しました！`);
+        alert(`お見事！竿灯お囃子ゲームクリア！\n${gameScore} Akita Tokenを獲得しました！`);
     } else {
         if (feedback) feedback.textContent = "ゲーム終了！";
     }
