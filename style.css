@@ -2244,3 +2244,83 @@ body:has(#dmPage[style*="display: block"]) #topRight {
     border-color: var(--say-gold) !important;
     color: #1d1a14 !important;
 }
+
+
+/* Mini-games: unified champagne-gold controls */
+#minigamePage .minigameTabs {
+    border-bottom-color: color-mix(in srgb, var(--say-gold) 48%, var(--border-color)) !important;
+}
+#minigamePage .minigameTab {
+    border: 1px solid var(--say-gold) !important;
+    border-radius: 4px !important;
+    background: transparent !important;
+    color: var(--say-gold-deep) !important;
+    font-weight: 650 !important;
+    transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease !important;
+}
+#minigamePage .minigameTab:hover {
+    background: color-mix(in srgb, var(--say-gold) 13%, transparent) !important;
+    border-color: var(--say-gold-deep) !important;
+    transform: translateY(-1px);
+}
+#minigamePage .minigameTab.is-active {
+    background: var(--say-gold-deep) !important;
+    border-color: var(--say-gold-deep) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(75, 58, 29, .12) !important;
+}
+#minigamePage .minigameTabPlaceholder,
+#minigamePage .minigameTabPlaceholder:disabled {
+    border: 1px dashed color-mix(in srgb, var(--say-gold) 48%, var(--border-color)) !important;
+    background: transparent !important;
+    color: var(--text-sub) !important;
+    opacity: .55 !important;
+    cursor: not-allowed !important;
+}
+#minigamePage #minigamePanelKanto > div[style*="text-align: center"] {
+    border: 1px solid var(--say-gold) !important;
+    background: color-mix(in srgb, var(--say-gold) 8%, var(--surface-color)) !important;
+}
+#minigamePage #minigamePanelKanto > div[style*="text-align: center"] > div:first-child {
+    color: var(--say-gold-deep) !important;
+}
+:root[data-theme="dark"] #minigamePage #minigamePanelKanto > div[style*="text-align: center"] > div:first-child {
+    color: var(--say-gold) !important;
+}
+#minigamePage #gameTrack {
+    border-color: color-mix(in srgb, var(--say-gold) 60%, var(--border-color)) !important;
+    background: var(--surface-color) !important;
+}
+#minigamePage #gameStartBtn,
+#minigamePage #minigamePanelKanto button[onclick="hitTaiko()"] {
+    min-height: 44px !important;
+    border: 1px solid var(--say-gold-deep) !important;
+    border-radius: 4px !important;
+    background: var(--say-gold-deep) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(75, 58, 29, .12) !important;
+    font-weight: 700 !important;
+    transition: background .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease !important;
+}
+#minigamePage #gameStartBtn:hover,
+#minigamePage #minigamePanelKanto button[onclick="hitTaiko()"]:hover {
+    background: var(--say-gold) !important;
+    border-color: var(--say-gold) !important;
+    color: #fff !important;
+    transform: translateY(-1px) !important;
+}
+#minigamePage #gameStartBtn:active,
+#minigamePage #minigamePanelKanto button[onclick="hitTaiko()"]:active {
+    transform: scale(.985) !important;
+}
+#minigamePage .minigameTab:focus-visible,
+#minigamePage #gameStartBtn:focus-visible,
+#minigamePage #minigamePanelKanto button[onclick="hitTaiko()"]:focus-visible {
+    outline: 2px solid var(--say-gold) !important;
+    outline-offset: 3px !important;
+}
+@media(max-width:600px) {
+    #minigamePage .minigameTabs { gap: 6px; }
+    #minigamePage .minigameTab,
+    #minigamePage .minigameTabPlaceholder { padding: 9px 6px !important; }
+}
