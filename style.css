@@ -2646,3 +2646,91 @@ body:has(#minigamePage[style*="display: block"]) {
         font-size: 12px !important;
     }
 }
+
+/* Akita Quiz: premium unified answer controls */
+#minigamePage .quizAnswerButton {
+    position: relative;
+    min-height: 66px;
+    padding: 14px 16px;
+    gap: 14px;
+    border: 1px solid color-mix(in srgb, var(--say-gold) 68%, var(--border-color));
+    border-radius: 4px;
+    background: var(--surface-color);
+    color: var(--text-main);
+    box-shadow: 0 2px 8px rgba(45, 35, 20, .045);
+    font-weight: 600;
+    transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+#minigamePage .quizAnswerButton:hover:not(:disabled) {
+    border-color: var(--say-gold-deep);
+    background: color-mix(in srgb, var(--say-gold) 13%, var(--surface-color));
+    color: var(--text-main);
+    box-shadow: 0 5px 14px rgba(45, 35, 20, .09);
+    transform: translateY(-2px);
+}
+#minigamePage .quizAnswerButton:active:not(:disabled) {
+    transform: translateY(0) scale(.99);
+}
+#minigamePage .quizAnswerButton:focus-visible {
+    outline: 2px solid var(--say-gold);
+    outline-offset: 3px;
+}
+#minigamePage .quizChoiceLetter {
+    flex-basis: 30px;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--say-gold);
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--say-gold) 10%, transparent);
+    color: var(--say-gold-deep);
+    font-weight: 750;
+    transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+:root[data-theme="dark"] #minigamePage .quizChoiceLetter {
+    color: var(--say-gold);
+}
+#minigamePage .quizAnswerButton.is-correct {
+    border-color: #63866a;
+    background: color-mix(in srgb, #63866a 12%, var(--surface-color));
+    color: var(--text-main);
+    box-shadow: inset 3px 0 0 #63866a;
+}
+#minigamePage .quizAnswerButton.is-correct .quizChoiceLetter {
+    border-color: #63866a;
+    background: #63866a;
+    color: #fff;
+}
+#minigamePage .quizAnswerButton.is-wrong {
+    border-color: #b76560;
+    background: color-mix(in srgb, #b76560 10%, var(--surface-color));
+    color: var(--text-main);
+    box-shadow: inset 3px 0 0 #b76560;
+}
+#minigamePage .quizAnswerButton.is-wrong .quizChoiceLetter {
+    border-color: #b76560;
+    background: #b76560;
+    color: #fff;
+}
+#minigamePage .quizAnswerButton:disabled {
+    opacity: 1;
+    cursor: default;
+}
+#minigamePage .quizNextButton {
+    min-height: 44px;
+    border: 1px solid var(--say-gold-deep);
+    border-radius: 4px;
+    background: var(--say-gold-deep);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(75, 58, 29, .12);
+    transition: background .2s ease, border-color .2s ease, transform .2s ease;
+}
+#minigamePage .quizNextButton:hover {
+    border-color: var(--say-gold);
+    background: var(--say-gold);
+    color: #fff;
+    transform: translateY(-1px);
+}
+@media(max-width:560px) {
+    #minigamePage .quizAnswerButton { min-height: 60px; padding: 12px 13px; }
+}
+
