@@ -2324,3 +2324,23 @@ body:has(#dmPage[style*="display: block"]) #topRight {
     #minigamePage .minigameTab,
     #minigamePage .minigameTabPlaceholder { padding: 9px 6px !important; }
 }
+
+/* Akita Quiz */
+.quizGamePanel{max-width:860px;margin:0 auto}.quizGameHeader{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:14px;border-bottom:1px solid color-mix(in srgb,var(--say-gold) 40%,var(--border-color))}
+.quizGameHeader h3{margin:2px 0 0;font-size:22px}.quizGameEyebrow{margin:0;color:var(--say-gold-deep);font-size:10px;font-weight:800;letter-spacing:.18em}
+:root[data-theme="dark"] .quizGameEyebrow{color:var(--say-gold)}.quizRewardTag{padding:7px 11px;border:1px solid var(--say-gold);color:var(--say-gold-deep);font-size:12px;font-weight:700;white-space:nowrap}
+:root[data-theme="dark"] .quizRewardTag{color:var(--say-gold)}.quizGameIntro{color:var(--text-sub);font-size:13px;line-height:1.7}
+.quizGameStage{margin-top:18px;padding:clamp(16px,3vw,28px);border:1px solid color-mix(in srgb,var(--say-gold) 48%,var(--border-color));background:color-mix(in srgb,var(--say-gold) 5%,var(--surface-color))}
+.quizGameStats{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--text-sub);font-size:12px;padding-bottom:14px;border-bottom:1px solid var(--border-color)}
+.quizQuestionText{margin:22px 0;font-size:clamp(17px,2.5vw,22px);line-height:1.65}.quizAnswerChoices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quizAnswerButton{display:flex;align-items:center;gap:12px;min-height:58px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--say-gold) 55%,var(--border-color));border-radius:3px;background:var(--surface-color);color:var(--text-main);text-align:left;font:inherit;font-size:14px;cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
+.quizAnswerButton:hover:not(:disabled){border-color:var(--say-gold);background:color-mix(in srgb,var(--say-gold) 10%,var(--surface-color));transform:translateY(-1px)}
+.quizAnswerButton:disabled{cursor:default;opacity:1}.quizChoiceLetter{display:grid;place-items:center;flex:0 0 27px;width:27px;height:27px;border:1px solid var(--say-gold);color:var(--say-gold-deep);font-size:12px;font-weight:800}
+:root[data-theme="dark"] .quizChoiceLetter{color:var(--say-gold)}.quizAnswerButton.is-correct{border-color:#63866a;background:color-mix(in srgb,#63866a 12%,var(--surface-color))}
+.quizAnswerButton.is-wrong{border-color:#b76560;background:color-mix(in srgb,#b76560 10%,var(--surface-color))}.quizAnswerFeedback{min-height:34px;margin-top:18px;font-weight:700;font-size:14px}
+.quizAnswerFeedback.is-correct{color:#63866a}.quizAnswerFeedback.is-wrong{color:#b76560}.quizExplanation{margin:8px 0;color:var(--text-main);font-size:13px;font-weight:400;line-height:1.7}
+.quizNextButton{min-height:42px;margin-top:12px;padding:10px 20px;border:1px solid var(--say-gold-deep);border-radius:3px;background:var(--say-gold-deep);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+.quizNextButton:hover{background:var(--say-gold);border-color:var(--say-gold);color:#fff}.quizEmptyState,.quizResultState{text-align:center;padding:22px 8px}
+.quizEmptyState strong,.quizResultState h4{font-size:19px}.quizEmptyState p{color:var(--text-sub);font-size:13px}.quizResultScore{font-size:22px;font-weight:800}
+.quizResultEarned{color:var(--say-gold-deep);font-weight:800}:root[data-theme="dark"] .quizResultEarned{color:var(--say-gold)}
+@media(max-width:560px){.quizAnswerChoices{grid-template-columns:1fr}.quizGameHeader h3{font-size:19px}.quizGameStats{font-size:11px}.quizGameHeader{align-items:flex-start}}
