@@ -1689,7 +1689,86 @@ document.addEventListener("DOMContentLoaded",()=>{
     });
 });
 
+
+/* ==========================================
+   秋田クイズ管理（オーナー用）
+========================================== */
+function resetQuizForm() {
+    ["quizEditId","quizQuestion","quizChoice0","quizChoice1","quizChoice2","quizChoice3","quizExplanation"].forEach(id => {
+        const el=document.getElementById(id); if(el) el.value="";
+    });
+    const difficulty=document.getElementById("quizDifficulty"); if(difficulty) difficulty.value="easy";
+    const answer=document.getElementById("quizAnswer"); if(answer) answer.value="0";
+    const active=document.getElementById("quizActive"); if(active) active.checked=true;
+    const save=document.getElementById("quizSaveButton"); if(save) save.textContent="問題を保存";
+    const cancel=document.getElementById("quizCancelEditButton"); if(cancel) cancel.hidden=true;
+}
+async function loadQuizAdminList() {
+    const list=document.getElementById("quizAdminList"); if(!list) return;
+    try {
+        const response=await fetch("/data/quiz.json",{cache:"no-store"});
+        if(!response.ok) throw new Error("クイズデータを読み込めません。");
+        const items=await response.json();
+        list.replaceChildren();
+        if(!Array.isArray(items)||!items.length){list.textContent="まだ問題は登録されていません。";return;}
+        items.forEach(item=>{
+            const row=document.createElement("div"); row.className="quizAdminRow";
+            const info=document.createElement("div"); info.className="quizAdminInfo";
+            const title=document.createElement("strong"); title.textContent=item.question;
+            const meta=document.createElement("small"); meta.textContent=(item.difficulty==="hard"?"Hard":"Easy")+" ・ "+(item.active?"公開中":"非公開");
+            info.append(title,meta);
+            const actions=document.createElement("div"); actions.className="quizAdminRowActions";
+            const edit=document.createElement("button"); edit.type="button"; edit.textContent="編集";
+            edit.onclick=()=>editQuizQuestion(item);
+            const remove=document.createElement("button"); remove.type="button"; remove.textContent="削除"; remove.className="quizSecondaryButton";
+            remove.onclick=()=>deleteQuizQuestion(item.id);
+            actions.append(edit,remove); row.append(info,actions); list.append(row);
+        });
+    } catch(error){list.textContent=error.message;}
+}
+function editQuizQuestion(item) {
+    document.getElementById("quizEditId").value=item.id;
+    document.getElementById("quizDifficulty").value=item.difficulty;
+    document.getElementById("quizQuestion").value=item.question;
+    (item.choices||[]).forEach((value,index)=>{const el=document.getElementById("quizChoice"+index);if(el)el.value=value;});
+    document.getElementById("quizAnswer").value=String(item.answerIndex);
+    document.getElementById("quizExplanation").value=item.explanation||"";
+    document.getElementById("quizActive").checked=!!item.active;
+    document.getElementById("quizSaveButton").textContent="変更を保存";
+    document.getElementById("quizCancelEditButton").hidden=false;
+    document.getElementById("quizQuestion").focus();
+}
+async function saveQuizQuestion() {
+    const status=document.getElementById("quizAdminStatus"), button=document.getElementById("quizSaveButton");
+    const key=document.getElementById("equipmentAdminKey")?.value||"";
+    if(!isEquipmentOwner()){status.textContent="オーナーアカウントでログインしてください。";return;}
+    if(!key){status.textContent="管理キーを入力してください。";return;}
+    const question=document.getElementById("quizQuestion").value.trim();
+    const choices=[0,1,2,3].map(i=>document.getElementById("quizChoice"+i).value.trim());
+    if(!question||choices.some(v=>!v)){status.textContent="問題文と4つの選択肢をすべて入力してください。";return;}
+    const payload={action:"save",id:document.getElementById("quizEditId").value||undefined,difficulty:document.getElementById("quizDifficulty").value,question,choices,answerIndex:Number(document.getElementById("quizAnswer").value),explanation:document.getElementById("quizExplanation").value.trim(),active:document.getElementById("quizActive").checked};
+    button.disabled=true; status.textContent="保存しています…";
+    try{
+        const response=await fetch("/api/quiz",{method:"POST",headers:{"Content-Type":"application/json","x-equipment-admin-key":key},body:JSON.stringify(payload)});
+        const result=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(result.error||"保存できませんでした。");
+        status.textContent="保存しました。"; resetQuizForm(); await loadQuizAdminList();
+    }catch(error){status.textContent=error.message||"保存できませんでした。";}
+    finally{button.disabled=false;}
+}
+async function deleteQuizQuestion(id) {
+    if(!confirm("この問題を削除しますか？"))return;
+    const status=document.getElementById("quizAdminStatus"), key=document.getElementById("equipmentAdminKey")?.value||"";
+    if(!key){status.textContent="管理キーを入力してください。";return;}
+    try{
+        const response=await fetch("/api/quiz",{method:"POST",headers:{"Content-Type":"application/json","x-equipment-admin-key":key},body:JSON.stringify({action:"delete",id})});
+        const result=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(result.error||"削除できませんでした。");
+        status.textContent="削除しました。"; await loadQuizAdminList();
+    }catch(error){status.textContent=error.message||"削除できませんでした。";}
+}
+
 const _equipmentOriginalUpdateTopRight = updateTopRight;
 updateTopRight = function(){ _equipmentOriginalUpdateTopRight(); updateEquipmentAdminAccess(); };
 const _equipmentOriginalShowPage = showPage;
-showPage = function(id){ _equipmentOriginalShowPage(id); if(id === "equipmentAdminPage" && isEquipmentOwner()) loadEquipmentAdminList(); };
+showPage = function(id){ _equipmentOriginalShowPage(id); if(id === "equipmentAdminPage" && isEquipmentOwner()) { loadEquipmentAdminList(); loadQuizAdminList(); } };
