@@ -1729,7 +1729,7 @@ function renderQuizQuestion(difficulty){
  [`${state.index+1} / ${state.questions.length} 問`,`連続正解 ${state.streak}`,`今回獲得 ${state.earned} ATK`].forEach(t=>{const el=document.createElement("span");el.textContent=t;stats.append(el);});
  const question=document.createElement("h4");question.className="quizQuestionText";question.textContent=q.question;
  const choices=document.createElement("div");choices.className="quizAnswerChoices";
- q.choices.forEach((choice,index)=>{const btn=document.createElement("button");btn.type="button";btn.className="quizAnswerButton";const letter=document.createElement("span");letter.className="quizChoiceLetter";letter.textContent=String.fromCharCode(65+index);const label=document.createElement("span");label.textContent=choice;btn.append(letter,label);btn.onclick=(event)=>{event.preventDefault();event.stopPropagation();answerQuizQuestion(difficulty,index,choices);};choices.append(btn);});
+ q.choices.forEach((choice,index)=>{const btn=document.createElement("button");btn.type="button";btn.className="quizAnswerButton";btn.dataset.quizChoice=String(index);const letter=document.createElement("span");letter.className="quizChoiceLetter";letter.textContent=String.fromCharCode(65+index);const label=document.createElement("span");label.textContent=choice;btn.append(letter,label);choices.append(btn);});
  const feedback=document.createElement("div");feedback.className="quizAnswerFeedback";feedback.id="quizFeedback"+(difficulty==="easy"?"Easy":"Hard");feedback.setAttribute("aria-live","polite");
  stage.append(stats,question,choices,feedback);
 }
@@ -1775,6 +1775,23 @@ async function answerQuizQuestion(difficulty,selectedIndex,choices){
  next.addEventListener("click",()=>{state.index++;renderQuizQuestion(difficulty);});
  feedback.append(next);
 }
+/* 選択肢のクリックは document の capture 段階で受け取り、親要素のイベント干渉を避ける */
+document.addEventListener("click",event=>{
+ const target=event.target;
+ if(!target||typeof target.closest!=="function")return;
+ const button=target.closest(".quizAnswerButton");
+ if(!button)return;
+ const choices=button.closest(".quizAnswerChoices");
+ const stage=button.closest(".quizGameStage");
+ if(!choices||!stage)return;
+ const difficulty=stage.id==="quizGameEasy"?"easy":stage.id==="quizGameHard"?"hard":null;
+ if(!difficulty)return;
+ const selectedIndex=Number(button.dataset.quizChoice);
+ if(!Number.isInteger(selectedIndex)||selectedIndex<0)return;
+ event.preventDefault();
+ answerQuizQuestion(difficulty,selectedIndex,choices);
+},true);
+
 function renderQuizResult(difficulty){
  const state=quizGameState[difficulty],stage=document.getElementById(difficulty==="easy"?"quizGameEasy":"quizGameHard");if(!stage)return;stage.replaceChildren();
  const wrap=document.createElement("div");wrap.className="quizResultState";
