@@ -8,10 +8,19 @@ function applyTheme(theme) {
     document.documentElement.dataset.theme = selectedTheme;
 
     const button = document.getElementById("themeToggle");
+    const label = document.getElementById("themeToggleLabel");
+    const icon = document.getElementById("themeToggleIcon");
+    const nextLabel = selectedTheme === "dark" ? "ライトモード" : "ダークモード";
+    const nextAria = selectedTheme === "dark" ? "ライトモードに切り替える" : "ダークモードに切り替える";
+    if (label) label.textContent = nextLabel;
     if (button) {
-        button.textContent = selectedTheme === "dark" ? "☀️ ライト" : "🌙 ダーク";
-        button.setAttribute("aria-label", selectedTheme === "dark" ? "ライトテーマに切り替える" : "ダークテーマに切り替える");
-        button.title = selectedTheme === "dark" ? "ライトテーマに切り替える" : "ダークテーマに切り替える";
+        button.setAttribute("aria-label", nextAria);
+        button.title = nextAria;
+    }
+    if (icon) {
+        icon.src = selectedTheme === "dark"
+            ? "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3Cpath d='M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42'/%3E%3C/svg%3E"
+            : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777e79' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z'/%3E%3C/svg%3E";
     }
 
     const themeColor = document.querySelector('meta[name="theme-color"]');
