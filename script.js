@@ -1,5 +1,29 @@
 let currentUser = null;
 
+/* 秋田クイズ：選択肢クリックを最優先で捕捉 */
+document.addEventListener("click", function(event) {
+    const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+    const button = target?.closest(".quizAnswerButton");
+    if (!button) return;
+    const stage = button.closest(".quizGameStage");
+    const choices = button.closest(".quizAnswerChoices");
+    const difficulty = stage?.id === "quizGameEasy" ? "easy" : stage?.id === "quizGameHard" ? "hard" : null;
+    if (!difficulty || !choices) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const feedback = document.getElementById("quizFeedback" + (difficulty === "easy" ? "Easy" : "Hard"));
+    if (feedback) {
+        feedback.className = "quizAnswerFeedback";
+        feedback.textContent = "回答を受け付けました。";
+    }
+    try {
+        answerQuizQuestion(difficulty, Number(button.dataset.quizChoice), choices);
+    } catch (error) {
+        console.error("クイズ回答処理エラー:", error);
+        if (feedback) feedback.textContent = "回答処理でエラーが発生しました。ページを再読み込みしてください。";
+    }
+}, true);
+
 // =====================
 // テーマ切り替え
 // =====================
@@ -1775,23 +1799,6 @@ async function answerQuizQuestion(difficulty,selectedIndex,choices){
  next.addEventListener("click",()=>{state.index++;renderQuizQuestion(difficulty);});
  feedback.append(next);
 }
-/* 選択肢のクリックは document の capture 段階で受け取り、親要素のイベント干渉を避ける */
-document.addEventListener("click",event=>{
- const target=event.target;
- if(!target||typeof target.closest!=="function")return;
- const button=target.closest(".quizAnswerButton");
- if(!button)return;
- const choices=button.closest(".quizAnswerChoices");
- const stage=button.closest(".quizGameStage");
- if(!choices||!stage)return;
- const difficulty=stage.id==="quizGameEasy"?"easy":stage.id==="quizGameHard"?"hard":null;
- if(!difficulty)return;
- const selectedIndex=Number(button.dataset.quizChoice);
- if(!Number.isInteger(selectedIndex)||selectedIndex<0)return;
- event.preventDefault();
- answerQuizQuestion(difficulty,selectedIndex,choices);
-},true);
-
 function renderQuizResult(difficulty){
  const state=quizGameState[difficulty],stage=document.getElementById(difficulty==="easy"?"quizGameEasy":"quizGameHard");if(!stage)return;stage.replaceChildren();
  const wrap=document.createElement("div");wrap.className="quizResultState";
