@@ -2110,3 +2110,72 @@ body:has(#dmPage[style*="display: block"]) #topRight {
 :root[data-theme="dark"] .akitaConvertButton,:root[data-theme="dark"] .akitaPreviewActions button,:root[data-theme="dark"] .dmBackButton,:root[data-theme="dark"] #dmRefreshBtn,:root[data-theme="dark"] .quizSecondaryButton { color:var(--say-gold) !important; }
 .postButton:active,.page button:active { transform:translateY(0) scale(.985) !important; }
 @media(max-width:430px) { #accountBtn { width:40px !important;min-width:40px !important;height:40px !important;min-height:40px !important; } }
+
+
+/* アカウント：アイコン＋ユーザー名 */
+#topRight {
+    display: flex;
+    align-items: center;
+}
+#accountBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 5px 15px 5px 6px;
+    border: 1px solid var(--say-gold, #b99a5b);
+    border-radius: 999px;
+    background: var(--surface-color, #fff);
+    color: var(--text-main, #222);
+    box-shadow: 0 4px 16px rgba(20, 18, 12, 0.08);
+    font: inherit;
+    cursor: pointer;
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+#accountBtn .accountAvatar {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    border-radius: 50%;
+    background: rgba(185, 154, 91, .13);
+    color: var(--say-gold, #a98a4e);
+}
+#accountBtn .accountAvatar svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.55;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+#accountBtn .accountUserName {
+    max-width: 150px;
+    overflow: hidden;
+    color: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .025em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+#accountBtn:hover {
+    background: var(--say-gold, #b99a5b);
+    color: #fff;
+    border-color: var(--say-gold, #b99a5b);
+    box-shadow: 0 7px 20px rgba(20, 18, 12, .13);
+    transform: translateY(-1px);
+}
+#accountBtn:hover .accountAvatar {
+    background: rgba(255,255,255,.17);
+    color: #fff;
+}
+@media (max-width: 600px) {
+    #topRight { right: 12px; top: 12px; }
+    #accountBtn { min-height: 42px; gap: 7px; padding-right: 11px; }
+    #accountBtn .accountAvatar { width: 30px; height: 30px; flex-basis: 30px; }
+    #accountBtn .accountUserName { max-width: 105px; font-size: 12px; }
+}
