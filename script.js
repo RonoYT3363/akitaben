@@ -1760,7 +1760,8 @@ function renderQuizResult(difficulty){
  retry.addEventListener("click",()=>{state.questions=quizShuffle(state.questions);state.index=0;state.streak=0;state.earned=0;state.correct=0;state.answered=false;renderQuizQuestion(difficulty);});
  wrap.append(eyebrow,title,score,earned,retry);stage.append(wrap);
 }
-\n/* ==========================================
+
+/* ==========================================
    秋田クイズ管理（オーナー用）
 ========================================== */
 function resetQuizForm() {
