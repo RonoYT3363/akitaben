@@ -2005,3 +2005,50 @@ body:has(#dmPage[style*="display: block"]) #topRight {
         white-space: nowrap;
     }
 }
+
+
+/* Mini-game tab navigation */
+.minigameTabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    margin: 0 0 20px;
+    padding: 0 0 8px;
+    border-bottom: 1px solid var(--border-color, #d9dfdc);
+}
+.minigameTab,
+.minigameTabPlaceholder {
+    flex: 0 0 auto;
+    padding: 10px 16px;
+    border: 1px solid var(--border-color, #d9dfdc);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-color, inherit);
+    font: inherit;
+    font-size: 14px;
+    line-height: 1.4;
+}
+.minigameTab { cursor: pointer; }
+.minigameTab.is-active {
+    border-color: var(--primary-color, #2563eb);
+    background: var(--primary-color, #2563eb);
+    color: #fff;
+}
+.minigameTabPlaceholder {
+    color: var(--muted-text, #858d88);
+    border-style: dashed;
+    opacity: .75;
+}
+.minigamePanel[hidden] { display: none !important; }
+#minigamePage > h3 { margin: 0 0 12px; font-size: 18px; }
+:root[data-theme="dark"] .minigameTab,
+:root[data-theme="dark"] .minigameTabPlaceholder {
+    border-color: var(--border-color, #374151);
+    color: var(--text-color, #e5e7eb);
+}
+:root[data-theme="dark"] .minigameTab.is-active {
+    background: var(--primary-color, #2563eb);
+    border-color: var(--primary-color, #2563eb);
+    color: #fff;
+}
