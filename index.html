@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=Kaisei+Tokumin:wght@400;500;700&family=Klee+One:wght@400;600&family=Kosugi+Maru&family=Kiwi+Maru:wght@400;500;700&family=M+PLUS+2:wght@400;500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Murecho:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Serif+JP:wght@400;500;700&family=Shippori+Mincho:wght@400;500;700&family=Stick&family=Yomogi&family=Yusei+Magic&family=Yuji+Mai&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Kurenaido&family=Zen+Maru+Gothic:wght@400;500;700&family=Zen+Old+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=premium-minigame-gold-v1">
+    <link rel="stylesheet" href="style.css?v=premium-quiz-game-v1">
     <script>
         (() => {
             try {
@@ -171,8 +171,8 @@
             <h2>ミニゲーム</h2>
             <div class="minigameTabs" role="tablist" aria-label="ミニゲーム一覧">
                 <button type="button" class="minigameTab is-active" id="minigameTabKanto" role="tab" aria-selected="true" aria-controls="minigamePanelKanto" onclick="switchMinigameTab('kanto')">竿灯お囃子太鼓</button>
-                <button type="button" class="minigameTabPlaceholder" disabled>ゲーム2</button>
-                <button type="button" class="minigameTabPlaceholder" disabled>ゲーム3</button>
+                <button type="button" class="minigameTab" id="minigameTabQuizEasy" role="tab" aria-selected="false" aria-controls="minigamePanelQuizEasy" onclick="switchMinigameTab('quizEasy')">秋田クイズ Easy</button>
+                <button type="button" class="minigameTab" id="minigameTabQuizHard" role="tab" aria-selected="false" aria-controls="minigamePanelQuizHard" onclick="switchMinigameTab('quizHard')">秋田クイズ Hard</button>
             </div>
             <section class="minigamePanel" id="minigamePanelKanto" role="tabpanel" aria-labelledby="minigameTabKanto">
             <h3>竿灯お囃子太鼓</h3>
@@ -202,6 +202,16 @@
                     </button>
                 </div>
             </div>
+            </section>
+            <section class="minigamePanel quizGamePanel" id="minigamePanelQuizEasy" role="tabpanel" aria-labelledby="minigameTabQuizEasy" hidden>
+                <div class="quizGameHeader"><div><p class="quizGameEyebrow">AKITA QUIZ</p><h3>秋田クイズ Easy</h3></div><span class="quizRewardTag">正解 +5 ATK</span></div>
+                <p class="quizGameIntro">秋田にまつわる問題に挑戦しよう。連続正解でボーナスも獲得！</p>
+                <div id="quizGameEasy" class="quizGameStage"><p class="quizLoading">問題を読み込んでいます…</p></div>
+            </section>
+            <section class="minigamePanel quizGamePanel" id="minigamePanelQuizHard" role="tabpanel" aria-labelledby="minigameTabQuizHard" hidden>
+                <div class="quizGameHeader"><div><p class="quizGameEyebrow">AKITA QUIZ</p><h3>秋田クイズ Hard</h3></div><span class="quizRewardTag">正解 +8 ATK</span></div>
+                <p class="quizGameIntro">難問に挑戦。連続正解を伸ばして、さらに大きなボーナスを狙おう。</p>
+                <div id="quizGameHard" class="quizGameStage"><p class="quizLoading">問題を読み込んでいます…</p></div>
             </section>
         </div>
 
