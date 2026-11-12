@@ -1734,20 +1734,46 @@ function renderQuizQuestion(difficulty){
  stage.append(stats,question,choices,feedback);
 }
 async function answerQuizQuestion(difficulty,selectedIndex,choices){
- const state=quizGameState[difficulty];if(state.answered)return;
- if(!currentUser){alert("Tokenを獲得するにはログインしてください。");return;}
- const q=state.questions[state.index];if(!q)return;state.answered=true;
- choices.querySelectorAll("button").forEach((btn,i)=>{btn.disabled=true;if(i===q.answerIndex)btn.classList.add("is-correct");if(i===selectedIndex&&selectedIndex!==q.answerIndex)btn.classList.add("is-wrong");});
- const feedback=document.getElementById("quizFeedback"+(difficulty==="easy"?"Easy":"Hard"));let reward=0;
+ const state=quizGameState[difficulty];
+ if(state.answered)return;
+ const q=state.questions[state.index];
+ if(!q)return;
+ state.answered=true;
+ choices.querySelectorAll("button").forEach((btn,i)=>{
+  btn.disabled=true;
+  if(i===q.answerIndex)btn.classList.add("is-correct");
+  if(i===selectedIndex&&selectedIndex!==q.answerIndex)btn.classList.add("is-wrong");
+ });
+ const feedback=document.getElementById("quizFeedback"+(difficulty==="easy"?"Easy":"Hard"));
+ if(!feedback)return;
+ let reward=0;
  if(selectedIndex===q.answerIndex){
-  state.streak++;state.correct++;const base=QUIZ_BASE_REWARD[difficulty],bonus=quizMilestoneBonus(difficulty,state.streak);reward=base+bonus;state.earned+=reward;
-  feedback.className="quizAnswerFeedback is-correct";feedback.textContent="正解！ +"+base+" ATK"+(bonus?" ／ 連続正解ボーナス +"+bonus+" ATK":"");
-  await addTokensToUser(reward);
+  state.streak++;state.correct++;
+  const base=QUIZ_BASE_REWARD[difficulty],bonus=quizMilestoneBonus(difficulty,state.streak);
+  reward=base+bonus;
+  feedback.className="quizAnswerFeedback is-correct";
+  feedback.textContent="正解！"+(currentUser?" +"+base+" ATK"+(bonus?" ／ 連続正解ボーナス +"+bonus+" ATK":""):" ログインするとTokenを獲得できます。");
+  if(currentUser){
+   state.earned+=reward;
+   try{await addTokensToUser(reward);}
+   catch(error){console.error("クイズ報酬の付与に失敗しました:",error);feedback.textContent+="（Tokenの反映に失敗しました）";}
+  }
  }else{
-  state.streak=0;feedback.className="quizAnswerFeedback is-wrong";feedback.textContent="不正解。正解は "+String.fromCharCode(65+q.answerIndex)+" です。";
+  state.streak=0;
+  feedback.className="quizAnswerFeedback is-wrong";
+  feedback.textContent="不正解。正解は "+String.fromCharCode(65+q.answerIndex)+" です。";
  }
- if(q.explanation){const exp=document.createElement("p");exp.className="quizExplanation";exp.textContent=q.explanation;feedback.append(exp);}
- const next=document.createElement("button");next.type="button";next.className="quizNextButton";next.textContent=state.index+1>=state.questions.length?"結果を見る":"次の問題へ";next.addEventListener("click",()=>{state.index++;renderQuizQuestion(difficulty);});feedback.append(next);
+ if(q.explanation){
+  const exp=document.createElement("p");
+  exp.className="quizExplanation";
+  exp.textContent=q.explanation;
+  feedback.append(exp);
+ }
+ const next=document.createElement("button");
+ next.type="button";next.className="quizNextButton";
+ next.textContent=state.index+1>=state.questions.length?"結果を見る":"次の問題へ";
+ next.addEventListener("click",()=>{state.index++;renderQuizQuestion(difficulty);});
+ feedback.append(next);
 }
 function renderQuizResult(difficulty){
  const state=quizGameState[difficulty],stage=document.getElementById(difficulty==="easy"?"quizGameEasy":"quizGameHard");if(!stage)return;stage.replaceChildren();
