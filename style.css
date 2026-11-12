@@ -2344,3 +2344,165 @@ body:has(#dmPage[style*="display: block"]) #topRight {
 .quizEmptyState strong,.quizResultState h4{font-size:19px}.quizEmptyState p{color:var(--text-sub);font-size:13px}.quizResultScore{font-size:22px;font-weight:800}
 .quizResultEarned{color:var(--say-gold-deep);font-weight:800}:root[data-theme="dark"] .quizResultEarned{color:var(--say-gold)}
 @media(max-width:560px){.quizAnswerChoices{grid-template-columns:1fr}.quizGameHeader h3{font-size:19px}.quizGameStats{font-size:11px}.quizGameHeader{align-items:flex-start}}
+
+
+/* Mini-games: viewport workspace, no page scrolling */
+html:has(#minigamePage[style*="display: block"]),
+body:has(#minigamePage[style*="display: block"]) {
+    overflow: hidden !important;
+    overscroll-behavior: none;
+}
+#minigamePage[style*="display: block"] {
+    position: fixed !important;
+    left: 252px !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    z-index: 1900 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: auto !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 72px clamp(20px, 3vw, 44px) 20px !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+#minigamePage[style*="display: block"] > h2 {
+    flex: 0 0 auto !important;
+    margin: 0 0 14px !important;
+    padding-bottom: 12px !important;
+}
+#minigamePage[style*="display: block"] .minigameTabs {
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    gap: 8px !important;
+    margin-bottom: 14px !important;
+    padding-bottom: 8px !important;
+}
+#minigamePage[style*="display: block"] .minigameTab {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: 0 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    font-size: clamp(11px, 1.15vw, 14px) !important;
+}
+#minigamePage[style*="display: block"] .minigamePanel:not([hidden]) {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+#minigamePage[style*="display: block"] #minigamePanelKanto {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+#minigamePage[style*="display: block"] #minigamePanelKanto > p {
+    margin: 0 0 12px !important;
+    font-size: 13px;
+}
+#minigamePage[style*="display: block"] #minigamePanelKanto > div[style*="text-align: center"] {
+    padding: clamp(12px, 2vh, 20px) !important;
+}
+#minigamePage[style*="display: block"] #gameTrack {
+    height: clamp(76px, 15vh, 120px) !important;
+    margin-bottom: 12px !important;
+}
+#minigamePage[style*="display: block"] .quizGamePanel:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+#minigamePage[style*="display: block"] .quizGameHeader {
+    flex: 0 0 auto;
+    padding-bottom: 9px;
+}
+#minigamePage[style*="display: block"] .quizGameHeader h3 {
+    font-size: clamp(17px, 2vw, 22px);
+}
+#minigamePage[style*="display: block"] .quizGameIntro {
+    flex: 0 0 auto;
+    margin: 8px 0 0;
+    line-height: 1.45;
+}
+#minigamePage[style*="display: block"] .quizGameStage {
+    flex: 0 1 auto;
+    min-height: 0;
+    margin-top: 10px;
+    padding: clamp(12px, 2vh, 22px);
+}
+#minigamePage[style*="display: block"] .quizQuestionText {
+    margin: 12px 0;
+    line-height: 1.45;
+}
+#minigamePage[style*="display: block"] .quizAnswerChoices {
+    gap: 8px;
+}
+#minigamePage[style*="display: block"] .quizAnswerButton {
+    min-height: 48px;
+    padding: 9px 11px;
+}
+@media (max-width: 820px) {
+    #minigamePage[style*="display: block"] {
+        left: 0 !important;
+        top: 62px !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: calc(100vh - 62px) !important;
+        height: calc(100dvh - 62px) !important;
+        padding: 12px 12px 14px !important;
+    }
+    #minigamePage[style*="display: block"] > h2 {
+        margin-bottom: 9px !important;
+        padding-bottom: 8px !important;
+        font-size: 20px !important;
+    }
+    #minigamePage[style*="display: block"] .minigameTabs {
+        gap: 5px !important;
+        margin-bottom: 9px !important;
+        padding-bottom: 6px !important;
+    }
+    #minigamePage[style*="display: block"] .minigameTab {
+        padding: 8px 4px !important;
+        font-size: clamp(10px, 2.8vw, 12px) !important;
+        line-height: 1.25 !important;
+    }
+    #minigamePage[style*="display: block"] .quizGameStage {
+        padding: 12px !important;
+    }
+    #minigamePage[style*="display: block"] .quizAnswerChoices {
+        grid-template-columns: 1fr 1fr !important;
+    }
+    #minigamePage[style*="display: block"] .quizAnswerButton {
+        min-height: 48px;
+        font-size: 12px;
+    }
+}
+@media (max-height: 620px) {
+    #minigamePage[style*="display: block"] {
+        padding-top: 54px !important;
+        padding-bottom: 10px !important;
+    }
+    #minigamePage[style*="display: block"] > h2 {
+        margin-bottom: 7px !important;
+        padding-bottom: 7px !important;
+    }
+    #minigamePage[style*="display: block"] .minigameTabs {
+        margin-bottom: 7px !important;
+    }
+    #minigamePage[style*="display: block"] .quizGameIntro {
+        font-size: 11px;
+    }
+    #minigamePage[style*="display: block"] .quizQuestionText {
+        margin: 8px 0;
+        font-size: 16px;
+    }
+}
