@@ -1712,7 +1712,7 @@ async function loadQuizGame(difficulty){
  if(!stage||state.loaded||state.loading)return;
  state.loading=true;stage.textContent="問題を読み込んでいます…";
  try{
-  const response=await fetch("/data/quiz.json",{cache:"no-store"});if(!response.ok)throw new Error("クイズを読み込めませんでした。");
+  const response=await fetch("/api/quiz",{cache:"no-store"});if(!response.ok)throw new Error("クイズを読み込めませんでした。");
   const all=await response.json();
   state.questions=quizShuffle((Array.isArray(all)?all:[]).filter(q=>q.active===true&&q.difficulty===difficulty&&q.question&&Array.isArray(q.choices)&&q.choices.length===4&&Number.isInteger(q.answerIndex)&&q.answerIndex>=0&&q.answerIndex<4));
   state.loaded=state.questions.length>0;
