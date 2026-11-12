@@ -478,9 +478,16 @@ function openAccountEntry() {
 function updateTopRight() {
     try {
         const btn = document.getElementById("accountBtn");
+        const userName = document.getElementById("accountUserName");
         const menuBtn = document.getElementById("accountMenuBtn");
         if (btn) {
             btn.onclick = openAccountEntry;
+            const displayName = currentUser?.nickname || "ログイン";
+            if (userName) userName.textContent = displayName;
+            btn.setAttribute("aria-label", currentUser?.nickname
+                ? `アカウントを開く：${currentUser.nickname}`
+                : "ログイン");
+            btn.title = currentUser?.nickname || "ログイン";
         }
         if (menuBtn) {
             menuBtn.textContent = "アカウント";
