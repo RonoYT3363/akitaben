@@ -1715,7 +1715,7 @@ async function loadQuizGame(difficulty){
   const response=await fetch("/data/quiz.json",{cache:"no-store"});if(!response.ok)throw new Error("クイズを読み込めませんでした。");
   const all=await response.json();
   state.questions=quizShuffle((Array.isArray(all)?all:[]).filter(q=>q.active===true&&q.difficulty===difficulty&&q.question&&Array.isArray(q.choices)&&q.choices.length===4&&Number.isInteger(q.answerIndex)&&q.answerIndex>=0&&q.answerIndex<4));
-  state.loaded=true;
+  state.loaded=state.questions.length>0;
   if(!state.questions.length){stage.innerHTML='<div class="quizEmptyState"><strong>問題を準備中です</strong><p>この難易度の問題はまだ公開されていません。</p></div>';return;}
   renderQuizQuestion(difficulty);
  }catch(error){stage.textContent=error.message||"読み込みに失敗しました。";}
