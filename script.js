@@ -1729,7 +1729,7 @@ function renderQuizQuestion(difficulty){
  [`${state.index+1} / ${state.questions.length} 問`,`連続正解 ${state.streak}`,`今回獲得 ${state.earned} ATK`].forEach(t=>{const el=document.createElement("span");el.textContent=t;stats.append(el);});
  const question=document.createElement("h4");question.className="quizQuestionText";question.textContent=q.question;
  const choices=document.createElement("div");choices.className="quizAnswerChoices";
- q.choices.forEach((choice,index)=>{const btn=document.createElement("button");btn.type="button";btn.className="quizAnswerButton";const letter=document.createElement("span");letter.className="quizChoiceLetter";letter.textContent=String.fromCharCode(65+index);const label=document.createElement("span");label.textContent=choice;btn.append(letter,label);btn.addEventListener("click",()=>answerQuizQuestion(difficulty,index,choices));choices.append(btn);});
+ q.choices.forEach((choice,index)=>{const btn=document.createElement("button");btn.type="button";btn.className="quizAnswerButton";const letter=document.createElement("span");letter.className="quizChoiceLetter";letter.textContent=String.fromCharCode(65+index);const label=document.createElement("span");label.textContent=choice;btn.append(letter,label);btn.onclick=(event)=>{event.preventDefault();event.stopPropagation();answerQuizQuestion(difficulty,index,choices);};choices.append(btn);});
  const feedback=document.createElement("div");feedback.className="quizAnswerFeedback";feedback.id="quizFeedback"+(difficulty==="easy"?"Easy":"Hard");feedback.setAttribute("aria-live","polite");
  stage.append(stats,question,choices,feedback);
 }
