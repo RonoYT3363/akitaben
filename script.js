@@ -548,6 +548,20 @@ function renderProfile() {
 // =====================
 // ページ切替
 // =====================
+function switchMinigameTab(gameId) {
+    const tabs = document.querySelectorAll(".minigameTab[role='tab']");
+    const panels = document.querySelectorAll(".minigamePanel");
+    tabs.forEach(tab => {
+        const active = tab.id === "minigameTabKanto" && gameId === "kanto";
+        tab.classList.toggle("is-active", active);
+        tab.setAttribute("aria-selected", active ? "true" : "false");
+        tab.tabIndex = active ? 0 : -1;
+    });
+    panels.forEach(panel => {
+        panel.hidden = !(panel.id === "minigamePanelKanto" && gameId === "kanto");
+    });
+}
+
 function showPage(id) {
     document.querySelectorAll(".page").forEach(page => {
         page.style.display = "none";
