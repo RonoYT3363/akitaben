@@ -30,7 +30,7 @@ module.exports = async (req, res) => {
     if (!githubToken) return send(res, 503, { error: "クイズデータを読み込めません。サーバー設定を確認してください。" });
     try {
       const file = await github("/repos/" + REPO + "/contents/" + FILE_PATH + "?ref=" + BRANCH);
-      const raw = Buffer.from(file.content.replace(/\\n/g, ""), "base64").toString("utf8");
+      const raw = Buffer.from(file.content.replace(/\n/g, ""), "base64").toString("utf8");
       const items = JSON.parse(raw);
       if (!Array.isArray(items)) throw new Error("quiz.json must contain an array");
       res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
