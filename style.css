@@ -1930,3 +1930,78 @@ body:has(#dmPage[style*="display: block"]) #topRight {
     color: #ffffff !important;
     filter: none !important;
 }
+
+
+/* Sidebar appearance controls */
+#leftMenu {
+    display: flex !important;
+    flex-direction: column !important;
+}
+#leftMenu .sidebarSettings {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--say-line);
+}
+#leftMenu .sidebarSettings #themeToggle {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 11px;
+    width: 100%;
+    min-height: 45px !important;
+    padding: 0 13px !important;
+    border: 0 !important;
+    border-left: 2px solid transparent !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: var(--say-muted) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-align: left;
+    box-shadow: none !important;
+    cursor: pointer;
+}
+#leftMenu .sidebarSettings #themeToggle:hover {
+    border-left-color: var(--say-blue) !important;
+    background: rgba(90,100,110,.06) !important;
+    color: var(--say-ink) !important;
+    transform: none !important;
+}
+#themeToggleIcon {
+    display: block;
+    flex: 0 0 19px;
+    width: 19px;
+    height: 19px;
+    object-fit: contain;
+}
+#fontPickerOpen {
+    min-height: 42px;
+    padding: 0 14px;
+    border: 1px solid var(--say-line);
+    border-radius: var(--say-radius);
+    background: var(--say-white);
+    color: var(--say-ink);
+    font-size: 13px;
+    cursor: pointer;
+}
+.equipmentAdminHint {
+    margin: 12px 0 0;
+    color: var(--say-muted);
+    font-size: 12px;
+    line-height: 1.7;
+}
+@media (max-width: 820px) {
+    #leftMenu .sidebarSettings {
+        flex: 0 0 auto;
+        margin: 0 0 0 4px;
+        padding: 0 0 0 8px;
+        border-top: 0;
+        border-left: 1px solid var(--say-line);
+    }
+    #leftMenu .sidebarSettings #themeToggle {
+        width: auto;
+        min-height: 36px !important;
+        padding: 0 10px !important;
+        white-space: nowrap;
+    }
+}
