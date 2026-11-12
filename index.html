@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=Kaisei+Tokumin:wght@400;500;700&family=Klee+One:wght@400;600&family=Kosugi+Maru&family=Kiwi+Maru:wght@400;500;700&family=M+PLUS+2:wght@400;500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Murecho:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Serif+JP:wght@400;500;700&family=Shippori+Mincho:wght@400;500;700&family=Stick&family=Yomogi&family=Yusei+Magic&family=Yuji+Mai&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Kurenaido&family=Zen+Maru+Gothic:wght@400;500;700&family=Zen+Old+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=minigame-tabs-v2">
+    <link rel="stylesheet" href="style.css?v=quiz-admin-v1">
     <script>
         (() => {
             try {
@@ -258,6 +258,35 @@
                 <button type="button" id="equipmentSaveButton" onclick="saveEquipmentToGitHub()">GitHubに保存</button>
                 <p id="equipmentAdminStatus" class="equipmentAdminStatus" aria-live="polite">PNG・JPEG・WebP、2MB以下の画像を選択してください。</p>
             </section>
+
+            <section class="equipmentAdminCard" id="quizAdminCard">
+                <h3>秋田クイズ管理</h3>
+                <p class="equipmentAdminHint">Easy・Hardの問題を作成し、公開状態を管理できます。</p>
+                <input type="hidden" id="quizEditId">
+                <label for="quizDifficulty">難易度</label>
+                <select id="quizDifficulty"><option value="easy">Easy</option><option value="hard">Hard</option></select>
+                <label for="quizQuestion">問題文</label>
+                <textarea id="quizQuestion" maxlength="500" rows="3" placeholder="問題文を入力"></textarea>
+                <div class="quizChoiceFields">
+                    <div><label for="quizChoice0">選択肢 A</label><input id="quizChoice0" maxlength="160" placeholder="選択肢 A"></div>
+                    <div><label for="quizChoice1">選択肢 B</label><input id="quizChoice1" maxlength="160" placeholder="選択肢 B"></div>
+                    <div><label for="quizChoice2">選択肢 C</label><input id="quizChoice2" maxlength="160" placeholder="選択肢 C"></div>
+                    <div><label for="quizChoice3">選択肢 D</label><input id="quizChoice3" maxlength="160" placeholder="選択肢 D"></div>
+                </div>
+                <label for="quizAnswer">正解</label>
+                <select id="quizAnswer"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select>
+                <label for="quizExplanation">解説（任意）</label>
+                <textarea id="quizExplanation" maxlength="1000" rows="2" placeholder="回答後に表示する解説"></textarea>
+                <label class="quizActiveLabel"><input type="checkbox" id="quizActive" checked> 公開する</label>
+                <div class="quizAdminActions">
+                    <button type="button" id="quizSaveButton" onclick="saveQuizQuestion()">問題を保存</button>
+                    <button type="button" id="quizCancelEditButton" class="quizSecondaryButton" onclick="resetQuizForm()" hidden>編集をキャンセル</button>
+                </div>
+                <p id="quizAdminStatus" class="equipmentAdminStatus" aria-live="polite">問題を作成できます。</p>
+                <h4>登録済みクイズ</h4>
+                <div id="quizAdminList" class="equipmentAdminList">読み込み待ち</div>
+            </section>
+
             <section class="equipmentAdminCard">
                 <h3>登録済み装備品</h3>
                 <div id="equipmentAdminList" class="equipmentAdminList">読み込み待ち</div>
