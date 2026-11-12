@@ -1,27 +1,21 @@
 let currentUser = null;
 
-/* 秋田クイズ：選択肢クリックを最優先で捕捉 */
-document.addEventListener("click", function(event) {
+/* 秋田クイズ：window の最上位でポインター操作を捕捉 */
+window.addEventListener("pointerdown", function(event) {
     const target = event.target instanceof Element ? event.target : event.target?.parentElement;
     const button = target?.closest(".quizAnswerButton");
-    if (!button) return;
+    if (!button || button.disabled) return;
     const stage = button.closest(".quizGameStage");
     const choices = button.closest(".quizAnswerChoices");
     const difficulty = stage?.id === "quizGameEasy" ? "easy" : stage?.id === "quizGameHard" ? "hard" : null;
     if (!difficulty || !choices) return;
     event.preventDefault();
-    event.stopPropagation();
-    const feedback = document.getElementById("quizFeedback" + (difficulty === "easy" ? "Easy" : "Hard"));
-    if (feedback) {
-        feedback.className = "quizAnswerFeedback";
-        feedback.textContent = "回答を受け付けました。";
-    }
-    try {
-        answerQuizQuestion(difficulty, Number(button.dataset.quizChoice), choices);
-    } catch (error) {
+    event.stopImmediatePropagation();
+    answerQuizQuestion(difficulty, Number(button.dataset.quizChoice), choices).catch(error => {
         console.error("クイズ回答処理エラー:", error);
+        const feedback = document.getElementById("quizFeedback" + (difficulty === "easy" ? "Easy" : "Hard"));
         if (feedback) feedback.textContent = "回答処理でエラーが発生しました。ページを再読み込みしてください。";
-    }
+    });
 }, true);
 
 // =====================
