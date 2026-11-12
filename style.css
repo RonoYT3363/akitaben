@@ -2070,3 +2070,43 @@ body:has(#dmPage[style*="display: block"]) #topRight {
 .quizAdminInfo small{color:var(--text-sub);font-size:11px}
 .quizAdminRowActions{flex:0 0 auto}
 @media(max-width:600px){.quizChoiceFields{grid-template-columns:1fr}.quizAdminRow{align-items:flex-start;flex-direction:column}.quizAdminRowActions{width:100%}}
+
+
+/* SAY premium button & token prototype */
+:root { --say-gold:#b7a078; --say-gold-deep:#92784d; }
+:root[data-theme="dark"] { --say-gold:#c8b487; --say-gold-deep:#a48d60; }
+#topRight { gap:0 !important; }
+#accountBtn {
+ display:grid !important; place-items:center !important; width:44px !important; min-width:44px !important;
+ height:44px !important; min-height:44px !important; padding:0 !important;
+ border:1px solid var(--say-gold) !important; border-radius:50% !important;
+ background:var(--surface-color) !important; color:var(--say-gold-deep) !important;
+ box-shadow:0 3px 12px rgba(40,32,20,.08) !important;
+ transition:background .22s ease,color .22s ease,border-color .22s ease,transform .22s ease,box-shadow .22s ease !important;
+}
+#accountBtn svg { display:block;width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.45;stroke-linecap:round;stroke-linejoin:round; }
+#accountBtn:hover { background:var(--say-gold) !important;color:#fff !important;border-color:var(--say-gold) !important;transform:translateY(-2px) !important;box-shadow:0 7px 18px rgba(70,54,27,.16) !important; }
+#accountBtn:active { transform:translateY(0) scale(.96) !important; }
+#accountBtn:focus-visible { outline:2px solid var(--say-gold);outline-offset:4px; }
+:root[data-theme="dark"] #accountBtn { background:#22211e !important;color:var(--say-gold) !important;border-color:var(--say-gold) !important; }
+:root[data-theme="dark"] #accountBtn:hover { background:var(--say-gold) !important;color:#171715 !important; }
+.profileTokenCard {
+ max-width:560px;margin:24px 0;padding:23px 25px 19px;border:1px solid var(--say-gold);
+ background:linear-gradient(135deg,color-mix(in srgb,var(--say-gold) 9%,var(--surface-color)),var(--surface-color) 72%);
+ box-shadow:0 8px 26px rgba(48,39,23,.055);
+}
+.profileTokenEyebrow { color:var(--say-gold-deep);font-size:10px;font-weight:700;letter-spacing:.18em; }
+:root[data-theme="dark"] .profileTokenEyebrow { color:var(--say-gold); }
+.profileTokenAmount { display:flex;align-items:baseline;gap:9px;margin-top:12px;color:var(--text-main);font-size:clamp(29px,5vw,40px);font-weight:650;letter-spacing:-.045em;font-variant-numeric:tabular-nums; }
+.profileTokenAmount small { color:var(--say-gold-deep);font-size:11px;font-weight:700;letter-spacing:.13em; }
+:root[data-theme="dark"] .profileTokenAmount small { color:var(--say-gold); }
+.profileTokenCaption { margin-top:8px;color:var(--text-sub);font-size:11px;letter-spacing:.04em; }
+.postButton,.searchButton,.page button:not(.postButton):not(.akitamon-spot-marker),.dmControls button,.dmComposer button,#themeToggle,.akitaConvertButton,.akitaPreviewActions button {
+ border-radius:4px !important;transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease,box-shadow .2s ease !important;
+}
+.postButton,#homePage .postButton,#dmPage #dmSendBtn { background:var(--say-gold-deep) !important;border:1px solid var(--say-gold-deep) !important;color:#fff !important;letter-spacing:.035em; }
+.postButton:hover,#homePage .postButton:hover,#dmPage #dmSendBtn:hover { background:var(--say-gold) !important;border-color:var(--say-gold) !important;box-shadow:0 5px 14px rgba(90,70,35,.13) !important;transform:translateY(-1px) !important; }
+.akitaConvertButton,.akitaPreviewActions button,.dmBackButton,#dmRefreshBtn,.quizSecondaryButton { background:transparent !important;border:1px solid var(--say-gold) !important;color:var(--say-gold-deep) !important; }
+:root[data-theme="dark"] .akitaConvertButton,:root[data-theme="dark"] .akitaPreviewActions button,:root[data-theme="dark"] .dmBackButton,:root[data-theme="dark"] #dmRefreshBtn,:root[data-theme="dark"] .quizSecondaryButton { color:var(--say-gold) !important; }
+.postButton:active,.page button:active { transform:translateY(0) scale(.985) !important; }
+@media(max-width:430px) { #accountBtn { width:40px !important;min-width:40px !important;height:40px !important;min-height:40px !important; } }
