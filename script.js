@@ -479,10 +479,7 @@ function updateTopRight() {
     try {
         const btn = document.getElementById("accountBtn");
         const menuBtn = document.getElementById("accountMenuBtn");
-        const headerToken = document.getElementById("headerToken");
-        const tokenCountSpan = document.getElementById("tokenCount");
         if (btn) {
-            btn.textContent = "アカウント";
             btn.onclick = openAccountEntry;
         }
         if (menuBtn) {
@@ -490,13 +487,7 @@ function updateTopRight() {
             menuBtn.onclick = openAccountEntry;
             menuBtn.style.display = "block";
         }
-        if (!currentUser) {
-            if (headerToken) headerToken.style.display = "none";
-        } else {
-            if (headerToken && tokenCountSpan) {
-                tokenCountSpan.textContent = currentUser.tokens !== undefined ? currentUser.tokens : 0;
-                headerToken.style.display = "block";
-            }
+        if (currentUser) {
             renderProfile();
         }
         renderGachaInventory();
@@ -520,7 +511,11 @@ function renderProfile() {
                 <b>名前:</b> <span style="margin-left: 6px;">${currentUser.nickname}</span> ${badgeHtml}
             </p>
             <p style="font-size: 16px; margin: 8px 0;"><b>権限:</b> ${currentUser.role || "user"}</p>
-            <p style="font-size: 16px; margin: 8px 0; color: #d97706; font-weight: bold;"><b>所持 Akita Token:</b> 🪙 ${userTokens} 枚</p>
+            <section class="profileTokenCard" aria-label="Akita Token残高">
+                <div class="profileTokenEyebrow">AKITA TOKEN BALANCE</div>
+                <div class="profileTokenAmount"><span>${Number(userTokens).toLocaleString("ja-JP")}</span><small>ATK</small></div>
+                <div class="profileTokenCaption">現在の所持残高</div>
+            </section>
             <button id="logoutBtn" style="background-color: #ff4d4d; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; transition: background-color 0.2s;">
                 ログアウト
             </button>
