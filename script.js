@@ -1,30 +1,5 @@
 let currentUser = null;
 
-/* 秋田クイズ：選択肢検知の診断 */
-window.addEventListener("pointerdown", function(event) {
-    const target = event.target instanceof Element ? event.target : event.target?.parentElement;
-    const button = target?.closest(".quizAnswerButton");
-    if (!button || button.disabled) return;
-    const stage = button.closest(".quizGameStage");
-    const choices = button.closest(".quizAnswerChoices");
-    const difficulty = stage?.id === "quizGameEasy" ? "easy" : stage?.id === "quizGameHard" ? "hard" : null;
-    if (!difficulty || !choices) return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    const feedback = document.getElementById("quizFeedback" + (difficulty === "easy" ? "Easy" : "Hard"));
-    if (feedback) feedback.textContent = "選択肢のクリックを検知しました。回答を処理しています…";
-    try {
-        Promise.resolve(answerQuizQuestion(difficulty, Number(button.dataset.quizChoice), choices)).catch(error => {
-            console.error("クイズ回答処理エラー:", error);
-            if (feedback) feedback.textContent = "回答処理でエラーが発生しました。";
-        });
-    } catch (error) {
-        console.error("クイズ回答処理エラー:", error);
-        if (feedback) feedback.textContent = "回答処理でエラーが発生しました。";
-    }
-}, true);
-
-
 // =====================
 // テーマ切り替え
 // =====================
@@ -1754,7 +1729,7 @@ function renderQuizQuestion(difficulty){
  [`${state.index+1} / ${state.questions.length} 問`,`連続正解 ${state.streak}`,`今回獲得 ${state.earned} ATK`].forEach(t=>{const el=document.createElement("span");el.textContent=t;stats.append(el);});
  const question=document.createElement("h4");question.className="quizQuestionText";question.textContent=q.question;
  const choices=document.createElement("div");choices.className="quizAnswerChoices";
- q.choices.forEach((choice,index)=>{const btn=document.createElement("button");btn.type="button";btn.className="quizAnswerButton";btn.dataset.quizChoice=String(index);const letter=document.createElement("span");letter.className="quizChoiceLetter";letter.textContent=String.fromCharCode(65+index);const label=document.createElement("span");label.textContent=choice;btn.append(letter,label);choices.append(btn);});
+ q.choices.forEach((choice,index)=>{const btn=document.createElement("button");btn.type="button";btn.className="quizAnswerButton";btn.dataset.quizChoice=String(index);const letter=document.createElement("span");letter.className="quizChoiceLetter";letter.textContent=String.fromCharCode(65+index);const label=document.createElement("span");label.textContent=choice;btn.append(letter,label);btn.addEventListener("click",()=>{answerQuizQuestion(difficulty,index,choices).catch(error=>{console.error("クイズ回答処理エラー:",error);const feedback=document.getElementById("quizFeedback"+(difficulty==="easy"?"Easy":"Hard"));if(feedback)feedback.textContent="回答処理でエラーが発生しました。";});});choices.append(btn);});
  const feedback=document.createElement("div");feedback.className="quizAnswerFeedback";feedback.id="quizFeedback"+(difficulty==="easy"?"Easy":"Hard");feedback.setAttribute("aria-live","polite");
  stage.append(stats,question,choices,feedback);
 }
