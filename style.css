@@ -2179,3 +2179,68 @@ body:has(#dmPage[style*="display: block"]) #topRight {
     #accountBtn .accountAvatar { width: 30px; height: 30px; flex-basis: 30px; }
     #accountBtn .accountUserName { max-width: 105px; font-size: 12px; }
 }
+
+
+/* Home composer: unified champagne-gold actions */
+#homePage #postInput:focus {
+    border-color: var(--say-gold) !important;
+    outline: 2px solid color-mix(in srgb, var(--say-gold) 22%, transparent) !important;
+    outline-offset: 1px;
+}
+#homePage .postComposerActions {
+    gap: 10px;
+}
+#homePage .postComposerActions .akitaConvertButton {
+    border: 1px solid var(--say-gold) !important;
+    background: transparent !important;
+    color: var(--say-gold-deep) !important;
+}
+#homePage .postComposerActions .akitaConvertButton:hover {
+    background: color-mix(in srgb, var(--say-gold) 12%, transparent) !important;
+    border-color: var(--say-gold-deep) !important;
+    color: var(--say-gold-deep) !important;
+}
+#homePage .postComposerActions .postButton {
+    background: var(--say-gold-deep) !important;
+    border: 1px solid var(--say-gold-deep) !important;
+    color: #fff !important;
+}
+#homePage .postComposerActions .postButton:hover {
+    background: var(--say-gold) !important;
+    border-color: var(--say-gold) !important;
+    color: #fff !important;
+}
+#homePage .akitaPreview {
+    border: 1px solid color-mix(in srgb, var(--say-gold) 65%, var(--border-color)) !important;
+    background: color-mix(in srgb, var(--say-gold) 7%, var(--surface-color)) !important;
+}
+#homePage .akitaPreviewHeading {
+    color: var(--say-gold-deep) !important;
+}
+:root[data-theme="dark"] #homePage .akitaPreviewHeading {
+    color: var(--say-gold) !important;
+}
+#homePage .akitaPreviewActions button {
+    border: 1px solid var(--say-gold) !important;
+    background: transparent !important;
+    color: var(--say-gold-deep) !important;
+}
+#homePage .akitaPreviewActions button:first-child {
+    background: var(--say-gold-deep) !important;
+    border-color: var(--say-gold-deep) !important;
+    color: #fff !important;
+}
+#homePage .akitaPreviewActions button:hover {
+    background: var(--say-gold) !important;
+    border-color: var(--say-gold) !important;
+    color: #fff !important;
+}
+:root[data-theme="dark"] #homePage .postComposerActions .akitaConvertButton,
+:root[data-theme="dark"] #homePage .akitaPreviewActions .akitaCancelButton {
+    color: var(--say-gold) !important;
+}
+:root[data-theme="dark"] #homePage .akitaPreviewActions button:first-child {
+    background: var(--say-gold) !important;
+    border-color: var(--say-gold) !important;
+    color: #1d1a14 !important;
+}
