@@ -2019,8 +2019,10 @@ body:has(#dmPage[style*="display: block"]) #topRight {
 }
 .minigameTab,
 .minigameTabPlaceholder {
-    flex: 0 0 auto;
-    padding: 10px 16px;
+    flex: 1 1 0;
+    min-width: 0;
+    width: 33.333%;
+    padding: 10px 8px;
     border: 1px solid var(--border-color, #d9dfdc);
     border-radius: 8px;
     background: transparent;
