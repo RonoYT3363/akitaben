@@ -551,17 +551,18 @@ function renderProfile() {
 // ページ切替
 // =====================
 function switchMinigameTab(gameId) {
-    const tabs = document.querySelectorAll(".minigameTab[role='tab']");
-    const panels = document.querySelectorAll(".minigamePanel");
-    tabs.forEach(tab => {
-        const active = tab.id === "minigameTabKanto" && gameId === "kanto";
+    const suffix = ({kanto:"Kanto",quizEasy:"QuizEasy",quizHard:"QuizHard"})[gameId] || "Kanto";
+    const activeTabId = "minigameTab" + suffix;
+    const activePanelId = "minigamePanel" + suffix;
+    document.querySelectorAll(".minigameTab[role='tab']").forEach(tab => {
+        const active = tab.id === activeTabId;
         tab.classList.toggle("is-active", active);
         tab.setAttribute("aria-selected", active ? "true" : "false");
         tab.tabIndex = active ? 0 : -1;
     });
-    panels.forEach(panel => {
-        panel.hidden = !(panel.id === "minigamePanelKanto" && gameId === "kanto");
-    });
+    document.querySelectorAll(".minigamePanel").forEach(panel => { panel.hidden = panel.id !== activePanelId; });
+    if (gameId === "quizEasy") loadQuizGame("easy");
+    if (gameId === "quizHard") loadQuizGame("hard");
 }
 
 function showPage(id) {
@@ -1692,7 +1693,74 @@ document.addEventListener("DOMContentLoaded",()=>{
 });
 
 
-/* ==========================================
+
+/* 秋田クイズ：プレイ処理 */
+const quizGameState = {
+ easy:{loaded:false,loading:false,questions:[],index:0,streak:0,earned:0,correct:0,answered:false},
+ hard:{loaded:false,loading:false,questions:[],index:0,streak:0,earned:0,correct:0,answered:false}
+};
+const QUIZ_BASE_REWARD={easy:5,hard:8};
+const QUIZ_STREAK_BONUS_UNIT={easy:5,hard:8};
+function quizShuffle(items){const a=[...items];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function quizMilestoneBonus(difficulty,streak){
+ if(streak===5)return QUIZ_STREAK_BONUS_UNIT[difficulty];
+ if(streak>=10&&streak%10===0)return streak/10*2*QUIZ_STREAK_BONUS_UNIT[difficulty];
+ return 0;
+}
+async function loadQuizGame(difficulty){
+ const state=quizGameState[difficulty],stage=document.getElementById(difficulty==="easy"?"quizGameEasy":"quizGameHard");
+ if(!stage||state.loaded||state.loading)return;
+ state.loading=true;stage.textContent="問題を読み込んでいます…";
+ try{
+  const response=await fetch("/data/quiz.json",{cache:"no-store"});if(!response.ok)throw new Error("クイズを読み込めませんでした。");
+  const all=await response.json();
+  state.questions=quizShuffle((Array.isArray(all)?all:[]).filter(q=>q.active===true&&q.difficulty===difficulty&&q.question&&Array.isArray(q.choices)&&q.choices.length===4&&Number.isInteger(q.answerIndex)&&q.answerIndex>=0&&q.answerIndex<4));
+  state.loaded=true;
+  if(!state.questions.length){stage.innerHTML='<div class="quizEmptyState"><strong>問題を準備中です</strong><p>この難易度の問題はまだ公開されていません。</p></div>';return;}
+  renderQuizQuestion(difficulty);
+ }catch(error){stage.textContent=error.message||"読み込みに失敗しました。";}
+ finally{state.loading=false;}
+}
+function renderQuizQuestion(difficulty){
+ const state=quizGameState[difficulty],stage=document.getElementById(difficulty==="easy"?"quizGameEasy":"quizGameHard");if(!stage)return;
+ if(state.index>=state.questions.length){renderQuizResult(difficulty);return;}
+ state.answered=false;const q=state.questions[state.index];stage.replaceChildren();
+ const stats=document.createElement("div");stats.className="quizGameStats";
+ [`${state.index+1} / ${state.questions.length} 問`,`連続正解 ${state.streak}`,`今回獲得 ${state.earned} ATK`].forEach(t=>{const el=document.createElement("span");el.textContent=t;stats.append(el);});
+ const question=document.createElement("h4");question.className="quizQuestionText";question.textContent=q.question;
+ const choices=document.createElement("div");choices.className="quizAnswerChoices";
+ q.choices.forEach((choice,index)=>{const btn=document.createElement("button");btn.type="button";btn.className="quizAnswerButton";const letter=document.createElement("span");letter.className="quizChoiceLetter";letter.textContent=String.fromCharCode(65+index);const label=document.createElement("span");label.textContent=choice;btn.append(letter,label);btn.addEventListener("click",()=>answerQuizQuestion(difficulty,index,choices));choices.append(btn);});
+ const feedback=document.createElement("div");feedback.className="quizAnswerFeedback";feedback.id="quizFeedback"+(difficulty==="easy"?"Easy":"Hard");feedback.setAttribute("aria-live","polite");
+ stage.append(stats,question,choices,feedback);
+}
+async function answerQuizQuestion(difficulty,selectedIndex,choices){
+ const state=quizGameState[difficulty];if(state.answered)return;
+ if(!currentUser){alert("Tokenを獲得するにはログインしてください。");return;}
+ const q=state.questions[state.index];if(!q)return;state.answered=true;
+ choices.querySelectorAll("button").forEach((btn,i)=>{btn.disabled=true;if(i===q.answerIndex)btn.classList.add("is-correct");if(i===selectedIndex&&selectedIndex!==q.answerIndex)btn.classList.add("is-wrong");});
+ const feedback=document.getElementById("quizFeedback"+(difficulty==="easy"?"Easy":"Hard"));let reward=0;
+ if(selectedIndex===q.answerIndex){
+  state.streak++;state.correct++;const base=QUIZ_BASE_REWARD[difficulty],bonus=quizMilestoneBonus(difficulty,state.streak);reward=base+bonus;state.earned+=reward;
+  feedback.className="quizAnswerFeedback is-correct";feedback.textContent="正解！ +"+base+" ATK"+(bonus?" ／ 連続正解ボーナス +"+bonus+" ATK":"");
+  await addTokensToUser(reward);
+ }else{
+  state.streak=0;feedback.className="quizAnswerFeedback is-wrong";feedback.textContent="不正解。正解は "+String.fromCharCode(65+q.answerIndex)+" です。";
+ }
+ if(q.explanation){const exp=document.createElement("p");exp.className="quizExplanation";exp.textContent=q.explanation;feedback.append(exp);}
+ const next=document.createElement("button");next.type="button";next.className="quizNextButton";next.textContent=state.index+1>=state.questions.length?"結果を見る":"次の問題へ";next.addEventListener("click",()=>{state.index++;renderQuizQuestion(difficulty);});feedback.append(next);
+}
+function renderQuizResult(difficulty){
+ const state=quizGameState[difficulty],stage=document.getElementById(difficulty==="easy"?"quizGameEasy":"quizGameHard");if(!stage)return;stage.replaceChildren();
+ const wrap=document.createElement("div");wrap.className="quizResultState";
+ const eyebrow=document.createElement("p");eyebrow.className="quizGameEyebrow";eyebrow.textContent="RESULT";
+ const title=document.createElement("h4");title.textContent="クイズ終了！";
+ const score=document.createElement("p");score.className="quizResultScore";score.textContent=state.correct+" / "+state.questions.length+" 問正解";
+ const earned=document.createElement("p");earned.className="quizResultEarned";earned.textContent="獲得 "+state.earned+" Akita Token";
+ const retry=document.createElement("button");retry.type="button";retry.className="quizNextButton";retry.textContent="もう一度挑戦";
+ retry.addEventListener("click",()=>{state.questions=quizShuffle(state.questions);state.index=0;state.streak=0;state.earned=0;state.correct=0;state.answered=false;renderQuizQuestion(difficulty);});
+ wrap.append(eyebrow,title,score,earned,retry);stage.append(wrap);
+}
+\n/* ==========================================
    秋田クイズ管理（オーナー用）
 ========================================== */
 function resetQuizForm() {
