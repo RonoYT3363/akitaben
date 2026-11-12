@@ -2506,3 +2506,143 @@ body:has(#minigamePage[style*="display: block"]) {
         font-size: 16px;
     }
 }
+
+
+/* Quiz: use the available game workspace more generously */
+#minigamePage[style*="display: block"] .quizGamePanel:not([hidden]) {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    justify-content: flex-start !important;
+    gap: 0 !important;
+}
+#minigamePage[style*="display: block"] .quizGameHeader {
+    padding: 8px 4px 16px !important;
+}
+#minigamePage[style*="display: block"] .quizGameHeader h3 {
+    font-size: clamp(22px, 2.5vw, 30px) !important;
+}
+#minigamePage[style*="display: block"] .quizGameEyebrow {
+    font-size: 11px !important;
+    letter-spacing: .22em !important;
+}
+#minigamePage[style*="display: block"] .quizRewardTag {
+    padding: 9px 15px !important;
+    font-size: 13px !important;
+}
+#minigamePage[style*="display: block"] .quizGameIntro {
+    margin: 14px 4px 0 !important;
+    font-size: 14px !important;
+    line-height: 1.7 !important;
+}
+#minigamePage[style*="display: block"] .quizGameStage {
+    width: 100% !important;
+    flex: 1 1 auto !important;
+    box-sizing: border-box !important;
+    margin-top: 18px !important;
+    padding: clamp(22px, 3vw, 42px) !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+}
+#minigamePage[style*="display: block"] .quizGameStats {
+    padding: 0 0 18px !important;
+    font-size: 14px !important;
+    gap: 18px !important;
+}
+#minigamePage[style*="display: block"] .quizQuestionText {
+    max-width: 1100px;
+    margin: clamp(20px, 3vh, 34px) auto !important;
+    font-size: clamp(23px, 3vw, 34px) !important;
+    line-height: 1.65 !important;
+    text-align: center;
+}
+#minigamePage[style*="display: block"] .quizAnswerChoices {
+    width: min(100%, 1100px);
+    margin: 0 auto;
+    gap: 14px !important;
+}
+#minigamePage[style*="display: block"] .quizAnswerButton {
+    min-height: clamp(68px, 10vh, 88px) !important;
+    padding: 16px 20px !important;
+    gap: 16px !important;
+    font-size: clamp(15px, 1.4vw, 18px) !important;
+}
+#minigamePage[style*="display: block"] .quizChoiceLetter {
+    flex-basis: 34px !important;
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 14px !important;
+}
+#minigamePage[style*="display: block"] .quizAnswerFeedback {
+    width: min(100%, 1100px);
+    box-sizing: border-box;
+    margin: 18px auto 0 !important;
+    font-size: 15px !important;
+    line-height: 1.65;
+}
+#minigamePage[style*="display: block"] .quizExplanation {
+    font-size: 14px !important;
+    line-height: 1.7 !important;
+}
+#minigamePage[style*="display: block"] .quizNextButton {
+    min-height: 50px !important;
+    margin-top: 16px !important;
+    padding: 12px 28px !important;
+    font-size: 15px !important;
+}
+#minigamePage[style*="display: block"] .quizEmptyState,
+#minigamePage[style*="display: block"] .quizResultState {
+    width: 100%;
+    margin: auto;
+    padding: 30px 12px !important;
+}
+#minigamePage[style*="display: block"] .quizResultState h4 {
+    margin: 16px 0;
+    font-size: clamp(25px, 3vw, 36px) !important;
+}
+#minigamePage[style*="display: block"] .quizResultScore {
+    font-size: clamp(25px, 3vw, 36px) !important;
+}
+#minigamePage[style*="display: block"] .quizResultEarned {
+    font-size: 18px !important;
+}
+@media (max-width: 820px) {
+    #minigamePage[style*="display: block"] .quizGameHeader {
+        padding: 4px 2px 10px !important;
+    }
+    #minigamePage[style*="display: block"] .quizGameIntro {
+        margin-top: 8px !important;
+        font-size: 12px !important;
+    }
+    #minigamePage[style*="display: block"] .quizGameStage {
+        margin-top: 10px !important;
+        padding: 16px 12px !important;
+        gap: 6px;
+    }
+    #minigamePage[style*="display: block"] .quizGameStats {
+        padding-bottom: 10px !important;
+        font-size: 11px !important;
+        gap: 8px !important;
+    }
+    #minigamePage[style*="display: block"] .quizQuestionText {
+        margin: 14px auto !important;
+        font-size: clamp(19px, 5vw, 25px) !important;
+    }
+    #minigamePage[style*="display: block"] .quizAnswerChoices {
+        gap: 9px !important;
+    }
+    #minigamePage[style*="display: block"] .quizAnswerButton {
+        min-height: 60px !important;
+        padding: 10px 9px !important;
+        gap: 9px !important;
+        font-size: 13px !important;
+    }
+    #minigamePage[style*="display: block"] .quizChoiceLetter {
+        flex-basis: 28px !important;
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 12px !important;
+    }
+}
