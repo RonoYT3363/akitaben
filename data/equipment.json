@@ -12,5 +12,12 @@
     "rarity": "SSR",
     "category": "持ち物",
     "image": "https://raw.githubusercontent.com/RonoYT3363/akitaben/dm-test/assets/equipment/なまはげ-9a19255f.jpg"
+  },
+  {
+    "id": "大日堂舞楽-0b1d8670",
+    "name": "大日堂舞楽",
+    "rarity": "R",
+    "category": "持ち物",
+    "image": "https://raw.githubusercontent.com/RonoYT3363/akitaben/dm-test/assets/equipment/大日堂舞楽-0b1d8670.jpg"
   }
 ]
