@@ -810,7 +810,10 @@ function renderGachaCatalog() {
         list.textContent = "現在、ガチャに登場する装備品はありません。";
         return;
     }
-    gachaItems.forEach(item => {
+    const rarityOrder = { SSR: 0, SR: 1, R: 2, N: 3 };
+    [...gachaItems]
+        .sort((a, b) => rarityOrder[a.rarity] - rarityOrder[b.rarity])
+        .forEach(item => {
         const card = document.createElement("article");
         card.className = "gachaCatalogCard";
         const image = document.createElement("img");
