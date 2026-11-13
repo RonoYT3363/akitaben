@@ -5,5 +5,12 @@
     "rarity": "SR",
     "category": "持ち物",
     "image": "https://raw.githubusercontent.com/RonoYT3363/akitaben/dm-test/assets/equipment/竿灯-9348cbdc.jpg"
+  },
+  {
+    "id": "なまはげ-9a19255f",
+    "name": "なまはげ！",
+    "rarity": "SSR",
+    "category": "持ち物",
+    "image": "https://raw.githubusercontent.com/RonoYT3363/akitaben/dm-test/assets/equipment/なまはげ-9a19255f.jpg"
   }
 ]
