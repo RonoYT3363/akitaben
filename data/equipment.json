@@ -19,5 +19,12 @@
     "rarity": "R",
     "category": "持ち物",
     "image": "https://raw.githubusercontent.com/RonoYT3363/akitaben/dm-test/assets/equipment/大日堂舞楽-0b1d8670.jpg"
+  },
+  {
+    "id": "なまはげの牙-673828c8",
+    "name": "なまはげの牙",
+    "rarity": "N",
+    "category": "持ち物",
+    "image": "https://raw.githubusercontent.com/RonoYT3363/akitaben/dm-test/assets/equipment/なまはげの牙-673828c8.jpg"
   }
 ]
